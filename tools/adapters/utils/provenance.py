@@ -49,6 +49,9 @@ def build_header(
         },
         "caveats": caveats,
     }
+    licence_classification = source_metadata.get("licence_classification")
+    if isinstance(licence_classification, Mapping):
+        header["source"]["licence_classification"] = dict(licence_classification)
     if language_code is not None:
         header["language_code"] = language_code
     if language_pair is not None:
@@ -64,4 +67,3 @@ def sha256_of(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-

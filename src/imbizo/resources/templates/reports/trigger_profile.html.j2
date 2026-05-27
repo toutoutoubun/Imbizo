@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Trigger Profile — {{ project.title }}</title>
+  <style>
+    body { color: #111827; background: #ffffff; font-family: system-ui, sans-serif; line-height: 1.45; margin: 2rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { border: 1px solid #4b5563; padding: 0.45rem; text-align: left; vertical-align: top; }
+    th { background: #e5e7eb; }
+    .methods, .licence-propagation { border: 1px solid #4b5563; background: #f9fafb; padding: 1rem; margin-top: 1rem; }
+    @media print { body { margin: 1cm; font-size: 10.5pt; } }
+  </style>
+</head>
+<body>
+  <header><h1>Trigger Profile</h1><p>{{ project.title }} — {{ project.date }}</p></header>
+  <section>
+    <h2>Trigger counts</h2>
+    <table>
+      <thead><tr><th>Speaker</th><th>Scene</th><th>Trigger type</th><th>Count</th></tr></thead>
+      <tbody>
+        {% for row in trigger_counts %}
+          <tr><td>{{ row.speaker_id }}</td><td>{{ row.scene }}</td><td>{{ row.trigger_type }}</td><td>{{ row.count }}</td></tr>
+        {% else %}
+          <tr><td colspan="4">No confirmed trigger links are available.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <footer>
+    <section class="methods"><h2>Methods note</h2><p>Trigger candidates are advisory evidence for Clyne's trigger hypothesis and do not prove why a speaker switched (Clyne, 1967; Clyne, 2003).</p></section>
+    {% include "partials/licence_propagation.html.j2" %}
+  </footer>
+</body>
+</html>

@@ -1,0 +1,5 @@
+APACHE-2.0
+
+REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT FROM <https://www.apache.org/licenses/LICENSE-2.0.txt>
+
+Canonical URL: https://www.apache.org/licenses/LICENSE-2.0.txt

@@ -6,5 +6,12 @@
   "export.file": "Export",
   "lid.run": "Run Local LID",
   "annotation.editor": "Annotation Editor",
-  "error.title": "Something needs attention"
+  "error.title": "Something needs attention",
+  "licence.warning.message": "This project uses {tiers} resources: {resources}. Outputs derived from these resources may carry additional redistribution obligations. Read the resource provenance notes before sharing exported data or reports.",
+  "licence.warning.unknown_resources": "resources recorded in the bootstrap acknowledgement",
+  "licence.warning.accessible_name": "Resource licence notice",
+  "licence.warning.read_more": "Read more",
+  "licence.warning.read_more.accessible": "Open resource licence explanation",
+  "licence.warning.dismiss_session": "Dismiss for this session",
+  "licence.warning.dismiss_permanent": "Dismiss permanently for this project"
 }

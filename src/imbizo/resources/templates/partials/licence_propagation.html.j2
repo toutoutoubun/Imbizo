@@ -1,0 +1,40 @@
+{% set report = licence_report | default(none) %}
+{% if report and report.has_obligations %}
+<section class="licence-propagation" aria-labelledby="licence-propagation-title">
+  <h2 id="licence-propagation-title">Resource licence propagation</h2>
+  <p>
+    This report was rendered with local resource metadata from Imbizo-CS. The
+    following notices describe obligations that may travel with exported data,
+    review packets, or redistributed reports.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Resource</th>
+        <th>Licence</th>
+        <th>Tier</th>
+        <th>AGPLv3 relation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for resource in report.resources %}
+        <tr>
+          <td>{{ resource.resource_name }}</td>
+          <td>{{ resource.classification.spdx_id }}</td>
+          <td>{{ resource.classification.tier }}</td>
+          <td>{{ resource.classification.combinable_with_agpl }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if report.nc_resources %}
+    <p><strong>NonCommercial notice:</strong> Tier-2 resources are present. Outputs derived from those data resources may carry non-commercial redistribution limits.</p>
+  {% endif %}
+  {% if report.sharealike_resources %}
+    <p><strong>ShareAlike notice:</strong> At least one active resource carries a ShareAlike clause. Redistributing the resource or an adapted resource under incompatible terms may violate the original licence.</p>
+  {% endif %}
+  {% for notice in report.notices %}
+    <blockquote>{{ notice }}</blockquote>
+  {% endfor %}
+</section>
+{% endif %}

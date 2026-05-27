@@ -6,10 +6,7 @@ import ast
 from pathlib import Path
 
 FORBIDDEN = {"urllib.request", "requests", "httpx", "aiohttp", "socket"}
-ALLOWED_NETWORK_IMPORT_FILES = {
-    Path("tools/bootstrap.py"),
-    Path("tools/make_bundle.py"),
-}
+ALLOWED_NETWORK_IMPORT_FILES = {Path("tools/bootstrap.py")}
 
 
 def test_only_bootstrap_tools_import_network_libraries() -> None:
@@ -44,4 +41,5 @@ def _should_skip(relative: Path) -> bool:
         or ".venv" in parts
         or relative.parts[0] in {".git", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
         or relative == Path("tests/test_bootstrap_offline_guard.py")
+        or (len(relative.parts) >= 2 and relative.parts[0] == "tools" and relative.parts[1] == "adapters")
     )

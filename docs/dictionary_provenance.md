@@ -2,6 +2,10 @@
 
 The dictionary bootstrap subsystem lets Imbizo-CS rebuild imported dictionaries from audited source files. It is intentionally separate from the runtime application: once the dictionaries have been built, Imbizo-CS can run in an air-gapped environment with no network access.
 
+For the combined dictionary and processing-resource provenance guide, see
+`docs/resource_provenance.md`. This older page is retained as the dictionary
+specific view for existing links.
+
 ## Citing Imported Dictionaries
 
 When you use imported dictionaries in a thesis or article, cite both Imbizo-CS and the source dictionary. A methods section should also name the dictionary YAML file, content version, retrieval date, raw SHA-256 hash, and adapter version recorded in the YAML header.

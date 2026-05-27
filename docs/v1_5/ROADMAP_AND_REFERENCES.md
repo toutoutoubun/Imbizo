@@ -134,6 +134,58 @@ control, responsibility, and ethics, especially when dictionaries touch
 stigmatized varieties or community-specific language knowledge (Carroll et al.,
 2020).
 
+### Processing Resources Roadmap
+
+1. **AfroLID weights** - Licensing question: confirm redistribution terms for
+model weights and any HuggingFace mirrors. Technical question: package weights
+for CPU-only inference without making Layer 2 mandatory. Ethical question:
+document uneven accuracy across African languages and keep researcher override
+central.
+
+2. **NCHLT POS taggers and lemmatisers** - Licensing question: audit
+per-language handles and model files. Technical question: make the taggers
+portable on Windows and Debian/Ubuntu without network setup. Ethical question:
+avoid treating POS output as a substitute for language-community expertise.
+
+3. **CTexTools standalone** - Licensing question: confirm redistribution
+conditions for the standalone bundle. Technical question: isolate any platform
+assumptions. Ethical question: explain which languages and genres the tools
+were designed for.
+
+4. **ZulMorph FST** - Licensing question: confirm FST and lexicon reuse terms.
+Technical question: build offline with Foma or another open toolchain. Ethical
+question: avoid presenting isiZulu morphology as a template for all Nguni
+languages.
+
+5. **SADiLaR spelling checker word-lists** - Licensing question: confirm whether
+word-lists can be extracted from Windows/MS Office packages. Technical question:
+make extraction cross-platform. Ethical question: preserve non-standard
+orthography instead of forcing correction.
+
+6. **Bantu Science whisper-derived models** - Licensing question: confirm model
+redistribution and derivative model terms. Technical question: package models
+without GPU assumptions. Ethical question: publish quality caveats per language
+and domain.
+
+7. **Vuk'uzenzele Corpus** - Licensing question: verify CC-BY-4.0 attribution
+metadata and redistribution format. Technical question: produce indexed local
+corpora. Ethical question: document register and government-publication genre.
+
+8. **PuoData / PuoBERTa** - Licensing question: confirm CC-BY-4.0 data and model
+terms. Technical question: keep large model artifacts optional. Ethical
+question: explain what benchmark performance does not say about interview
+data.
+
+9. **African Next Voices speech corpora** - Licensing question: verify consent
+and redistribution terms for speech data. Technical question: support large
+audio bundles without breaking low-resource installs. Ethical question: ensure
+community governance for voice data.
+
+10. **English-isiZulu Code-Switched Speech Corpus** - Licensing question: confirm
+whether the Van der Westhuizen and Niesler (2018) corpus can be redistributed.
+Technical question: preserve alignment metadata. Ethical question: avoid
+generalizing soap-opera speech patterns to all South African code-switching.
+
 ## 10b. Consolidated references
 
 Adebara, I., Elmadany, A., Abdul-Mageed, M., & Alcoba Inciarte, A. (2022).

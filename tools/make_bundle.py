@@ -1,14 +1,14 @@
 """Create an air-gap dictionary bootstrap bundle.
 
-This is one of the only two files allowed to import urllib.request. It runs on
-a connected machine and packages raw downloads, checksums, and license files.
+Network access is delegated to :mod:`tools.bootstrap` so the project has one
+auditable download path for bootstrap resources.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import shutil
-import urllib.request
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -18,6 +18,12 @@ import click
 import yaml
 
 from tools.adapters.utils.provenance import sha256_of
+from tools.bootstrap import (
+    _license_file_for,
+    _source_tier,
+    _verify_online_license_metadata,
+    download_url,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -25,7 +31,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 @click.command()
 @click.option("--manifest", "manifest_path", type=click.Path(path_type=Path), default=PROJECT_ROOT / "bootstrap" / "sources.yaml")
 @click.option("--out", "out_path", type=click.Path(path_type=Path), default=PROJECT_ROOT / "bootstrap_bundle.zip")
-def main(manifest_path: Path, out_path: Path) -> None:
+@click.option("--include-nc-data", is_flag=True, default=False, help="Include Tier-2 resources after IMBIZO_NC_ACCEPTED=1.")
+@click.option("--include-community", is_flag=True, default=False, help="Include Tier-3 resources after IMBIZO_COMMUNITY_ACCEPTED=1.")
+@click.option("--include-asr", is_flag=True, default=False, help="Include strictly opt-in whisper.cpp ASR resources.")
+def main(manifest_path: Path, out_path: Path, include_nc_data: bool, include_community: bool, include_asr: bool) -> None:
     """Download shippable sources and pack an offline bootstrap zip."""
 
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) or {}
@@ -40,6 +49,20 @@ def main(manifest_path: Path, out_path: Path) -> None:
     for source in manifest.get("sources", []):
         if source.get("bundle_status") != "shippable":
             click.echo(f"Skipping {source.get('id')}: not shippable")
+            continue
+        tier = _source_tier(source)
+        if tier == 2 and not include_nc_data:
+            click.echo(f"Skipping {source.get('id')}: Tier-2 opt-in not requested")
+            continue
+        if tier == 2 and os.environ.get("IMBIZO_NC_ACCEPTED") != "1":
+            raise click.ClickException("Tier-2 bundle creation requires IMBIZO_NC_ACCEPTED=1.")
+        if tier == 3 and not include_community:
+            click.echo(f"Skipping {source.get('id')}: Tier-3 community opt-in not requested")
+            continue
+        if tier == 3 and os.environ.get("IMBIZO_COMMUNITY_ACCEPTED") != "1":
+            raise click.ClickException("Tier-3 bundle creation requires IMBIZO_COMMUNITY_ACCEPTED=1.")
+        if source.get("opt_in_flag") == "include_asr" and not include_asr:
+            click.echo(f"Skipping {source.get('id')}: ASR opt-in not requested")
             continue
         _verify_online_license_metadata(source)
         raw_files = _download_source(source, bundle_root / "raw")
@@ -82,51 +105,15 @@ def _download_source(source: Mapping[str, Any], raw_dir: Path) -> list[Path]:
         if not isinstance(url, str):
             raise click.ClickException(f"Invalid URL for source {source.get('id')}")
         path = raw_dir / _safe_raw_name(str(source["id"]), index, url)
-        try:
-            urllib.request.urlretrieve(url, path)
-        except Exception as exc:
-            raise click.ClickException(f"Failed to download {url}: {exc}") from exc
+        download_url(url, path)
         paths.append(path)
         click.echo(f"Downloaded {source['id']} -> {path.name}")
     return paths
 
 
-def _verify_online_license_metadata(source: Mapping[str, Any]) -> None:
-    markers = [str(marker) for marker in source.get("license_markers", [])]
-    if not markers:
-        return
-    probe_url = str(source.get("license_probe_url") or source.get("url"))
-    try:
-        with urllib.request.urlopen(probe_url, timeout=30) as response:
-            page = response.read().decode("utf-8", errors="replace")
-    except Exception as exc:
-        raise click.ClickException(f"Could not verify online license metadata for {source.get('id')}: {exc}") from exc
-    folded = page.casefold()
-    if not any(marker.casefold() in folded for marker in markers):
-        raise click.ClickException(
-            f"Could not confirm required license metadata for {source.get('id')} at {probe_url}. "
-            f"Expected one of: {', '.join(markers)}"
-        )
-
-
 def _safe_raw_name(source_id: str, index: int, url: str) -> str:
     suffix = Path(url.split("?", 1)[0]).suffix or ".raw"
     return f"{source_id}_{index:02d}{suffix}"
-
-
-def _license_file_for(license_name: str) -> Path:
-    folded = license_name.casefold()
-    if "nwulite" in folded:
-        return PROJECT_ROOT / "LICENSES" / "NWULITE-OBODO-1.0.txt"
-    if "cc-by-nc-sa" in folded or "cc by-nc-sa" in folded:
-        return PROJECT_ROOT / "LICENSES" / "CC-BY-NC-SA-2.5-ZA.txt"
-    if "cc-by-4.0" in folded or "cc by 4.0" in folded:
-        return PROJECT_ROOT / "LICENSES" / "CC-BY-4.0.txt"
-    if "oer" in folded or "unisa" in folded:
-        return PROJECT_ROOT / "LICENSES" / "OER-UNISA.txt"
-    if "public" in folded:
-        return PROJECT_ROOT / "LICENSES" / "PUBLIC-DOMAIN.txt"
-    return PROJECT_ROOT / "LICENSES" / f"{license_name}.txt"
 
 
 def _bundle_readme() -> str:
