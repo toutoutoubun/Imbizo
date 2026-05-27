@@ -1,0 +1,47 @@
+language_code: "zul"
+language_name: "isiZulu trigger candidates"
+version: "0.1.0"
+source: "Clyne (1967); Clyne (2003); Poulos & Msimang (1998); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+trigger_candidates:
+  proper_nouns:
+    - form: "KwaZulu"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place/region name; not a standalone language label."
+    - form: "uMhlanga"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place name with Nguni-style orthography; verify local spelling."
+  domain_specific_borrowings:
+    - form: "isikole"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Often discussed as an adapted borrowing from school; verify against local grammar and transcript."
+    - form: "ikhompyutha"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Technology borrowing candidate; spelling varies."
+    - form: "ibhasi"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Transport borrowing candidate; review before use."
+  discourse_markers:
+    - form: "yebo"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Affirmation marker; may occur across multilingual repertoires."
+    - form: "hawu"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Interjection candidate; review with local speakers."
+    - form: "hayi"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Negation/interjection-like use can vary; do not auto-interpret."
+  cognates:
+    - form: "ibandla"
+      trigger_type: "cognate"
+      verified: false
+      note: "Religion/governance context candidate; needs lexical verification."

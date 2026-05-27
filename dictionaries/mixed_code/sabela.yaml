@@ -1,0 +1,53 @@
+variety_code: "sabela"
+variety_name: "Sabela"
+version: "0.1.0"
+source: "Van Onselen (1984); Ravyse (2021); Saville & McKinney (2017)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+social_context: >
+  Sabela is treated here as a sensitive prison-linked communicative repertoire
+  associated in available literature with secrecy, institutional power,
+  coercion, gang contexts, and later circulation outside prisons. Researchers
+  should approach it through ethics review, participant consent, and community
+  expertise.
+caveats: >
+  This starter profile is intentionally sparse and heavily unverified. It does
+  not teach Sabela, celebrate prison gangs, identify speakers, or imply that a
+  form is criminal. Public descriptions of Sabela are uneven and can be
+  sensationalized. Use this file only to support careful annotation where a
+  researcher already has ethical clearance and contextual knowledge. Local
+  review is required before any entry is treated as evidence.
+lexicon:
+  - form: "sabela"
+    gloss_eng: "respond/speak the register"
+    source_languages: ["Nguni", "prison repertoire"]
+    verified: false
+    note: "Basic label reported in public descriptions; still requires ethical project review."
+  - form: "phakamisa"
+    gloss_eng: "approval/raise"
+    source_languages: ["Nguni", "prison repertoire"]
+    verified: false
+    note: "Reported in public word lists; do not treat as authoritative."
+  - form: "nombor"
+    gloss_eng: "number/Numbers-gang reference"
+    source_languages: ["Afrikaans", "English", "prison repertoire"]
+    verified: false
+    note: "Sensitive term; avoid decontextualized analysis."
+  - form: "skrif"
+    gloss_eng: "writing/significant item"
+    source_languages: ["Afrikaans", "prison repertoire"]
+    verified: false
+    note: "Reported in public word lists; verify before use."
+morphosyntactic_features:
+  - feature: "covert_register_context"
+    description: "Sabela may function as coded communication rather than ordinary conversational CS."
+    verified: false
+    note: "Requires ethics and context; do not auto-classify."
+  - feature: "nguni_afrikaans_english_resources"
+    description: "Available descriptions report resources from Nguni languages, Afrikaans, and English."
+    verified: false
+    note: "Do not infer a single host frame."
+  - feature: "high_risk_annotation"
+    description: "Annotation can affect participant safety and representation."
+    verified: true
+    note: "The UI should warn before enabling Sabela profile mode."

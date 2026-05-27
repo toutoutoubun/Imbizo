@@ -1,0 +1,53 @@
+variety_code: "tsotsitaal"
+variety_name: "Tsotsitaal"
+version: "0.1.0"
+source: "Slabbert & Myers-Scotton (1997); Hurst (2008); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+social_context: >
+  Tsotsitaal is treated here as a historically situated urban repertoire, not
+  as a fixed language with a stable dictionary. Published work links it to
+  township speech, youth style, masculinity, performance, mobility, and local
+  identity, but actual use varies by place, period, speaker, and community.
+caveats: >
+  This starter profile does not define Tsotsitaal, certify a speaker as
+  authentic, or freeze living urban practices into a closed list. It is a
+  historical snapshot intended to help researchers mark spans that may not fit
+  clean Matrix Language / Embedded Language analysis. Many entries below are
+  deliberately unverified because they require local speaker review, project
+  context, and attention to how Tsotsitaal has often been moralized,
+  criminalized, masculinized, or sensationalized in public discourse.
+lexicon:
+  - form: "heita"
+    gloss_eng: "hello"
+    source_languages: ["uncertain", "township repertoire"]
+    verified: false
+    note: "Reported in Tsotsitaal-related literature, but local form and spelling need review."
+  - form: "kasi"
+    gloss_eng: "township"
+    source_languages: ["uncertain", "Afrikaans", "township repertoire"]
+    verified: false
+    note: "Widely circulated South African urban term; not exclusive to Tsotsitaal."
+  - form: "dladla"
+    gloss_eng: "house/home"
+    source_languages: ["uncertain", "Nguni"]
+    verified: false
+    note: "Reported in Tsotsitaal literature; verify before use as evidence."
+  - form: "authi"
+    gloss_eng: "male peer"
+    source_languages: ["uncertain", "township repertoire"]
+    verified: false
+    note: "Sensitive social term; avoid decontextualized interpretation."
+morphosyntactic_features:
+  - feature: "variable_host_frame"
+    description: "Published accounts describe shifting frames depending on place and speaker repertoire."
+    verified: false
+    note: "Do not assume a single host language."
+  - feature: "lexical_substitution_and_relexification"
+    description: "Some accounts describe stylized lexical replacement within broader township speech."
+    verified: false
+    note: "Treat as a researcher-coded feature, not an automatic diagnosis."
+  - feature: "standard_language_categories_insufficient"
+    description: "Tsotsitaal spans may be better annotated as mixed-code variety data than as ordinary two-language CS."
+    verified: true
+    note: "Use only when justified by project context and memo."

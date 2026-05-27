@@ -1,0 +1,51 @@
+language_code: "afr"
+language_name: "Afrikaans trigger candidates"
+version: "0.1.0"
+source: "Clyne (1967); Clyne (2003); Mesthrie (2008); McCormick (2002)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+trigger_candidates:
+  proper_nouns:
+    - form: "Kaapstad"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Afrikaans form of Cape Town; may be relevant in Afrikaans/Kaaps data."
+    - form: "Stellenbosch"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place/institution name; not language-exclusive."
+    - form: "Pretoria"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Shared place name across languages; use as context only."
+  domain_specific_borrowings:
+    - form: "skool"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Education-domain candidate; review in relation to local varieties."
+    - form: "kerk"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Religion-domain candidate; project-specific review required."
+    - form: "werk"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Work-domain candidate; may be ordinary Afrikaans rather than a trigger."
+  discourse_markers:
+    - form: "maar"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Common Afrikaans discourse/conjunction form; may circulate in Kaaps and English contexts."
+    - form: "mos"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Candidate discourse marker; verify with local speakers."
+    - form: "ne"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "ASCII spelling used here; accented spellings and pronunciation vary, so keep matching conservative."
+  cognates:
+    - form: "universiteit"
+      trigger_type: "cognate"
+      verified: false
+      note: "Education-domain cognate candidate; not decisive."

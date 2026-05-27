@@ -1,0 +1,38 @@
+language_code: "zul"
+language_name: "isiZulu phonological integration cues"
+version: "0.1.0"
+source: "Poulos & Msimang (1998); Doke (1927); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+transcription_basis: "orthographic_with_optional_audio_review"
+patterns:
+  - feature_type: "vowel_epenthesis"
+    description: "Borrowed stems may receive vowel material or noun-class prefix material to fit isiZulu syllable patterns."
+    example: "English school -> isiZulu isikole # fictional or paraphrased example; verify for publication"
+    verified: false
+    note: "Commonly cited adaptation pattern, but project scoring requires researcher confirmation."
+    citation: "Poulos & Msimang (1998); Doke (1927)"
+  - feature_type: "consonant_cluster_simplification"
+    description: "English consonant clusters may be broken up or simplified in adapted forms."
+    example: "English class -> ikilasi # fictional or paraphrased example; verify for publication"
+    verified: false
+    note: "Orthographic form alone may not show pronunciation."
+    citation: "Poulos & Msimang (1998)"
+  - feature_type: "click_adaptation_in_non_nguni_hosts"
+    description: "Not normally a host-language feature for isiZulu, which has click consonants; included for cross-language schema compatibility."
+    example: "not_applicable_for_zul_host # fictional or paraphrased example"
+    verified: false
+    note: "Use only when analyzing source-to-host adaptation across languages."
+    citation: "Mesthrie (2008)"
+  - feature_type: "tonal_reassignment"
+    description: "Borrowed stems may be assigned tonal patterns in speech, but this requires audio or tone-marked transcription."
+    example: "borrowed noun assigned local tonal pattern # fictional or paraphrased example"
+    verified: false
+    note: "Do not score tone when the project has only ordinary orthography."
+    citation: "Poulos & Msimang (1998)"
+  - feature_type: "stress_pattern_shift"
+    description: "Source-language stress may become less relevant when a borrowing is pronounced in an isiZulu prosodic frame."
+    example: "English laptop pronounced with local prosodic timing # fictional or paraphrased example"
+    verified: false
+    note: "Requires audio evidence; not inferable from token text alone."
+    citation: "Mesthrie (2008)"

@@ -1,0 +1,47 @@
+language_code: "xho"
+language_name: "isiXhosa trigger candidates"
+version: "0.1.0"
+source: "Clyne (1967); Clyne (2003); Du Plessis & Visser (1992); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+trigger_candidates:
+  proper_nouns:
+    - form: "Makhanda"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place name; not language-exclusive."
+    - form: "eKapa"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Cape Town reference in Nguni-style form; verify local usage."
+  domain_specific_borrowings:
+    - form: "isikolo"
+      trigger_type: "borrowing"
+      verified: false
+      note: "School-related borrowing candidate; spelling varies and needs review."
+    - form: "ikhompyutha"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Technology borrowing candidate; may overlap with isiZulu spelling."
+    - form: "ibhasi"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Transport borrowing candidate; not decisive."
+  discourse_markers:
+    - form: "ewe"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Affirmation marker; context required."
+    - form: "hayi"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Shared form; cannot disambiguate alone."
+    - form: "kaloku"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Candidate discourse marker; verify against reference grammar and local speakers."
+  cognates:
+    - form: "icawa"
+      trigger_type: "cognate"
+      verified: false
+      note: "Religion-domain candidate; verify before treating as trigger evidence."

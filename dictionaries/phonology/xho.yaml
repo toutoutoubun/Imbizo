@@ -1,0 +1,38 @@
+language_code: "xho"
+language_name: "isiXhosa phonological integration cues"
+version: "0.1.0"
+source: "Du Plessis & Visser (1992); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+transcription_basis: "orthographic_with_optional_audio_review"
+patterns:
+  - feature_type: "vowel_epenthesis"
+    description: "Borrowed stems may be adapted with vowel material and class-prefix material."
+    example: "English school -> isikolo # fictional or paraphrased example; verify for publication"
+    verified: false
+    note: "Spelling varies; confirm with local speaker and source grammar."
+    citation: "Du Plessis & Visser (1992)"
+  - feature_type: "consonant_cluster_simplification"
+    description: "Clusters from English or Afrikaans may be broken up in adapted isiXhosa forms."
+    example: "English glass -> iglasi # fictional or paraphrased example; verify for publication"
+    verified: false
+    note: "Orthographic evidence may not capture actual pronunciation."
+    citation: "Du Plessis & Visser (1992)"
+  - feature_type: "click_adaptation_in_non_nguni_hosts"
+    description: "Not normally a host-language feature for isiXhosa, which has click consonants; included for cross-language schema compatibility."
+    example: "not_applicable_for_xho_host # fictional or paraphrased example"
+    verified: false
+    note: "Relevant mainly when comparing how isiXhosa-origin forms are adapted in non-Nguni hosts."
+    citation: "Mesthrie (2008)"
+  - feature_type: "tonal_reassignment"
+    description: "Borrowed stems may be assigned local tonal behavior in speech."
+    example: "borrowed noun assigned isiXhosa tonal behavior # fictional or paraphrased example"
+    verified: false
+    note: "Requires tone-marked transcription or audio analysis."
+    citation: "Du Plessis & Visser (1992)"
+  - feature_type: "stress_pattern_shift"
+    description: "English or Afrikaans stress may shift under local prosodic integration."
+    example: "English manager pronounced in local prosodic frame # fictional or paraphrased example"
+    verified: false
+    note: "Requires audio evidence; leave unavailable for text-only projects."
+    citation: "Mesthrie (2008)"

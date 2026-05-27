@@ -1,0 +1,47 @@
+language_code: "tsn"
+language_name: "Setswana trigger candidates"
+version: "0.1.0"
+source: "Clyne (1967); Clyne (2003); Cole (1955); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+trigger_candidates:
+  proper_nouns:
+    - form: "Mahikeng"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place name; not language-exclusive."
+    - form: "Gaborone"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place name; can appear across language contexts."
+  domain_specific_borrowings:
+    - form: "sekolo"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Education-domain candidate; shared with other Sotho-Tswana varieties."
+    - form: "koloi"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Transport-domain candidate; verify locally."
+    - form: "kereke"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Religion-domain candidate; not decisive."
+  discourse_markers:
+    - form: "ee"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Affirmation candidate; may be shared."
+    - form: "nnyaa"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Negation candidate; spelling varies and requires review."
+    - form: "akere"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Discourse marker candidate; review in context."
+  cognates:
+    - form: "yunibesithi"
+      trigger_type: "cognate"
+      verified: false
+      note: "Education-domain adapted form candidate; verify before use."

@@ -1,0 +1,80 @@
+language_code: "zul-xho"
+language_name: "isiZulu versus isiXhosa disambiguation"
+version: "0.1.0"
+source: "Poulos & Msimang (1998); Du Plessis & Visser (1992); Mesthrie (2002)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+scope_note: "Starter evidence for local, advisory isiZulu/isiXhosa disambiguation. Shared Nguni material is expected; cues are never decisive without researcher review."
+distinctive_morphemes:
+  - form: "ngi-"
+    language: "zul"
+    gloss: "first-person singular subject marker"
+    citation: "Poulos & Msimang (1998)"
+    verified: false
+    note: "Common classroom cue for isiZulu, but verify against transcript context and orthography."
+  - form: "ndi-"
+    language: "xho"
+    gloss: "first-person singular subject marker"
+    citation: "Du Plessis & Visser (1992)"
+    verified: false
+    note: "Common classroom cue for isiXhosa, but not a standalone language decision."
+  - form: "angi-"
+    language: "zul"
+    gloss: "first-person singular negative subject sequence"
+    citation: "Poulos & Msimang (1998)"
+    verified: false
+    note: "Useful only when tokenization preserves the negative sequence."
+  - form: "andi-"
+    language: "xho"
+    gloss: "first-person singular negative subject sequence"
+    citation: "Du Plessis & Visser (1992)"
+    verified: false
+    note: "Useful only when tokenization preserves the negative sequence."
+distinctive_lexemes:
+  - form: "yebo"
+    language: "zul"
+    gloss: "yes"
+    citation: "Poulos & Msimang (1998)"
+    verified: false
+    note: "Broadly associated with isiZulu in teaching materials; may occur across repertoires."
+  - form: "ewe"
+    language: "xho"
+    gloss: "yes"
+    citation: "Du Plessis & Visser (1992)"
+    verified: false
+    note: "Broadly associated with isiXhosa in teaching materials; speaker repertoire may vary."
+  - form: "sawubona"
+    language: "zul"
+    gloss: "greeting"
+    citation: "Poulos & Msimang (1998)"
+    verified: false
+    note: "Greeting forms circulate widely; do not use as decisive evidence."
+  - form: "molo"
+    language: "xho"
+    gloss: "greeting"
+    citation: "Du Plessis & Visser (1992)"
+    verified: false
+    note: "Greeting forms circulate widely; do not use as decisive evidence."
+orthographic_features:
+  - code: "click_letters_c_q_x"
+    languages: ["zul", "xho"]
+    description: "The letters c, q, and x can mark click consonants in both isiZulu and isiXhosa orthographies."
+    verified: true
+    note: "Presence of click letters alone is not sufficient for disambiguation."
+  - code: "xho_nd_initial"
+    languages: ["xho"]
+    description: "Initial ndi-/ndiya- sequences may be suggestive of isiXhosa first-person forms."
+    verified: false
+    note: "Advisory string cue only; validate against grammar and local orthographic practice."
+phonotactic_features:
+  - code: "nguni_shared_open_syllables"
+    languages: ["zul", "xho"]
+    description: "Many Nguni forms share open-syllable patterns, limiting token-level disambiguation."
+    verified: false
+    note: "Use this as a warning against overconfident labels, not as a classifier feature."
+confidence_thresholds:
+  high: 0.85
+  medium: 0.65
+  low: 0.4
+  ambiguous_below: 0.65
+  note: "Thresholds are defaults for advisory ranking only; project settings may override them."
