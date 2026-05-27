@@ -306,3 +306,25 @@ tables and reports keep their software-citation context.
 Automatic analysis is only assistance. The researcher remains the final
 authority. Every automatic label is stored as automatic, provenance is recorded,
 and manual annotation takes precedence.
+
+## Bootstrap Resource Licence Summary
+
+Imbizo-CS source code is AGPLv3, but imported resources keep their own licences.
+The bootstrap subsystem therefore installs Core resources by default and gates
+Optional-NC or Community resources behind explicit acknowledgement.
+
+| Resource | Licence | Tier | AGPLv3 combinable? | Commercial use? | ShareAlike? | Default install? |
+| --- | --- | --- | --- | --- | --- | --- |
+| UP Multilingual Lexicons | CC-BY-4.0 | 1 | combination | yes | no | yes |
+| Mafoko / za-mavito | NOODL or CC-BY-NC-SA-2.5-ZA | 3 | aggregation only | restricted where NC rows apply | yes where SA rows apply | no |
+| African Wordnet verified subset | CC-BY-4.0 | 1 | combination | yes | no | yes |
+| UNISA Termbank | OER-UNISA | 1 | combination | yes | no | yes |
+| EXDN | Public Domain | 1 | combination | yes | no | yes |
+| fastText lid.176 compressed | CC-BY-SA-3.0 | 2 | aggregation only | yes | yes | no |
+| fastText lid.176 full | CC-BY-SA-3.0 | 2 | aggregation only | yes | yes | no |
+| NCHLT Text Corpora | CC-BY-2.5-SA | 1 | aggregation only | yes | no | yes |
+| Morphologically Annotated Corpora | CC-BY-4.0 when verified | 1 | combination | yes | no | yes |
+| MasakhaPOS | CC-BY-NC-4.0 | 2 | aggregation only | no | no | no |
+| MasakhaNER | CC-BY-NC-4.0 | 2 | aggregation only | no | no | no |
+| ZA_LEX | Apache-2.0 / MIT plus per-language files | 1 | combination | yes | no | yes |
+| whisper.cpp source | MIT | 1 | combination | yes | no | no, ASR opt-in |

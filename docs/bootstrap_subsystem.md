@@ -20,6 +20,9 @@ tools/
     └── exdn.py                        # EXDN Turtle/RDF adapter
 LICENSES/                              # license text for imported sources
 dictionaries/imported/                 # generated dictionaries; gitignored except provenance anchors
+models/lid/                            # generated fastText baseline LID model
+corpora/                               # generated validation and training/evaluation corpora
+processing/                            # generated optional processing toolkits
 downloads/raw/                         # downloaded raw files; gitignored
 tests/test_adapter_*.py                # synthetic adapter tests
 ```

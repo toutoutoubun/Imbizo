@@ -1,4 +1,4 @@
-"""Project-local morphology dictionaries and manual morpheme splits."""
+"""Project-local morphology dictionaries and corpus loaders."""
 
 from __future__ import annotations
 
@@ -6,13 +6,17 @@ from imbizo.domain.morphology import Morpheme, MorphemeDictionaryEntry, Morpheme
 from imbizo.morphology.suggestions import MorphologySuggester
 from imbizo.services.morphology_service import MorphologyService
 
+from .annotated_corpus_loader import MorphAnnotatedCorpus, load_morph_corpus
+
 __all__ = [
     "Morpheme",
     "MorphemeDictionaryEntry",
     "MorphemeService",
     "MorphemeSplit",
+    "MorphAnnotatedCorpus",
     "MorphologyService",
     "MorphologySuggester",
+    "load_morph_corpus",
     "parse_split_text",
 ]
 

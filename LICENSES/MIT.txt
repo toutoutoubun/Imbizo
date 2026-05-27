@@ -1,0 +1,5 @@
+MIT
+
+REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT FROM <https://opensource.org/license/mit/>
+
+Canonical URL: https://opensource.org/license/mit/

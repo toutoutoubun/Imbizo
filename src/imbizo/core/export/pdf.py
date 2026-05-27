@@ -12,6 +12,8 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from imbizo.core.licence.registry import downstream_propagation_summary
+
 
 def render_report_to_pdf(template_name: str, context: dict, out_path: Path) -> None:
     """Render a bundled Jinja2 report template to a local PDF file.
@@ -37,8 +39,10 @@ def render_report_to_pdf(template_name: str, context: dict, out_path: Path) -> N
             loader=FileSystemLoader(str(template_dir)),
             autoescape=select_autoescape(("html", "xml", "j2")),
         )
+        render_context = dict(context)
+        render_context.setdefault("licence_report", downstream_propagation_summary())
         template = environment.get_template(template_name)
-        html_text = template.render(**context)
+        html_text = template.render(**render_context)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         HTML(
             string=html_text,

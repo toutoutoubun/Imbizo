@@ -1,13 +1,35 @@
-# Master manifest for the Imbizo-CS dictionary bootstrap subsystem.
+# Master manifest for Imbizo-CS dictionary and processing-resource bootstrap.
 # expected_sha256 is null until the first audited retrieval. Production
 # releases should pin every checksum after the first human license audit.
+manifest_version: "1.1"
+default_tier: 1
+distribution_policy:
+  tier_1: "always installed; default offline-after-bootstrap state"
+  tier_2: "opt-in only; requires --include-nc-data flag and IMBIZO_NC_ACCEPTED=1"
+  tier_3: "community-curated; not auto-downloaded; transferred via USB review packets only"
+
 sources:
   - id: up_multilingual_lexicons
     name: South African multilingual lexicons
+    resource_kind: dictionary
     origin: University of Pretoria, ABSA Chair for Data Science
     url: https://researchdata.up.ac.za/articles/dataset/South_African_multilingual_lexicons/27002596
     format: json
     license: CC-BY-4.0
+    licence_classification:
+      spdx_id: CC-BY-4.0
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: combination
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+      redistribution_notice: >
+        UP Multilingual Lexicons are treated as Tier-1 resources under
+        CC-BY-4.0. Outputs should cite the source and retain attribution, but
+        the resource does not add a non-commercial restriction to Imbizo-CS
+        reports or exported project data.
     license_probe_url: https://researchdata.up.ac.za/articles/dataset/South_African_multilingual_lexicons/27002596
     license_markers:
       - CC-BY-4.0
@@ -28,6 +50,7 @@ sources:
 
   - id: mafoko
     name: Mafoko / za-mavito terminology collections
+    resource_kind: dictionary
     origin: Data Science for Social Impact, University of Pretoria
     url:
       - https://raw.githubusercontent.com/dsfsi/za-mavito/main/data/dsac/combined/combined_dsac.csv
@@ -36,6 +59,28 @@ sources:
       - https://raw.githubusercontent.com/dsfsi/za-mavito/main/data/up_glossary/up_multilingual_academic_glossaries.csv
     format: csv
     license: Nwulite Obodo Open Data License 1.0 OR CC-BY-NC-SA 2.5 ZA
+    licence_classification:
+      spdx_id: MIXED-NOODL-1.0-OR-CC-BY-NC-SA-2.5-ZA
+      tier: 3
+      fosl_compatible: false
+      combinable_with_agpl: aggregation_only
+      commercial_use_restricted: true
+      sharealike_required: true
+      downstream_obligations:
+        - attribution
+        - non_commercial_when_marked
+        - sharealike_when_marked
+        - community_acknowledgement
+      redistribution_notice: >
+        Mafoko contains terminology assembled under mixed data licences,
+        including the Nwulite Obodo Open Data License and CC-BY-NC-SA-2.5 ZA
+        entries. Imbizo-CS treats Mafoko as a Tier-3 community-governed source
+        unless a release audit separates individual Tier-1 rows. CC-BY-NC-SA
+        rows restrict commercial reuse and require ShareAlike attribution when
+        redistributed. NOODL rows require explicit acknowledgement of the data
+        sovereignty terms under which they were shared. Do not redistribute
+        Mafoko-derived overlays without preserving the per-entry licence and
+        consulting the project governance notes in PRINCIPLES.md.
     license_check_required: true
     expected_sha256: null
     bundle_status: shippable
@@ -48,15 +93,30 @@ sources:
       - University of Pretoria
     notes: >
       The adapter preserves the per-file license string passed from audited
-      repository metadata. If a listed optional CSV is absent, make_bundle logs
-      it and continues only after human release review.
+      repository metadata. NOODL-licensed subsets are community-tier resources
+      and should normally travel through review packets rather than automatic
+      bootstrap.
 
   - id: african_wordnet
     name: African Wordnet open-license subset
+    resource_kind: dictionary
     origin: UNISA SADiLaR node, African Wordnet project
     url: https://repo.sadilar.org/
     format: xml
-    license: CC-BY-4.0 or CC-BY-NC-4.0 when declared in SADiLaR metadata
+    license: CC-BY-4.0 when declared in SADiLaR metadata
+    licence_classification:
+      spdx_id: CC-BY-4.0
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: combination
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+      redistribution_notice: >
+        African Wordnet files are included only when the SADiLaR metadata
+        declares a Tier-1 open licence such as CC-BY-4.0. Converted semantic
+        domain files retain attribution and provenance metadata.
     license_check_required: true
     expected_sha256: null
     bundle_status: shippable
@@ -67,15 +127,30 @@ sources:
       - African Wordnet Project
       - UNISA SADiLaR node
     notes: >
-      Only XML files whose metadata declares an allowed license are converted.
-      A bundle should carry the specific SADiLaR XML exports, not a live search.
+      Only XML files whose metadata declares a Tier-1 allowed license are
+      converted. CC-BY-NC files should be handled as Tier-2 overlays only after
+      explicit opt-in.
 
   - id: unisa_termbank
     name: UNISA Multilingual Linguistic Terminology
+    resource_kind: dictionary
     origin: SADiLaR / UNISA node Lexonomy export
     url: https://repo.sadilar.org/
     format: xml
     license: OER-UNISA
+    licence_classification:
+      spdx_id: OER-UNISA
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: combination
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+      redistribution_notice: >
+        UNISA linguistic terminology is treated as a Tier-1 OER resource. The
+        imported glossary files preserve source attribution and should not be
+        represented as human-verified Imbizo-CS terminology until reviewed.
     license_check_required: true
     expected_sha256: null
     bundle_status: shippable
@@ -90,10 +165,25 @@ sources:
 
   - id: exdn
     name: English-Xhosa Dictionary for Nurses
+    resource_kind: dictionary
     origin: MacVicar (1935), linked-data conversion by Klein et al. (2018)
     url: https://github.com/linked-dictionaries/exdn
     format: rdf-turtle
-    license: PUBLIC-DOMAIN
+    license: Public-Domain
+    licence_classification:
+      spdx_id: Public-Domain
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: combination
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - citation_requested
+      redistribution_notice: >
+        EXDN is treated as a Tier-1 public-domain historical source. Imbizo-CS
+        still asks researchers to cite MacVicar (1935) and the linked-data
+        conversion because provenance matters even when copyright restrictions
+        no longer apply.
     license_check_required: false
     expected_sha256: null
     bundle_status: shippable
@@ -107,7 +197,300 @@ sources:
       Public-domain historical medical dictionary. Orthography may differ from
       modern isiXhosa standards; every entry remains unverified.
 
-# Deferred sources: do not enable without human license and distribution review.
+  # Pin this model checksum after the first audited retrieval. The compressed
+  # .ftz is intentionally Tier 2 because CC-BY-SA-3.0 is aggregation-only with
+  # AGPLv3 according to Creative Commons compatibility guidance.
+  - id: fasttext_lid176_ftz
+    name: fastText lid.176 compressed language ID model
+    resource_kind: model
+    origin: Facebook AI Research
+    url: https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
+    format: fasttext-binary
+    license: CC-BY-SA-3.0
+    licence_classification:
+      spdx_id: CC-BY-SA-3.0
+      tier: 2
+      fosl_compatible: false
+      combinable_with_agpl: aggregation_only
+      commercial_use_restricted: false
+      sharealike_required: true
+      downstream_obligations:
+        - attribution
+        - sharealike
+      redistribution_notice: >
+        The fastText lid.176 model file is licensed CC-BY-SA-3.0 by Facebook AI
+        Research and is included in Imbizo-CS only as an aggregated model file,
+        not as AGPL-derived source code. Imbizo-CS uses it for inference during
+        local language identification. If you redistribute the model file or a
+        model adapted from it, you must preserve attribution and comply with the
+        ShareAlike terms for that model-derived artifact. Researchers who use
+        the installed model locally and do not redistribute the model itself are
+        generally unaffected, but reports should still record that language-ID
+        suggestions used a CC-BY-SA resource.
+    license_check_required: false
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/fasttext_lid.py
+    output_dirs:
+      - models/lid
+    origin_authors:
+      - Facebook AI Research
+      - Joulin et al.
+    notes: Joulin et al. 2017. Optional lightweight LID for Layer 1 of F4.
+
+  - id: fasttext_lid176_bin_optional
+    name: fastText lid.176 full language ID model
+    resource_kind: model
+    origin: Facebook AI Research
+    url: https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+    format: fasttext-binary
+    license: CC-BY-SA-3.0
+    licence_classification:
+      spdx_id: CC-BY-SA-3.0
+      tier: 2
+      fosl_compatible: false
+      combinable_with_agpl: aggregation_only
+      commercial_use_restricted: false
+      sharealike_required: true
+      downstream_obligations:
+        - attribution
+        - sharealike
+      redistribution_notice: >
+        The full fastText lid.176 model carries the same CC-BY-SA-3.0
+        aggregation-only obligations as the compressed model, with a much larger
+        storage footprint. It is excluded from default bundles unless a release
+        manager explicitly chooses it and records the checksum.
+    license_check_required: false
+    expected_sha256: null
+    bundle_status: pending_license_verification
+    adapter: tools/adapters/fasttext_lid.py
+    output_dirs:
+      - models/lid
+    origin_authors:
+      - Facebook AI Research
+      - Joulin et al.
+    notes: Optional full model; excluded from default shippable bundle because of size.
+
+  - id: nchlt_text_corpora
+    name: NCHLT Text Corpora (10 South African languages)
+    resource_kind: corpus
+    origin: North-West University CTexT via SADiLaR
+    url:
+      - https://repo.sadilar.org/handle/20.500.12185/293
+    format: zip
+    license: CC-BY-2.5-SA
+    licence_classification:
+      spdx_id: CC-BY-2.5-SA
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: aggregation_only
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+      redistribution_notice: >
+        NCHLT Text Corpora are included as Tier-1 aggregated research corpora
+        under Creative Commons Attribution 2.5 South Africa. Researchers must
+        preserve attribution when redistributing corpus-derived artifacts.
+    license_check_required: false
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/nchlt_text.py
+    output_dirs:
+      - corpora/nchlt
+    origin_authors:
+      - Eiselen
+      - Puttkammer
+      - North-West University CTexT
+    notes: >
+      Eiselen & Puttkammer 2014. Release managers should replace the handle
+      list with audited per-language direct files in the air-gap bundle.
+
+  - id: morph_annotated_corpora
+    name: Updated Morphologically Annotated Corpora for South African languages
+    resource_kind: corpus
+    origin: SADiLaR II extension project
+    url: https://repo.sadilar.org/
+    format: txt
+    license: CC-BY-4.0 when declared in SADiLaR metadata
+    licence_classification:
+      spdx_id: CC-BY-4.0
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: combination
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+      redistribution_notice: >
+        The morphologically annotated corpora are included only when the audited
+        SADiLaR handle declares a Tier-1 open licence such as CC-BY-4.0. Derived
+        validation indexes retain attribution and remain advisory.
+    license_check_required: true
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/morph_annotated.py
+    output_dirs:
+      - corpora/morph_annotated
+    origin_authors:
+      - Gaustad
+      - McKellar
+    notes: Gaustad & McKellar 2024 JOHD. Adapter reads dc.rights/license metadata before indexing.
+
+  - id: masakhapos
+    name: MasakhaPOS / AfricaPOS dataset
+    resource_kind: dataset
+    origin: Masakhane community
+    url: https://github.com/masakhane-io/masakhane-pos
+    format: conll
+    license: CC-BY-NC-4.0
+    licence_classification:
+      spdx_id: CC-BY-NC-4.0
+      tier: 2
+      fosl_compatible: false
+      combinable_with_agpl: aggregation_only
+      commercial_use_restricted: true
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+        - non_commercial
+      redistribution_notice: >
+        MasakhaPOS is licensed CC-BY-NC-4.0 by the Masakhane community. Imbizo-CS
+        treats it as an Optional-NC resource: it may support local POS analysis
+        and 4-M auxiliary tagging, but any redistributed dataset or annotation
+        layer that directly incorporates MasakhaPOS-derived labels must respect
+        the NonCommercial condition. Academic publication, classroom use, and
+        non-profit research dissemination are generally compatible with the NC
+        clause, but paid products, fee-based services, or institutional products
+        offered for commercial advantage may not be. Creative Commons guidance
+        asks users to consider whether a use is primarily intended for commercial
+        advantage or monetary compensation. Attribute Masakhane and Dione et al.
+        (2023), retain this notice in reports, and consult Masakhane before any
+        commercial reuse.
+    license_check_required: false
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/masakhapos.py
+    output_dirs:
+      - corpora/masakhapos
+    origin_authors:
+      - Dione et al.
+      - Masakhane community
+    notes: Dione et al. 2023. Dataset is non-commercial; code licensing is separate.
+
+  - id: masakhaner
+    name: MasakhaNER 2.0 dataset
+    resource_kind: dataset
+    origin: Masakhane community
+    url: https://github.com/masakhane-io/masakhane-ner
+    format: conll
+    license: CC-BY-NC-4.0
+    licence_classification:
+      spdx_id: CC-BY-NC-4.0
+      tier: 2
+      fosl_compatible: false
+      combinable_with_agpl: aggregation_only
+      commercial_use_restricted: true
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+        - non_commercial
+      redistribution_notice: >
+        MasakhaNER 2.0 is licensed CC-BY-NC-4.0 by the Masakhane community. In
+        Imbizo-CS it is an Optional-NC resource for local named-entity evidence,
+        including proper-noun candidates in trigger analysis. If you redistribute
+        NER-tagged data, review packets, or supplementary files that directly
+        include MasakhaNER-derived labels, those materials carry the
+        NonCommercial condition. Academic publication and non-profit research
+        sharing are generally permitted with attribution, but commercial
+        services, paid products, or data products intended for monetary advantage
+        require separate permission. Attribute Masakhane and Adelani et al.
+        (2022), preserve this notice in reports, and contact the data maintainers
+        before commercial reuse.
+    license_check_required: false
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/masakhaner.py
+    output_dirs:
+      - corpora/masakhaner
+    origin_authors:
+      - Adelani et al.
+      - Masakhane community
+    notes: Adelani et al. 2022. Proper-noun candidate support for trigger analysis.
+
+  - id: za_lex
+    name: ZA_LEX lexical pronunciation resources
+    resource_kind: toolkit
+    origin: ttslab / NWU, Daniel van Niekerk
+    url: https://github.com/ttslab/za_lex/archive/refs/heads/master.tar.gz
+    format: tar
+    license: Apache-2.0 / MIT scripts; per-language LICENCE files for data
+    licence_classification:
+      spdx_id: Apache-2.0-OR-MIT
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: combination
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+        - preserve_per_language_licence_files
+      redistribution_notice: >
+        ZA_LEX scripts are Tier-1 permissive resources, but each language data
+        directory must preserve its upstream LICENCE file. Imbizo-CS mirrors only
+        directories whose licence file is present so researchers can audit
+        phonological evidence later.
+    license_check_required: true
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/za_lex.py
+    output_dirs:
+      - processing/za_lex
+    origin_authors:
+      - Daniel van Niekerk
+      - ttslab
+    notes: >
+      Bootstrap mirrors per-language data only when each language directory
+      preserves its upstream LICENCE file.
+
+  - id: whisper_cpp_optional
+    name: whisper.cpp optional local ASR plug-in source
+    resource_kind: toolkit
+    origin: ggml-org / Georgi Gerganov
+    url: https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v1.7.6.tar.gz
+    format: tar
+    license: MIT
+    licence_classification:
+      spdx_id: MIT
+      tier: 1
+      fosl_compatible: true
+      combinable_with_agpl: combination
+      commercial_use_restricted: false
+      sharealike_required: false
+      downstream_obligations:
+        - attribution
+        - preserve_mit_notice
+      redistribution_notice: >
+        whisper.cpp source is MIT licensed and compatible as Tier-1 source code,
+        but Imbizo-CS never enables ASR by default. Model files remain pending
+        licence verification and require a separate explicit acceptance path.
+    license_check_required: false
+    expected_sha256: null
+    bundle_status: shippable
+    opt_in_flag: include_asr
+    adapter: tools/adapters/whisper_cpp.py
+    output_dirs:
+      - processing/whisper_cpp
+      - models/asr
+    origin_authors:
+      - Georgi Gerganov
+      - ggml-org
+    notes: >
+      Strictly opt-in. Requires --include-asr and IMBIZO_ASR_ACCEPTED=1.
+      Writes a quality disclaimer and never becomes an MVP default. Whisper.cpp
+      models are deferred until their redistribution terms are pinned per model.
+
+# Deferred sources: do not enable without human license, technical, and governance review.
 # - id: ukwabelana
 #   bundle_status: pending_license_verification
 #   notes: Deferred because distribution and downstream redistribution terms
@@ -120,3 +503,27 @@ sources:
 #   bundle_status: pending_license_verification
 #   notes: Deferred until rights, community governance, and redistribution terms
 #     are confirmed with the maintainers.
+# - id: nchlt_pos_taggers
+#   bundle_status: pending_license_verification
+#   notes: Per-language handle and model redistribution license verification required.
+# - id: ctextools_standalone
+#   bundle_status: pending_license_verification
+#   notes: Redistribution conditions for standalone tools must be confirmed.
+# - id: sadilar_spelling_checkers
+#   bundle_status: pending_license_verification
+#   notes: Windows/MS Office packaging is not cross-platform for the workbench.
+# - id: zulmorph
+#   bundle_status: pending_license_verification
+#   notes: FST build path must be made offline-runnable, ideally with Foma.
+# - id: afrolid_weights
+#   bundle_status: pending_license_verification
+#   notes: HuggingFace mirror redistribution license and model-card terms need audit.
+# - id: bantu_science_whisper_models
+#   bundle_status: pending_license_verification
+#   notes: Whisper-derived ASR model licences and language-quality notes pending.
+# - id: vukuzenzele_corpus
+#   bundle_status: pending_license_verification
+#   notes: CC-BY-4.0 candidate deferred from v1.5 processing-resource scope.
+# - id: puodata_puoberta
+#   bundle_status: pending_license_verification
+#   notes: CC-BY-4.0 candidate deferred from v1.5 processing-resource scope.
