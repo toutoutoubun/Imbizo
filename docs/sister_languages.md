@@ -143,3 +143,25 @@ This documentation should be read alongside
 [mixed-code variety guidance](mixed_codes.md), because some ambiguous tokens are
 not simply mistakes between two standard languages. They may belong to local
 repertoires where standard labels are only partly adequate.
+
+## How the Distinctive-Morpheme YAML Files Were Compiled
+
+The starter YAML files in `dictionaries/sister_lang/` are compiled from published
+reference grammars and sociolinguistic sources named in each file. They are not
+crowd-completed lexicons and they are not declarations of community usage. Each
+entry carries a confidence, a note, and `verified: false` unless it has been
+reviewed for the active project. The files cover `zul_vs_xho`, `sot_vs_tsn`,
+`nso_vs_sot_vs_tsn`, and `ssw_vs_zul`.
+
+The disambiguator combines three kinds of evidence: visible morphemes, lexical
+forms, and orthographic cues. For example, in the fictional token `ngi-hamba`,
+the `ngi-` cue contributes strong isiZulu evidence in the `zul_vs_xho` file. In
+the fictional token `ndi-hamba`, the `ndi-` cue contributes strong isiXhosa
+evidence. If the token is `ke` in a Sesotho/Setswana context, the YAML marks the
+form as shared, so confidence remains low.
+
+Confidence scores are audit weights, not probabilities of truth. Edit them when
+your project has better evidence. Add a `note` explaining whether the change
+came from a reference grammar, a native-speaker reviewer, or a local convention.
+For publication, report that automatic disambiguation was advisory and that weak
+cases were preserved rather than forced.

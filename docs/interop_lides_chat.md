@@ -103,3 +103,43 @@ copy of the project first. Compare the validation report against the original
 export. Then decide whether to merge the changed transcript text, keep only
 comments, or treat the returned file as a separate derivative dataset. This
 extra caution protects the original local annotations.
+
+## Concrete Export Commands and Examples
+
+Programmatic export is local and file-based:
+
+```python
+from pathlib import Path
+from imbizo.core.interop.lides import to_lides
+from imbizo.core.interop.chat_clan import to_chat
+
+to_lides(project, Path("exports/example.lides"))
+to_chat(project, Path("exports/example.cha"))
+```
+
+Example LIDES token lines:
+
+```text
+UTT	u1	S01		ngiyabona manager
+TOK	t1	u1	1	ngiyabona	zul	NC=1+4M=early_system
+LID	t1	@zu
+```
+
+Example CHAT lines:
+
+```text
+@Begin
+@Languages:	eng, zul
+*S01:	ngiyabona [- @eng] manager .
+%mor:	ngiyabona|NC1/4M=early_system
+%xcom:	IMBIZO-CS: utterance=u1 t2(trigger=trigger)
+@End
+```
+
+| What Imbizo-CS records | What LIDES preserves | What CHAT preserves |
+| --- | --- | --- |
+| Speaker and utterance order | `UTT` blocks | Main speaker tiers |
+| Token language labels | `TOK` + `LID` lines | Inline `[- @iso]` switch markers |
+| Noun class and 4-M tags | Flattened morphology field | `%mor` where possible |
+| Trigger and mixed-code evidence | Documented losses | `%xcom` comments |
+| Concord links and phonological features | Losses file | Losses file / `%xcom` summary |

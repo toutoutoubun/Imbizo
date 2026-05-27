@@ -1,80 +1,102 @@
-language_code: "zul-xho"
-language_name: "isiZulu versus isiXhosa disambiguation"
+schema_version: "1.0"
+dictionary_kind: "sister_language_disambiguation"
+language_pair: ["zul", "xho"]
 version: "0.1.0"
-source: "Poulos & Msimang (1998); Du Plessis & Visser (1992); Mesthrie (2002)"
-last_reviewed_by: "PENDING_HUMAN_REVIEW"
-last_reviewed_on: "YYYY-MM-DD"
-scope_note: "Starter evidence for local, advisory isiZulu/isiXhosa disambiguation. Shared Nguni material is expected; cues are never decisive without researcher review."
+source:
+  origin_authors: ["Poulos & Msimang (1998)", "Du Plessis & Visser (1992)", "Mesthrie (2002)"]
+  origin_license: "Compiled from published reference grammars; YAML file licensed CC-BY-4.0"
+review:
+  last_reviewed_by: "PENDING_NATIVE_SPEAKER_REVIEW"
+  last_reviewed_on: null
+caveats: |
+  This starter dictionary lists candidate features that published reference grammars
+  describe for isiZulu and isiXhosa. Entries are unverified; treat them as ranked
+  evidence, not authoritative labels. Multilingual urban speech often refuses neat
+  single-language boundaries, and disagreement should be recorded.
 distinctive_morphemes:
-  - form: "ngi-"
-    language: "zul"
-    gloss: "first-person singular subject marker"
-    citation: "Poulos & Msimang (1998)"
+  - feature: "1sg subject concord"
+    zul_form: "ngi-"
+    xho_form: "ndi-"
+    confidence: 0.95
     verified: false
-    note: "Common classroom cue for isiZulu, but verify against transcript context and orthography."
-  - form: "ndi-"
-    language: "xho"
-    gloss: "first-person singular subject marker"
-    citation: "Du Plessis & Visser (1992)"
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Strong written cue when the subject concord is visible; still requires context review."
+  - feature: "1sg negative sequence"
+    zul_form: "angi-"
+    xho_form: "andi-"
+    confidence: 0.90
     verified: false
-    note: "Common classroom cue for isiXhosa, but not a standalone language decision."
-  - form: "angi-"
-    language: "zul"
-    gloss: "first-person singular negative subject sequence"
-    citation: "Poulos & Msimang (1998)"
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Useful only when tokenisation preserves the sequence."
+  - feature: "shared negative present"
+    zul_form: "a-...-i"
+    xho_form: "a-...-i"
+    confidence: 0.20
     verified: false
-    note: "Useful only when tokenization preserves the negative sequence."
-  - form: "andi-"
-    language: "xho"
-    gloss: "first-person singular negative subject sequence"
-    citation: "Du Plessis & Visser (1992)"
-    verified: false
-    note: "Useful only when tokenization preserves the negative sequence."
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Shared pattern; not useful in isolation."
 distinctive_lexemes:
-  - form: "yebo"
-    language: "zul"
-    gloss: "yes"
-    citation: "Poulos & Msimang (1998)"
+  - meaning: "yes"
+    forms: {zul: "yebo", xho: "ewe"}
+    confidence: 0.75
     verified: false
-    note: "Broadly associated with isiZulu in teaching materials; may occur across repertoires."
-  - form: "ewe"
-    language: "xho"
-    gloss: "yes"
-    citation: "Du Plessis & Visser (1992)"
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Common teaching-example contrast; verify with local usage."
+  - meaning: "person"
+    forms: {zul: "umuntu", xho: "umntu"}
+    confidence: 0.70
     verified: false
-    note: "Broadly associated with isiXhosa in teaching materials; speaker repertoire may vary."
-  - form: "sawubona"
-    language: "zul"
-    gloss: "greeting"
-    citation: "Poulos & Msimang (1998)"
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Orthographic vowel pattern can help, but cognacy remains close."
+  - meaning: "greeting"
+    forms: {zul: "sawubona", xho: "molo"}
+    confidence: 0.65
     verified: false
-    note: "Greeting forms circulate widely; do not use as decisive evidence."
-  - form: "molo"
-    language: "xho"
-    gloss: "greeting"
-    citation: "Du Plessis & Visser (1992)"
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Greetings circulate across repertoires."
+  - meaning: "to speak/say"
+    forms: {zul: "ukukhuluma", xho: "ukuthetha"}
+    confidence: 0.65
     verified: false
-    note: "Greeting forms circulate widely; do not use as decisive evidence."
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Candidate lexeme pair from reference/teaching materials; verify before publication."
+  - meaning: "today"
+    forms: {zul: "namuhla", xho: "namhlanje"}
+    confidence: 0.60
+    verified: false
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Dialect and register may affect forms."
+  - meaning: "where"
+    forms: {zul: "kuphi", xho: "phi"}
+    confidence: 0.55
+    verified: false
+    source_citation: "Poulos & Msimang (1998); Du Plessis & Visser (1992)"
+    note: "Short forms are fragile as token-level evidence."
 orthographic_features:
-  - code: "click_letters_c_q_x"
-    languages: ["zul", "xho"]
-    description: "The letters c, q, and x can mark click consonants in both isiZulu and isiXhosa orthographies."
-    verified: true
-    note: "Presence of click letters alone is not sufficient for disambiguation."
   - code: "xho_nd_initial"
     languages: ["xho"]
-    description: "Initial ndi-/ndiya- sequences may be suggestive of isiXhosa first-person forms."
+    description: "Initial ndi-/ndiya- sequences may indicate isiXhosa first-person forms."
+    confidence: 0.75
     verified: false
-    note: "Advisory string cue only; validate against grammar and local orthographic practice."
+    source_citation: "Du Plessis & Visser (1992)"
+    note: "Advisory string cue only."
+  - code: "click_letters_c_q_x"
+    languages: ["zul", "xho"]
+    description: "Both orthographies use c/q/x for clicks; higher density may be suggestive of isiXhosa in some corpora."
+    confidence: 0.30
+    verified: false
+    source_citation: "Mesthrie (2002)"
+    note: "Statistical and project-tunable, never decisive."
 phonotactic_features:
   - code: "nguni_shared_open_syllables"
     languages: ["zul", "xho"]
-    description: "Many Nguni forms share open-syllable patterns, limiting token-level disambiguation."
+    description: "Shared Nguni phonotactic patterns limit token-level certainty."
+    confidence: 0.0
     verified: false
-    note: "Use this as a warning against overconfident labels, not as a classifier feature."
+    note: "Confidence-lowering caution."
 confidence_thresholds:
-  high: 0.85
-  medium: 0.65
-  low: 0.4
+  high: 0.80
+  medium: 0.50
+  low: 0.20
   ambiguous_below: 0.65
-  note: "Thresholds are defaults for advisory ranking only; project settings may override them."
+  default_evidence_required: "at least one feature ≥ 0.70 OR at least two features ≥ 0.50"
