@@ -1,8 +1,9 @@
-"""Rule-based triggered-switching candidate detection.
+"""Triggered-switching detection with local dictionaries only.
 
-The detector implements local string matching for Clyne-style trigger
-candidates (Clyne, 1967, 2003). It does not infer speaker intention and does
-not claim causality; it only proposes contexts for researcher review.
+The detector implements Clyne's triggering lens as a transparent candidate
+flagger (Clyne, 1967, 2003). It never infers speaker intention, never explains
+a switch by itself, and never writes to SQLite unless the researcher explicitly
+accepts a candidate.
 """
 
 from __future__ import annotations
@@ -19,6 +20,13 @@ from .annotation import Token
 
 
 VALID_SOURCES = {"manual", "suggested-accepted", "suggested-overridden", "imported"}
+TYPOLOGY_WEIGHT = {
+    "proper_noun": 0.75,
+    "borrowing": 0.68,
+    "cognate": 0.6,
+    "discourse_marker": 0.52,
+}
+_TRIGGER_DICTIONARIES: dict[str, "TriggerDictionary"] = {}
 
 
 @dataclass(slots=True)
@@ -44,12 +52,14 @@ class TriggerDictionary:
 
 @dataclass(slots=True)
 class TriggerCandidate:
-    """Advisory trigger relation candidate."""
+    """Advisory trigger candidate around a switch point."""
 
     head_token_id: str
     triggered_token_id: str
     trigger_type: str
     confidence: float
+    distance: int
+    matched_form: str
     note: str
 
 
@@ -66,7 +76,7 @@ class TriggerLink:
     created_at: str | None = None
 
 
-def load_trigger_dictionary(path: Path) -> TriggerDictionary:
+def load_trigger_dictionary(path: Path, register: bool = True) -> TriggerDictionary:
     """Load a local Clyne-style trigger dictionary from YAML."""
 
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
@@ -84,60 +94,80 @@ def load_trigger_dictionary(path: Path) -> TriggerDictionary:
                     note=str(item.get("note", "")),
                 )
             )
-    return TriggerDictionary(
+    dictionary = TriggerDictionary(
         language_code=str(data["language_code"]),
         language_name=str(data["language_name"]),
         version=str(data["version"]),
         source=str(data["source"]),
         entries=entries,
     )
+    if register:
+        _TRIGGER_DICTIONARIES[dictionary.language_code] = dictionary
+    return dictionary
+
+
+def load_trigger_dictionaries(directory: Path) -> dict[str, TriggerDictionary]:
+    """Load and register all trigger YAML files in a local directory."""
+
+    dictionaries: dict[str, TriggerDictionary] = {}
+    for path in sorted(directory.glob("*.yaml")):
+        dictionary = load_trigger_dictionary(path, register=True)
+        dictionaries[dictionary.language_code] = dictionary
+    return dictionaries
 
 
 def find_trigger_candidates(
     utterance_tokens: list[Token],
-    dictionaries: dict[str, TriggerDictionary],
-    window: int = 4,
+    switch_index: int,
+    window_left: int = 2,
+    window_right: int = 0,
 ) -> list[TriggerCandidate]:
-    """Find advisory trigger candidates in one utterance.
+    """Scan a switch-point context for Clyne-style trigger candidates.
 
-    The procedure scans for local dictionary matches and proposes nearby tokens
-    as possible triggered material. This operationalizes Clyne's triggering
-    lens (Clyne, 1967, 2003) as a candidate flagger only; researcher review is
-    required before persistence.
+    Given a switch point in an utterance, scan the preceding window for tokens
+    that match the local trigger dictionary: proper nouns, borrowings, cognates,
+    or discourse markers. Return candidates ranked by Clyne's typology with a
+    transparent confidence score (Clyne, 1967, 2003).
+
+    Returns candidates; never auto-applies them.
     """
 
+    if not 0 <= switch_index < len(utterance_tokens):
+        raise IndexError("switch_index is outside utterance_tokens")
+    if not _TRIGGER_DICTIONARIES:
+        _load_default_trigger_dictionaries()
+
+    triggered_tokens = utterance_tokens[switch_index : switch_index + window_right + 1]
+    left = max(0, switch_index - window_left)
     candidates: list[TriggerCandidate] = []
-    for index, token in enumerate(utterance_tokens):
-        dictionary = dictionaries.get(str(token.language or ""))
-        if dictionary is None:
-            continue
-        entry = _match_entry(token, dictionary)
+    for head_index in range(left, switch_index):
+        head = utterance_tokens[head_index]
+        entry = _match_entry(head)
         if entry is None:
             continue
-        for neighbor in utterance_tokens[index + 1 : index + 1 + window]:
-            if neighbor.id == token.id:
+        for triggered in triggered_tokens:
+            if triggered.id == head.id:
                 continue
-            if token.language and neighbor.language and token.language == neighbor.language:
-                continue
-            distance = max(1, neighbor.position - token.position)
-            confidence = _confidence(entry, distance)
+            distance = abs(switch_index - head_index)
             candidates.append(
                 TriggerCandidate(
-                    head_token_id=token.id,
-                    triggered_token_id=neighbor.id,
+                    head_token_id=head.id,
+                    triggered_token_id=triggered.id,
                     trigger_type=entry.trigger_type,
-                    confidence=confidence,
+                    confidence=_confidence(entry, distance),
+                    distance=distance,
+                    matched_form=entry.form,
                     note=(
-                        f"'{entry.form}' matched a {entry.trigger_type} trigger candidate; "
-                        "this is context evidence only."
+                        f"Matched '{entry.form}' as a {entry.trigger_type}; "
+                        "candidate trigger context only, not causal proof."
                     ),
                 )
             )
-    return candidates
+    return sorted(candidates, key=lambda item: (-item.confidence, item.distance, item.head_token_id))
 
 
 def persist_trigger_link(conn: sqlite3.Connection, link: TriggerLink) -> None:
-    """Persist a reviewed trigger link to SQLite."""
+    """Persist an explicitly accepted trigger candidate to `trigger_links`."""
 
     if link.source not in VALID_SOURCES:
         raise ValueError(f"invalid trigger link source: {link.source}")
@@ -165,25 +195,31 @@ def persist_trigger_link(conn: sqlite3.Connection, link: TriggerLink) -> None:
     conn.execute("UPDATE tokens SET trigger_role = 'triggered' WHERE id = ?", (link.triggered_token_id,))
 
 
-def _match_entry(token: Token, dictionary: TriggerDictionary) -> TriggerEntry | None:
+def _match_entry(token: Token) -> TriggerEntry | None:
     text = _clean(token.text_for_matching)
-    for entry in dictionary.entries:
-        if text == _clean(entry.form):
-            return entry
+    dictionary = _TRIGGER_DICTIONARIES.get(str(token.language or ""))
+    dictionaries = [dictionary] if dictionary else list(_TRIGGER_DICTIONARIES.values())
+    for trigger_dictionary in dictionaries:
+        if trigger_dictionary is None:
+            continue
+        for entry in trigger_dictionary.entries:
+            if text == _clean(entry.form):
+                return entry
     return None
 
 
 def _confidence(entry: TriggerEntry, distance: int) -> float:
-    base_by_type = {
-        "proper_noun": 0.62,
-        "borrowing": 0.58,
-        "cognate": 0.54,
-        "discourse_marker": 0.5,
-    }
-    base = base_by_type.get(entry.trigger_type, 0.45)
+    base = TYPOLOGY_WEIGHT.get(entry.trigger_type, 0.45)
     if entry.verified:
         base += 0.08
-    return round(max(0.05, min(1.0, base - (distance - 1) * 0.06)), 4)
+    distance_penalty = max(0, distance - 1) * 0.08
+    return round(max(0.05, min(1.0, base - distance_penalty)), 4)
+
+
+def _load_default_trigger_dictionaries() -> None:
+    root = Path.cwd() / "dictionaries" / "triggers"
+    if root.exists():
+        load_trigger_dictionaries(root)
 
 
 def _clean(value: str) -> str:

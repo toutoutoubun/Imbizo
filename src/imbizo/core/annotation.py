@@ -28,7 +28,9 @@ __all__ = [
     "AnnotationService",
     "AnnotationSource",
     "AnnotationStatus",
+    "ConcordLink",
     "LinguisticStatus",
+    "Project",
     "SwitchType",
     "Tag",
     "TagRepository",
@@ -65,6 +67,30 @@ class Token:
         """Return normalized text if available, otherwise the original surface."""
 
         return self.normalized or self.surface
+
+
+@dataclass(slots=True)
+class ConcordLink:
+    """Minimal concord-link contract used by Integration Score v2."""
+
+    head_token_id: str
+    dependent_token_id: str
+    concord_type: str
+    confidence: float = 1.0
+    source: str = "manual"
+
+
+@dataclass(slots=True)
+class Project:
+    """Small project contract used by v1.5 interop and review workflows."""
+
+    id: str
+    title: str
+    tokens: list[Token]
+    metadata: dict[str, Any] | None = None
+    annotations: list[dict[str, Any]] | None = None
+    provenance: list[dict[str, Any]] | None = None
+    project_path: str | None = None
 
 
 def token_from_mapping(data: dict[str, Any]) -> Token:

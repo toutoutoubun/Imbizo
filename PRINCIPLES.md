@@ -214,6 +214,68 @@ run, import, and export is logged with provenance. A project zip should allow
 another machine running the same Imbizo-CS version to reconstruct the analysis
 from local data.
 
+## Pluralism and Refusal
+
+v1.5 deliberately makes room for more than one theory of code-switching. The MVP
+and v1.0 already supported Matrix Language Frame analysis, including Matrix
+Language, Embedded Language, system morphemes, noun classes, concord, and the
+4-M model (Myers-Scotton, 1993, 2002). That support remains important. But a
+humanities workbench must not let one framework quietly become the only way a
+researcher is allowed to see their data.
+
+Muysken's typology of insertion, alternation, and congruent lexicalization gives
+researchers another way to describe mixed speech without always reducing it to a
+single Matrix Language claim (Muysken, 2000). Poplack's work highlights
+constraints and the empirical question of whether a form is a switch, borrowing,
+or something between those poles (Poplack, 1980). Conversation Analysis asks how
+switching works in sequence, stance, repair, quotation, and participant
+orientation, rather than only in sentence-internal structure (Auer, 1998).
+Decolonial sociolinguistics asks who benefits when categories are imposed, who
+gets to name varieties, and whose infrastructure the research must depend on
+(Ali, 2016; Risam, 2018).
+
+For that reason, v1.5 includes features that do not collapse into one
+theoretical line. The sister-language disambiguator preserves ambiguity when
+evidence is weak. The trigger detector follows Clyne-style local evidence but
+refuses to claim causality. Mixed-code variety mode acknowledges Tsotsitaal,
+Iscamtho, Kaaps, Sabela, and project-local labels while refusing to make lexical
+density stand in for social identity. Integration Score v2 exposes weights so a
+researcher can run sensitivity analysis instead of inheriting the software's
+theory of borrowing.
+
+The refusal to declare a span as Tsotsitaal without researcher confirmation is
+not a lack of automation. It is a methodological boundary. Tsotsitaal,
+Iscamtho, Kaaps, and Sabela are living, contested, historically situated
+practices. A detector can say that a span contains vocabulary matching a local
+profile. It cannot know the speaker's relationship to that variety, the local
+meaning of the label, or whether applying the label would be respectful in the
+project context. The software must therefore ask for human confirmation and keep
+the dictionary caveats visible in reports.
+
+Community-review packets queue rather than auto-apply for the same reason.
+Review is interpretive and ethical work. A packet may contain a correction, a
+warning, a disagreement, or a request to use a different community term. Applying
+that packet automatically would replace one kind of authority with another and
+erase the researcher's responsibility to read, understand, and document the
+change. The CARE Principles emphasize authority to control, responsibility, and
+ethics; Imbizo-CS implements those ideas by making review local, inspectable,
+and manually accepted (Carroll et al., 2020).
+
+Future contributors should be wary of features advertised as "improving
+accuracy" if they hardcode one theory, one orthography, one variety boundary, or
+one community's judgement as universal. A change that raises a benchmark score
+while reducing interpretive pluralism is a regression. A change that hides
+uncertainty to make the interface look cleaner is a regression. A change that
+makes cloud access, platform accounts, or remote model calls necessary for core
+analysis is a regression.
+
+Pluralism is not vagueness. It is a commitment to make theoretical choices
+explicit. A project may choose MLF as its primary frame, or a Muyskenian
+typology, or a CA reading, or a decolonial sociolinguistic account. The software
+should help the researcher document that choice and its consequences without
+silently bending every dataset toward a single preferred answer (Smith et al.,
+2016).
+
 ## License Choice: GPLv3-Or-Later
 
 Imbizo-CS Workbench is licensed under GPLv3-or-later. This is a deliberate

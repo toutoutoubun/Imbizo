@@ -211,3 +211,110 @@ imbizo-cs restore --from /path/to/project/backups/project.v1_0_pre_TIMESTAMP.zip
 
 Open the restored project or inspect its schema version. An MVP backup should
 show the MVP schema version or lack v1.0 tables.
+
+## v1.5 Offline Upgrade Addendum
+
+Use this section when upgrading an existing v1.0 project to Imbizo-CS v1.5 on
+an air-gapped machine. v1.5 adds sister-language disambiguation,
+triggered-switching evidence, mixed-code variety mode, phonological integration
+evidence, LIDES and CHAT/CLAN exporters, and offline community review. The
+upgrade is additive: v1.0 noun-class, concord, and 4-M annotations are
+preserved.
+
+### 1. Prepare The v1.5 Bundle On A Connected Machine
+
+```bash
+mkdir -p imbizo-cs-v1.5-offline/wheels
+python -m pip download --dest imbizo-cs-v1.5-offline/wheels imbizo-cs-workbench==1.5.0
+cp -R dictionaries imbizo-cs-v1.5-offline/dictionaries
+cp -R docs imbizo-cs-v1.5-offline/docs
+cp README.md PRINCIPLES.md INSTALL_OFFLINE.md imbizo-cs-v1.5-offline/
+find imbizo-cs-v1.5-offline -type f -print0 | sort -z | xargs -0 sha256sum > imbizo-cs-v1.5-offline/SHA256SUMS.txt
+zip -r imbizo-cs-v1.5-offline.zip imbizo-cs-v1.5-offline
+sha256sum imbizo-cs-v1.5-offline.zip > imbizo-cs-v1.5-offline.zip.sha256
+```
+
+Copy `imbizo-cs-v1.5-offline.zip` and
+`imbizo-cs-v1.5-offline.zip.sha256` to the offline machine by USB or another
+local transfer method.
+
+### 2. Verify Checksums
+
+Linux:
+
+```bash
+sha256sum -c imbizo-cs-v1.5-offline.zip.sha256
+unzip imbizo-cs-v1.5-offline.zip
+cd imbizo-cs-v1.5-offline
+sha256sum -c SHA256SUMS.txt
+```
+
+Windows PowerShell:
+
+```powershell
+certutil -hashfile imbizo-cs-v1.5-offline.zip SHA256
+```
+
+Compare the printed hash with the value in the `.sha256` file. After
+extraction, verify individual wheel and dictionary files against
+`SHA256SUMS.txt` with an offline checksum tool.
+
+### 3. Install v1.5 From The Local Wheelhouse
+
+```bash
+python -m pip install --no-index --find-links wheels imbizo-cs-workbench==1.5.0
+```
+
+The `--no-index` flag prevents contacting a package index. If any dependency is
+missing from `wheels/`, the install should fail locally rather than reaching out
+to the internet.
+
+### 4. Install LIDES And CHAT/CLAN Exporters Offline
+
+The v1.5 LIDES and CHAT/CLAN exporters are bundled Python modules. Confirm that
+they import without remote validators:
+
+```bash
+python - <<'PY'
+from imbizo.core.interop.lides import to_lides, validate_lides
+from imbizo.core.interop.chat_clan import to_chat, validate_chat
+print("LIDES exporter OK:", callable(to_lides), callable(validate_lides))
+print("CHAT exporter OK:", callable(to_chat), callable(validate_chat))
+PY
+```
+
+### 5. Verify No Outbound Network Call
+
+Linux:
+
+```bash
+unshare -n imbizo-cs --help
+unshare -n imbizo-cs migrate --project /path/to/project --target v1.5 --dry-run
+```
+
+Windows users can open Resource Monitor, choose the Network tab, and watch the
+`python.exe`, `imbizo.exe`, or `imbizo-cs.exe` process while launching the app,
+loading dictionaries, running migration dry-run, and rendering reports. There
+should be no outbound connections.
+
+### 6. Verify Dictionary Versions
+
+```bash
+imbizo-cs migrate --project /path/to/project --target v1.5 --dry-run
+```
+
+The dry-run lists discovered sister-language, trigger, mixed-code, and
+phonology dictionary versions. Compare them with the release notes and any
+project-local dictionary overrides.
+
+### 7. Run The v1.5 Migration
+
+```bash
+imbizo-cs migrate --project /path/to/project --target v1.5
+```
+
+The command refuses MVP-era projects until v1.0 has been applied, creates a
+pre-migration backup, applies only additive schema changes, writes provenance,
+and creates `migration_report_v1_5.md` inside the project folder. Mixed-code
+mode remains off until the researcher explicitly enables it after reading the
+variety caveats.
