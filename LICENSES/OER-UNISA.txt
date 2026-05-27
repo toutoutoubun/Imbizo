@@ -1,0 +1,5 @@
+OER-UNISA
+
+REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT FROM <https://repo.sadilar.org/>
+
+Canonical URL: https://repo.sadilar.org/

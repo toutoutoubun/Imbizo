@@ -1,0 +1,3 @@
+PUBLIC-DOMAIN
+
+The EXDN source is treated as public-domain historical material for Imbizo-CS bootstrap purposes because it derives from MacVicar's 1935 English-Xhosa Dictionary for Nurses and is outside the ordinary modern copyright term assumed for this release workflow. The linked-data conversion must still be cited separately, and any release manager should re-check jurisdiction-specific status before redistribution.
