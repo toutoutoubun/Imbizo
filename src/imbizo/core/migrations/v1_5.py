@@ -41,6 +41,8 @@ class MigrationReport:
     created_tables: list[str] = field(default_factory=list)
     pre_migration_db_sha256: str | None = None
     post_migration_db_sha256: str | None = None
+    feature_opt_ins: dict[str, object] = field(default_factory=dict)
+    report_path: Path | None = None
     message: str = ""
 
 
@@ -150,7 +152,12 @@ CREATE INDEX IF NOT EXISTS idx_community_reviews_status ON community_reviews(sta
 """
 
 
-def migrate_project(project_path: Path, dry_run: bool = False, no_backup: bool = False) -> MigrationReport:
+def migrate_project(
+    project_path: Path,
+    dry_run: bool = False,
+    no_backup: bool = False,
+    feature_opt_ins: dict[str, object] | None = None,
+) -> MigrationReport:
     """Upgrade a v1.0 Imbizo-CS project to the v1.5 additive schema.
 
     The migration supports Clyne-style trigger candidates (Clyne, 1967, 2003),
@@ -163,6 +170,7 @@ def migrate_project(project_path: Path, dry_run: bool = False, no_backup: bool =
     project_path = project_path.resolve()
     database_path = _find_database(project_path)
     dictionary_versions = collect_dictionary_versions(project_path)
+    opt_ins = feature_opt_ins or default_feature_opt_ins()
     from_version = detect_schema_version(database_path)
     pre_hash = _sha256_file(database_path)
 
@@ -181,6 +189,7 @@ def migrate_project(project_path: Path, dry_run: bool = False, no_backup: bool =
             dictionary_versions=dictionary_versions,
             pre_migration_db_sha256=pre_hash,
             post_migration_db_sha256=pre_hash,
+            feature_opt_ins=opt_ins,
             message="Project is already at v1.5 or later.",
         )
 
@@ -206,6 +215,7 @@ def migrate_project(project_path: Path, dry_run: bool = False, no_backup: bool =
             created_tables=created_tables,
             pre_migration_db_sha256=pre_hash,
             post_migration_db_sha256=pre_hash,
+            feature_opt_ins=opt_ins,
             message="Dry run only; no files were modified.",
         )
 
@@ -233,11 +243,12 @@ def migrate_project(project_path: Path, dry_run: bool = False, no_backup: bool =
             "to_version": TARGET_SCHEMA_VERSION,
             "backup_path": str(backup_path) if backup_path else None,
             "dictionary_versions": dictionary_versions,
+            "feature_opt_ins": opt_ins,
             "pre_migration_db_sha256": pre_hash,
             "post_migration_db_sha256": post_hash,
         },
     )
-    return MigrationReport(
+    report = MigrationReport(
         project_path=project_path,
         database_path=database_path,
         from_version=from_version,
@@ -251,8 +262,89 @@ def migrate_project(project_path: Path, dry_run: bool = False, no_backup: bool =
         created_tables=created_tables,
         pre_migration_db_sha256=pre_hash,
         post_migration_db_sha256=post_hash,
+        feature_opt_ins=opt_ins,
         message="v1.5 migration applied.",
     )
+    report.report_path = write_migration_report(report)
+    return report
+
+
+def default_feature_opt_ins() -> dict[str, object]:
+    """Return conservative v1.5 feature defaults for migration reports."""
+
+    return {
+        "sister_language_disambiguation": False,
+        "trigger_detection": False,
+        "mixed_code_mode": False,
+        "mixed_code_varieties": [],
+        "phonological_integration": False,
+        "interop_exports": True,
+        "community_review": False,
+    }
+
+
+def write_migration_report(report: MigrationReport) -> Path:
+    """Write the required post-migration v1.5 verification report."""
+
+    out_path = report.project_path / "migration_report_v1_5.md"
+    dictionary_lines = "\n".join(
+        f"- `{key}`: `{value}`" for key, value in sorted(report.dictionary_versions.items())
+    ) or "- No v1.5 dictionaries were discovered."
+    opt_in_lines = "\n".join(
+        f"- `{key}`: `{json.dumps(value, ensure_ascii=True)}`"
+        for key, value in sorted(report.feature_opt_ins.items())
+    )
+    added_columns = "\n".join(f"- `tokens.{column}`" for column in report.added_columns) or "- None."
+    created_tables = "\n".join(f"- `{table}`" for table in report.created_tables) or "- None."
+    text = f"""# Imbizo-CS v1.5 Migration Report
+
+Generated at: `{datetime.now(UTC).isoformat()}`
+
+## Version transition
+
+- From schema: `{report.from_version}`
+- To schema: `{report.to_version}`
+- Imbizo-CS transition: `v1.0 -> v1.5`
+
+## Schema diff summary
+
+Added nullable token columns:
+
+{added_columns}
+
+Created tables:
+
+{created_tables}
+
+## Dictionary versions loaded
+
+{dictionary_lines}
+
+## v1.5 feature opt-ins
+
+{opt_in_lines}
+
+## Provenance
+
+- Provenance event id: `{report.provenance_event_id or "not-written"}`
+- Backup path: `{report.backup_path or "not-created"}`
+
+## Database hashes
+
+- Pre-migration SQLite SHA-256: `{report.pre_migration_db_sha256}`
+- Post-migration SQLite SHA-256: `{report.post_migration_db_sha256}`
+
+## Reproducibility statement
+
+To reproduce this migration, restore the pre-migration backup zip, open the
+project with Imbizo-CS v1.5, confirm the dictionary versions listed above, and
+run `imbizo-cs migrate --project <project_dir> --target v1.5`. The migration is
+additive: existing v1.0 noun-class, concord, and 4-M annotations are preserved,
+and all new v1.5 token fields are nullable until the researcher opts into the
+corresponding feature.
+"""
+    out_path.write_text(text, encoding="utf-8")
+    return out_path
 
 
 def detect_schema_version(database_path: Path) -> str:

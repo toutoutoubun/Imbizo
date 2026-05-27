@@ -3,9 +3,10 @@ import sqlite3
 
 from imbizo.core.annotation import Token
 from imbizo.core.community.review import create_review_packet, validate_review_packet
+from imbizo.core.annotation import ConcordLink, Project
 from imbizo.core.integration_v2 import PhonologicalFeature, integration_score_v2, load_phonology_dictionary
-from imbizo.core.interop.chat_clan import export_chat_clan
-from imbizo.core.interop.lides import export_lides_json
+from imbizo.core.interop.chat_clan import to_chat, validate_chat
+from imbizo.core.interop.lides import to_lides, validate_lides
 from imbizo.core.migrations.v1_5 import migrate_project
 from imbizo.core.mixed_code import load_mixed_code_profile, suggest_mixed_code_span
 from imbizo.core.sister_lang import disambiguate_sister_languages, load_sister_lang_dictionary
@@ -35,7 +36,7 @@ def test_trigger_candidates_are_local_string_matches() -> None:
         Token(id="t1", surface="manager", position=0, language="eng"),
         Token(id="t2", surface="ngithe", position=1, language="zul"),
     ]
-    candidates = find_trigger_candidates(tokens, {"eng": dictionary})
+    candidates = find_trigger_candidates(tokens, switch_index=1, window_left=1)
     assert candidates
     assert candidates[0].head_token_id == "t1"
     assert candidates[0].triggered_token_id == "t2"
@@ -52,25 +53,24 @@ def test_mixed_code_profile_suggests_review_prompt_only() -> None:
     )
     assert suggestion is not None
     assert suggestion.variety == "tsotsitaal"
-    assert "review prompt" in suggestion.narrative
+    assert suggestion.confidence > 0
+    assert "heita" in suggestion.evidence_forms
 
 
 def test_integration_score_v2_bounds_and_optional_phonology() -> None:
     load_phonology_dictionary(ROOT / "dictionaries/phonology/zul.yaml")
     token = Token(id="loan", surface="i-laptop", position=0)
-    no_audio = integration_score_v2(token, 0.8, 0.7, 3, 5, [])
+    no_audio = integration_score_v2(token, [ConcordLink("loan", "adj", "AC", 0.8)], [], 3, 5)
     with_audio = integration_score_v2(
         token,
-        0.8,
-        0.7,
+        [ConcordLink("loan", "adj", "AC", 0.8)],
+        [PhonologicalFeature("p1", "loan", "vowel_epenthesis", "initial_i", "manual")],
         3,
         5,
-        [PhonologicalFeature("p1", "loan", "vowel_epenthesis", "initial_i", "manual")],
     )
     assert 0.0 <= no_audio.score <= 1.0
     assert 0.0 <= with_audio.score <= 1.0
-    assert no_audio.phonology_component is None
-    assert with_audio.phonology_component is not None
+    assert with_audio.score >= no_audio.score
 
 
 def test_migration_refuses_mvp_and_upgrades_v1_0(tmp_path: Path) -> None:
@@ -91,14 +91,13 @@ def test_migration_refuses_mvp_and_upgrades_v1_0(tmp_path: Path) -> None:
 
 def test_interop_exports_preserve_sidecars(tmp_path: Path) -> None:
     tokens = [Token(id="t1", surface="hello", utterance_id="u1", position=0, language="eng", speaker_id="S01")]
-    lides = tmp_path / "out.json"
-    cha = tmp_path / "out.cha"
-    sidecar = tmp_path / "out.sidecar.json"
-    export_lides_json(tokens, lides)
-    export_chat_clan(tokens, cha, sidecar)
-    assert "imbizo_sidecar" in lides.read_text()
-    assert "@Begin" in cha.read_text()
-    assert "imbizo_chat_sidecar" in sidecar.read_text()
+    project = Project(id="p1", title="Fictional Project", tokens=tokens)
+    lides = to_lides(project)
+    chat = to_chat(project)
+    assert validate_lides(lides).valid
+    assert validate_chat(chat).valid
+    assert "XIMB" in lides
+    assert "%ximb" in chat
 
 
 def test_community_review_packet_validates(tmp_path: Path) -> None:

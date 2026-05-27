@@ -104,6 +104,79 @@ not parse Bantu morphology automatically.
 Bundled ASR is also still out of scope. Manual transcription remains the
 default, and future ASR support must stay local, optional, and reviewable.
 
+## What's New in v1.5
+
+v1.5 adds six opt-in feature blocks. Existing MVP and v1.0 projects remain
+compatible, and all new fields are additive.
+
+**C1 - Sister Language Disambiguator.** v1.5 adds local, rule-based support for
+cases where lightweight language identification cannot confidently separate
+closely related languages, such as isiZulu and isiXhosa or Sesotho and
+Setswana. The disambiguator reads project dictionaries, reports evidence tags,
+and gives a ranked suggestion. It does not decide the language for you. See
+[docs/sister_languages.md](docs/sister_languages.md).
+
+**C2 - Triggered Switching Detector.** v1.5 adds a Clyne-style trigger lens for
+proper nouns, borrowings, cognates, discourse markers, and other words that may
+appear near switch boundaries (Clyne, 1967, 2003). Trigger candidates must be
+confirmed or rejected by the researcher. See [docs/triggers.md](docs/triggers.md).
+
+**C3 - Mixed-Code Variety Mode.** v1.5 makes room for Tsotsitaal, Iscamtho,
+Kaaps, Sabela, and project-local mixed-code labels without forcing them into a
+simple two-language switch model. This mode is off by default and includes
+strong caveats. See [docs/mixed_codes.md](docs/mixed_codes.md).
+
+**D1 - Borrowing Integration Score v2.** v1.5 extends the v1.0 integration
+score with optional phonological evidence such as vowel epenthesis, cluster
+simplification, and tonal reassignment. Projects without audio can leave these
+fields blank. See
+[docs/phonological_integration.md](docs/phonological_integration.md).
+
+**D2 - LIDES and CHAT/CLAN Export.** v1.5 adds export paths for international
+code-switching and transcript-analysis workflows while documenting losses in
+sidecar validation reports. See
+[docs/interop_lides_chat.md](docs/interop_lides_chat.md).
+
+**D3 - Community Review Workflow.** v1.5 adds offline review packets for
+dictionaries and sensitive annotations. Packets can be moved by USB, checked
+with a local signature hash, and queued for manual acceptance. See
+[docs/community_review.md](docs/community_review.md).
+
+### v1.5 Walkthrough
+
+Imagine an isiZulu-English interview used in earlier project examples. One
+utterance contains `Ngithenge i-laptop entsha izolo` (# fictional example). In
+v1.0, you could mark `i-laptop` as a class 9 integrated English stem and confirm
+agreement with `entsha`. In v1.5, you can add phonological evidence if the audio
+supports it, such as an audible vowel adaptation, then compare the v1.0 and v2
+integration scores.
+
+Later, the participant mentions a `manager` and then continues in English
+(# fictional example). The Triggered Switching Detector may flag `manager` as a
+candidate trigger because it appears just before the switch boundary. You can
+confirm it, reject it, or write a memo saying the switch is better explained by
+reported speech or institutional register.
+
+In another utterance, a short token is tied between isiZulu and isiXhosa
+(# fictional example). The Sister Language Disambiguator opens an evidence
+panel with dictionary cues and a confidence score. If the evidence is weak,
+leave the token ambiguous. Ambiguity is a valid scholarly result.
+
+Finally, suppose a speaker uses vocabulary that resembles a project-local
+Tsotsitaal profile (# fictional example). Mixed-code mode can suggest a span,
+but it will display a warning that lexical evidence is not the same as
+identifying a speaker, variety, or text. You decide whether the label fits your
+project's ethics, context, and theory.
+
+### v1.5 Limitations
+
+Sister-language disambiguation is heuristic, not authoritative. Trigger
+detection is suggestive only. Mixed-code mode is a starting point for variety
+analysis, not a definition of Tsotsitaal, Iscamtho, Kaaps, Sabela, or any living
+practice. LIDES and CHAT/CLAN exports have documented losses. Community review
+depends on people having time, trust, and authority to comment; the workflow
+supports review, but it does not manufacture community consent.
+
 ## Supported Languages
 
 Default project language labels include:

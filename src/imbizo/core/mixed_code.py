@@ -1,9 +1,10 @@
-"""Mixed-code variety profile loading and span annotation.
+"""Mixed-code variety profile loading and lexical-density detection.
 
 Tsotsitaal, Iscamtho, Kaaps, and Sabela can challenge a clean Matrix
-Language/Embedded Language split. This module therefore treats variety profiles
-as non-prescriptive historical snapshots, not definitions of living speech
-communities (Slabbert & Myers-Scotton, 1997; Hurst, 2008; McCormick, 2002).
+Language/Embedded Language split. The detector below only reports lexical
+evidence from non-prescriptive profile dictionaries; it does not identify a
+speaker, text, or community practice as Tsotsitaal, Iscamtho, Kaaps, or Sabela
+(Slabbert & Myers-Scotton, 1997; Hurst, 2008; McCormick, 2002).
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ VALID_SOURCES = {"manual", "suggested-accepted", "suggested-overridden", "import
 
 @dataclass(slots=True)
 class MixedCodeLexeme:
-    """One lexicon prompt from a mixed-code profile."""
+    """One signature-vocabulary prompt from a mixed-code profile."""
 
     form: str
     gloss_eng: str
@@ -35,8 +36,8 @@ class MixedCodeLexeme:
 
 
 @dataclass(slots=True)
-class MixedCodeProfile:
-    """Typed mixed-code variety profile."""
+class MixedCodeDictionary:
+    """Typed mixed-code variety profile dictionary."""
 
     variety_code: str
     variety_name: str
@@ -46,6 +47,9 @@ class MixedCodeProfile:
     caveats: str
     lexicon: list[MixedCodeLexeme]
     morphosyntactic_features: list[dict[str, object]]
+
+
+MixedCodeProfile = MixedCodeDictionary
 
 
 @dataclass(slots=True)
@@ -64,19 +68,22 @@ class MixedCodeSpan:
 
 
 @dataclass(slots=True)
-class MixedCodeSuggestion:
-    """Advisory mixed-code span suggestion."""
+class MixedCodeSpanCandidate:
+    """Advisory mixed-code span candidate with evidence trail."""
 
     variety: str
     start_token_id: str
     end_token_id: str
+    start_index: int
+    end_index: int
     confidence: float
-    matched_forms: list[str]
-    narrative: str
+    lexical_density: float
+    evidence_forms: list[str]
+    warning: str
 
 
-def load_mixed_code_profile(path: Path) -> MixedCodeProfile:
-    """Load a local mixed-code variety profile from YAML."""
+def load_mixed_code_dictionary(path: Path) -> MixedCodeDictionary:
+    """Load a non-prescriptive local mixed-code variety YAML dictionary."""
 
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     for field in ["variety_code", "variety_name", "version", "source", "caveats"]:
@@ -92,7 +99,7 @@ def load_mixed_code_profile(path: Path) -> MixedCodeProfile:
         )
         for item in data.get("lexicon", [])
     ]
-    return MixedCodeProfile(
+    return MixedCodeDictionary(
         variety_code=str(data["variety_code"]),
         variety_name=str(data["variety_name"]),
         version=str(data["version"]),
@@ -104,41 +111,69 @@ def load_mixed_code_profile(path: Path) -> MixedCodeProfile:
     )
 
 
-def suggest_mixed_code_span(tokens: list[Token], profile: MixedCodeProfile) -> MixedCodeSuggestion | None:
-    """Return an advisory span suggestion if profile lexicon evidence appears.
+def load_mixed_code_profile(path: Path) -> MixedCodeDictionary:
+    """Backward-compatible alias for loading a mixed-code dictionary."""
 
-    The suggestion is intentionally weak and memo-oriented. It supports
-    theoretical pluralism by surfacing possible mixed-code spans without
-    forcing them into MLF categories.
+    return load_mixed_code_dictionary(path)
+
+
+def detect_mixed_code_spans(
+    utterance_tokens: list[Token],
+    variety: str,
+    dictionary: MixedCodeDictionary,
+    threshold: float = 0.4,
+) -> list[MixedCodeSpanCandidate]:
+    """Detect candidate spans by variety-signature lexical density.
+
+    Detect contiguous spans whose lexical density of variety-signature
+    vocabulary exceeds a threshold. Return candidates with confidence and an
+    evidence trail. Advisory only.
+
+    Justified by Slabbert & Myers-Scotton (1997), Hurst (2008), and McCormick
+    (2002). Detecting Tsotsitaal-flavor lexis is NOT the same as identifying a
+    Tsotsitaal speaker or text. The researcher must consider the speaker,
+    setting, history, and broader sociolinguistic context.
     """
 
-    lexicon = {_clean(entry.form): entry for entry in profile.lexicon}
-    matched: list[str] = []
-    matched_tokens: list[Token] = []
-    for token in tokens:
-        cleaned = _clean(token.text_for_matching)
-        if cleaned in lexicon:
-            matched.append(lexicon[cleaned].form)
-            matched_tokens.append(token)
-    if not matched_tokens:
-        return None
-    unverified_penalty = 0.08 * sum(1 for form in matched if not lexicon[_clean(form)].verified)
-    confidence = max(0.15, min(0.75, 0.25 + len(set(matched)) * 0.12 - unverified_penalty))
-    return MixedCodeSuggestion(
-        variety=profile.variety_code,
-        start_token_id=matched_tokens[0].id,
-        end_token_id=matched_tokens[-1].id,
-        confidence=round(confidence, 4),
-        matched_forms=matched,
-        narrative=(
-            f"Matched {len(matched)} {profile.variety_name} profile forms. "
-            "Treat this as a review prompt, not a variety definition."
-        ),
-    )
+    if variety != dictionary.variety_code:
+        raise ValueError(f"Requested variety {variety!r} does not match dictionary {dictionary.variety_code!r}")
+    if variety not in VALID_VARIETIES:
+        raise ValueError(f"unsupported mixed-code variety: {variety}")
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("threshold must be in [0,1]")
+
+    lexicon = {_clean(entry.form): entry for entry in dictionary.lexicon}
+    candidates: list[MixedCodeSpanCandidate] = []
+    n_tokens = len(utterance_tokens)
+    for start in range(n_tokens):
+        for end in range(start, n_tokens):
+            window = utterance_tokens[start : end + 1]
+            evidence = [token.text_for_matching for token in window if _clean(token.text_for_matching) in lexicon]
+            density = len(evidence) / len(window)
+            if density < threshold or len(set(_clean(form) for form in evidence)) < 2:
+                continue
+            confidence = _candidate_confidence(evidence, window, lexicon)
+            candidates.append(
+                MixedCodeSpanCandidate(
+                    variety=variety,
+                    start_token_id=window[0].id,
+                    end_token_id=window[-1].id,
+                    start_index=start,
+                    end_index=end,
+                    confidence=confidence,
+                    lexical_density=round(density, 4),
+                    evidence_forms=evidence,
+                    warning=(
+                        "Lexical evidence only. This does not identify a speaker, "
+                        "community, or whole text as the variety."
+                    ),
+                )
+            )
+    return _maximal_non_overlapping(candidates)
 
 
 def persist_mixed_code_span(conn: sqlite3.Connection, span: MixedCodeSpan) -> None:
-    """Persist a reviewed mixed-code span and mark token rows with the variety."""
+    """Persist a reviewed mixed-code span and mark boundary token rows."""
 
     if span.variety not in VALID_VARIETIES:
         raise ValueError(f"unsupported mixed-code variety: {span.variety}")
@@ -166,10 +201,37 @@ def persist_mixed_code_span(conn: sqlite3.Connection, span: MixedCodeSpan) -> No
             created_at,
         ),
     )
-    conn.execute(
-        "UPDATE tokens SET mixed_code_variety = ? WHERE id IN (?, ?)",
-        (span.variety, span.start_token_id, span.end_token_id),
-    )
+
+
+def suggest_mixed_code_span(tokens: list[Token], profile: MixedCodeDictionary) -> MixedCodeSpanCandidate | None:
+    """Backward-compatible helper returning the best candidate, if any."""
+
+    candidates = detect_mixed_code_spans(tokens, profile.variety_code, profile)
+    return candidates[0] if candidates else None
+
+
+def _candidate_confidence(
+    evidence_forms: list[str],
+    window: list[Token],
+    lexicon: dict[str, MixedCodeLexeme],
+) -> float:
+    density = len(evidence_forms) / len(window)
+    verified_bonus = 0.05 * sum(1 for form in evidence_forms if lexicon[_clean(form)].verified)
+    length_penalty = max(0, len(window) - len(evidence_forms)) * 0.02
+    return round(max(0.0, min(0.95, density * 0.75 + verified_bonus - length_penalty)), 4)
+
+
+def _maximal_non_overlapping(candidates: list[MixedCodeSpanCandidate]) -> list[MixedCodeSpanCandidate]:
+    ordered = sorted(candidates, key=lambda item: (-item.confidence, item.start_index, -(item.end_index - item.start_index)))
+    chosen: list[MixedCodeSpanCandidate] = []
+    occupied: set[int] = set()
+    for candidate in ordered:
+        span_indexes = set(range(candidate.start_index, candidate.end_index + 1))
+        if occupied.intersection(span_indexes):
+            continue
+        chosen.append(candidate)
+        occupied.update(span_indexes)
+    return sorted(chosen, key=lambda item: item.start_index)
 
 
 def _clean(value: str) -> str:
