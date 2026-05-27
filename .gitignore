@@ -11,3 +11,16 @@ dist/
 project.sqlite
 *.sqlite-wal
 *.sqlite-shm
+downloads/raw/
+dictionaries/imported/*
+!dictionaries/imported/.gitkeep
+!dictionaries/imported/base_lexicon/
+!dictionaries/imported/base_lexicon/.gitkeep
+!dictionaries/imported/triggers/
+!dictionaries/imported/triggers/.gitkeep
+!dictionaries/imported/semantic_domains/
+!dictionaries/imported/semantic_domains/.gitkeep
+!dictionaries/imported/glossaries/
+!dictionaries/imported/glossaries/.gitkeep
+!dictionaries/imported/_provenance/
+!dictionaries/imported/_provenance/.gitkeep

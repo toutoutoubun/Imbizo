@@ -7,7 +7,6 @@ import hashlib
 import shutil
 import subprocess
 import sys
-import urllib.request
 from pathlib import Path
 
 
@@ -19,7 +18,17 @@ def main() -> int:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("bundle_dir", type=Path, help="Directory to create for USB transfer.")
-    parser.add_argument("--include-fasttext-lid", action="store_true", help="Download fastText lid.176.ftz into the bundle.")
+    parser.add_argument(
+        "--include-fasttext-lid",
+        action="store_true",
+        help="Deprecated: bootstrap network downloads are restricted to tools/bootstrap.py and tools/make_bundle.py.",
+    )
+    parser.add_argument(
+        "--fasttext-lid-file",
+        type=Path,
+        default=None,
+        help="Copy an already-downloaded lid.176.ftz into the bundle without network access.",
+    )
     args = parser.parse_args()
 
     bundle = args.bundle_dir
@@ -35,10 +44,17 @@ def main() -> int:
     shutil.copy2("CHANGELOG.md", bundle / "CHANGELOG.md")
     shutil.copytree("dictionaries", bundle / "dictionaries", dirs_exist_ok=True)
 
-    if args.include_fasttext_lid:
+    if args.include_fasttext_lid and args.fasttext_lid_file is None:
+        raise SystemExit(
+            "Direct model download is disabled here. Download on an audited connected "
+            "machine, then pass --fasttext-lid-file /path/to/lid.176.ftz."
+        )
+    if args.fasttext_lid_file is not None:
+        if not args.fasttext_lid_file.exists():
+            raise SystemExit(f"fastText LID file does not exist: {args.fasttext_lid_file}")
         target = models / "lid.176.ftz"
-        print(f"Downloading {FASTTEXT_LID_URL} -> {target}")
-        urllib.request.urlretrieve(FASTTEXT_LID_URL, target)
+        print(f"Copying audited local fastText LID model -> {target}")
+        shutil.copy2(args.fasttext_lid_file, target)
 
     _write_checksums(bundle)
     print(f"Offline bundle created at {bundle}")

@@ -1,0 +1,5 @@
+NWULITE-OBODO-1.0
+
+REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT FROM <https://github.com/dsfsi/za-mavito>
+
+Canonical URL: https://github.com/dsfsi/za-mavito

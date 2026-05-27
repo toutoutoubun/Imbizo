@@ -1,0 +1,122 @@
+# Master manifest for the Imbizo-CS dictionary bootstrap subsystem.
+# expected_sha256 is null until the first audited retrieval. Production
+# releases should pin every checksum after the first human license audit.
+sources:
+  - id: up_multilingual_lexicons
+    name: South African multilingual lexicons
+    origin: University of Pretoria, ABSA Chair for Data Science
+    url: https://researchdata.up.ac.za/articles/dataset/South_African_multilingual_lexicons/27002596
+    format: json
+    license: CC-BY-4.0
+    license_probe_url: https://researchdata.up.ac.za/articles/dataset/South_African_multilingual_lexicons/27002596
+    license_markers:
+      - CC-BY-4.0
+      - CC BY 4.0
+      - Creative Commons Attribution 4.0
+    license_check_required: true
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/up_lexicons.py
+    output_dirs:
+      - dictionaries/imported/base_lexicon
+    origin_authors:
+      - University of Pretoria ABSA Chair for Data Science
+    notes: >
+      Bootstrap must confirm the source page metadata declares CC-BY-4.0 before
+      release use. The manifest URL is canonical; deployments may provide a
+      direct JSON file in an audited bundle.
+
+  - id: mafoko
+    name: Mafoko / za-mavito terminology collections
+    origin: Data Science for Social Impact, University of Pretoria
+    url:
+      - https://raw.githubusercontent.com/dsfsi/za-mavito/main/data/dsac/combined/combined_dsac.csv
+      - https://raw.githubusercontent.com/dsfsi/za-mavito/main/data/statssa/statssa_multilingual_statistical_terminology.csv
+      - https://raw.githubusercontent.com/dsfsi/za-mavito/main/data/unisa_multilingual/unisa_multilingual_linguistic_terminology.csv
+      - https://raw.githubusercontent.com/dsfsi/za-mavito/main/data/up_glossary/up_multilingual_academic_glossaries.csv
+    format: csv
+    license: Nwulite Obodo Open Data License 1.0 OR CC-BY-NC-SA 2.5 ZA
+    license_check_required: true
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/mafoko.py
+    output_dirs:
+      - dictionaries/imported/triggers
+      - dictionaries/imported/glossaries
+    origin_authors:
+      - Data Science for Social Impact
+      - University of Pretoria
+    notes: >
+      The adapter preserves the per-file license string passed from audited
+      repository metadata. If a listed optional CSV is absent, make_bundle logs
+      it and continues only after human release review.
+
+  - id: african_wordnet
+    name: African Wordnet open-license subset
+    origin: UNISA SADiLaR node, African Wordnet project
+    url: https://repo.sadilar.org/
+    format: xml
+    license: CC-BY-4.0 or CC-BY-NC-4.0 when declared in SADiLaR metadata
+    license_check_required: true
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/african_wordnet.py
+    output_dirs:
+      - dictionaries/imported/semantic_domains
+    origin_authors:
+      - African Wordnet Project
+      - UNISA SADiLaR node
+    notes: >
+      Only XML files whose metadata declares an allowed license are converted.
+      A bundle should carry the specific SADiLaR XML exports, not a live search.
+
+  - id: unisa_termbank
+    name: UNISA Multilingual Linguistic Terminology
+    origin: SADiLaR / UNISA node Lexonomy export
+    url: https://repo.sadilar.org/
+    format: xml
+    license: OER-UNISA
+    license_check_required: true
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/unisa_termbank.py
+    output_dirs:
+      - dictionaries/imported/glossaries
+    origin_authors:
+      - UNISA SADiLaR node
+    notes: >
+      The release bundle must include the audited Lexonomy XML export and the
+      matching OER declaration text.
+
+  - id: exdn
+    name: English-Xhosa Dictionary for Nurses
+    origin: MacVicar (1935), linked-data conversion by Klein et al. (2018)
+    url: https://github.com/linked-dictionaries/exdn
+    format: rdf-turtle
+    license: PUBLIC-DOMAIN
+    license_check_required: false
+    expected_sha256: null
+    bundle_status: shippable
+    adapter: tools/adapters/exdn.py
+    output_dirs:
+      - dictionaries/imported/triggers
+    origin_authors:
+      - MacVicar
+      - Klein et al.
+    notes: >
+      Public-domain historical medical dictionary. Orthography may differ from
+      modern isiXhosa standards; every entry remains unverified.
+
+# Deferred sources: do not enable without human license and distribution review.
+# - id: ukwabelana
+#   bundle_status: pending_license_verification
+#   notes: Deferred because distribution and downstream redistribution terms
+#     require human verification before inclusion in an air-gappable bundle.
+# - id: nchlt
+#   bundle_status: pending_license_verification
+#   notes: Deferred because NCHLT module licenses and redistribution paths vary
+#     by resource and must be audited before bootstrap automation.
+# - id: kaaps_trilingual_dictionary
+#   bundle_status: pending_license_verification
+#   notes: Deferred until rights, community governance, and redistribution terms
+#     are confirmed with the maintainers.

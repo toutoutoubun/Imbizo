@@ -1,0 +1,51 @@
+"""Tests for the UNISA termbank adapter."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import yaml
+
+from tools.adapters.unisa_termbank import UNISATermbankAdapter
+
+
+def test_unisa_termbank_outputs_one_file_per_language(tmp_path: Path) -> None:
+    """Synthetic Lexonomy-like XML creates language-specific glossaries."""
+
+    raw = tmp_path / "terms.xml"
+    raw.write_text(
+        """<lexonomy>
+  <entry>
+    <eng><term>noun class</term><definition>classification system</definition></eng>
+    <zul><term>isigaba sebizo</term><definition>fictional</definition></zul>
+    <xho><term>udidi lwesibizo</term><definition>fictional</definition></xho>
+    <sot><term>sehlopha sa lebitso</term><definition>fictional</definition></sot>
+  </entry>
+  <entry>
+    <eng><term>concord</term><definition>agreement marker</definition></eng>
+    <zul><term>isivumelwano</term><definition>fictional</definition></zul>
+    <tsn><term>tumelano</term><definition>fictional</definition></tsn>
+  </entry>
+</lexonomy>""",
+        encoding="utf-8",
+    )
+    outputs = UNISATermbankAdapter().convert(
+        raw,
+        [tmp_path / "glossaries"],
+        {
+            "name": "UNISA Termbank",
+            "url": "https://example.invalid/unisa",
+            "license": "OER-UNISA",
+            "retrieved_on": "2026-05-27",
+        },
+    )
+    names = {path.name for path in outputs}
+    assert names == {
+        "unisa_linguistic_terminology_sot.yaml",
+        "unisa_linguistic_terminology_tsn.yaml",
+        "unisa_linguistic_terminology_xho.yaml",
+        "unisa_linguistic_terminology_zul.yaml",
+    }
+    payload = yaml.safe_load((tmp_path / "glossaries" / "unisa_linguistic_terminology_zul.yaml").read_text(encoding="utf-8"))
+    assert payload["entries"][0]["eng_term"] == "noun class"
+    assert payload["entries"][0]["translations"]["zul"]["term"] == "isigaba sebizo"
