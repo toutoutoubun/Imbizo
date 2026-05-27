@@ -1,0 +1,38 @@
+language_code: "sot"
+language_name: "Sesotho phonological integration cues"
+version: "0.1.0"
+source: "Doke & Mofokeng (1957); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+transcription_basis: "orthographic_with_optional_audio_review"
+patterns:
+  - feature_type: "vowel_epenthesis"
+    description: "Borrowed stems may be adapted with vowels to fit Sesotho syllable patterns."
+    example: "English school -> sekolo # fictional or paraphrased example; verify for publication"
+    verified: false
+    note: "Common education-domain example, but needs local review."
+    citation: "Doke & Mofokeng (1957)"
+  - feature_type: "consonant_cluster_simplification"
+    description: "Consonant clusters from source languages may be simplified or separated."
+    example: "English class -> kerese-like adapted form # fictional or paraphrased example; verify before use"
+    verified: false
+    note: "The example is intentionally not authoritative; replace with project-reviewed evidence."
+    citation: "Doke & Mofokeng (1957)"
+  - feature_type: "click_adaptation_in_non_nguni_hosts"
+    description: "Nguni click-containing forms may be adapted, avoided, or approximated in non-Nguni host speech."
+    example: "isiXhosa click word adapted without click in Sesotho context # fictional or paraphrased example"
+    verified: false
+    note: "Requires audio evidence and speaker review; do not infer from spelling alone."
+    citation: "Mesthrie (2008)"
+  - feature_type: "tonal_reassignment"
+    description: "Borrowed stems may receive tonal behavior compatible with Sesotho speech."
+    example: "borrowed noun assigned local tonal pattern # fictional or paraphrased example"
+    verified: false
+    note: "Only score if tone is transcribed or audio-reviewed."
+    citation: "Doke & Mofokeng (1957)"
+  - feature_type: "stress_pattern_shift"
+    description: "Source-language stress may shift or become irrelevant under Sesotho prosody."
+    example: "English laptop pronounced with Sesotho timing # fictional or paraphrased example"
+    verified: false
+    note: "Requires audio evidence; text alone is insufficient."
+    citation: "Mesthrie (2008)"

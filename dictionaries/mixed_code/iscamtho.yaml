@@ -1,0 +1,51 @@
+variety_code: "iscamtho"
+variety_name: "Iscamtho"
+version: "0.1.0"
+source: "Slabbert & Myers-Scotton (1997); Ntshangase (2002); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+social_context: >
+  Iscamtho is treated here as an urban township repertoire associated in the
+  literature with Soweto and related youth practices. The profile is designed
+  for span-level annotation where ordinary language-pair code-switching labels
+  would hide the social and historical character of the repertoire.
+caveats: >
+  This dictionary is not a claim that Iscamtho has one standard lexicon, one
+  grammar, or one speaker community. It should not be used to police whether a
+  speaker is using "real" Iscamtho. Entries are prompts for review and should
+  be validated with local speakers, project notes, and cited studies. The file
+  explicitly allows uncertainty, overlap with Tsotsitaal, and change over time.
+lexicon:
+  - form: "kasi"
+    gloss_eng: "township"
+    source_languages: ["uncertain", "township repertoire"]
+    verified: false
+    note: "Circulates across urban varieties; not exclusive evidence."
+  - form: "dladla"
+    gloss_eng: "house/home"
+    source_languages: ["uncertain", "Nguni"]
+    verified: false
+    note: "Reported in township-variety discussions; needs local review."
+  - form: "gaya"
+    gloss_eng: "give"
+    source_languages: ["uncertain"]
+    verified: false
+    note: "Candidate from secondary reports; verify against Ntshangase and speakers."
+  - form: "sharp"
+    gloss_eng: "fine/okay/goodbye"
+    source_languages: ["English", "South African urban repertoire"]
+    verified: false
+    note: "Widely circulated; do not treat as Iscamtho-specific."
+morphosyntactic_features:
+  - feature: "nguni_and_sotho_tswana_contact"
+    description: "Profiles may draw from several South African languages depending on speaker and place."
+    verified: false
+    note: "Project-local variety notes should specify observed sources."
+  - feature: "youth_style_and_peer_group_indexing"
+    description: "Some literature treats Iscamtho as style and identity practice as much as lexicon."
+    verified: false
+    note: "Do not infer identity automatically from a token."
+  - feature: "not_simple_ml_el"
+    description: "A span may challenge a clean Matrix Language / Embedded Language distinction."
+    verified: true
+    note: "Mixed-code mode should support plural theoretical readings."

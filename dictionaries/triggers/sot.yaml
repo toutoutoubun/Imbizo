@@ -1,0 +1,47 @@
+language_code: "sot"
+language_name: "Sesotho trigger candidates"
+version: "0.1.0"
+source: "Clyne (1967); Clyne (2003); Doke & Mofokeng (1957); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+trigger_candidates:
+  proper_nouns:
+    - form: "Maseru"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place name; may appear in multiple language contexts."
+    - form: "Lesotho"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Country name; not a language label by itself."
+  domain_specific_borrowings:
+    - form: "sekolo"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Education-domain candidate; review for Sesotho/Setswana overlap."
+    - form: "koloi"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Transport-domain candidate; needs lexical verification."
+    - form: "kereke"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Religion-domain candidate; verify in project context."
+  discourse_markers:
+    - form: "ee"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Affirmation candidate; spelling and usage vary."
+    - form: "tjhe"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Negation/interjection candidate; needs review."
+    - form: "akere"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Discourse marker candidate; may cross language boundaries."
+  cognates:
+    - form: "universithi"
+      trigger_type: "cognate"
+      verified: false
+      note: "Education-domain adapted form candidate; verify before use."

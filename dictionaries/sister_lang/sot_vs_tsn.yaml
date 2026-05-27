@@ -1,0 +1,80 @@
+language_code: "sot-tsn"
+language_name: "Sesotho versus Setswana disambiguation"
+version: "0.1.0"
+source: "Cole (1955); Doke & Mofokeng (1957)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+scope_note: "Starter evidence for local, advisory Sesotho/Setswana disambiguation. Southern Sotho-Tswana varieties share many forms; ambiguity is expected."
+distinctive_morphemes:
+  - form: "ke"
+    language: "sot"
+    gloss: "subject/copular form in many Sesotho contexts"
+    citation: "Doke & Mofokeng (1957)"
+    verified: false
+    note: "Very common and not distinctive alone; include only as contextual evidence."
+  - form: "ke"
+    language: "tsn"
+    gloss: "subject/copular form in many Setswana contexts"
+    citation: "Cole (1955)"
+    verified: false
+    note: "Shared form; included to prevent false distinctiveness."
+  - form: "ba-"
+    language: "sot"
+    gloss: "class 2 prefix or subject agreement in relevant contexts"
+    citation: "Doke & Mofokeng (1957)"
+    verified: false
+    note: "Shared Sotho-Tswana evidence; requires surrounding tokens."
+  - form: "ba-"
+    language: "tsn"
+    gloss: "class 2 prefix or subject agreement in relevant contexts"
+    citation: "Cole (1955)"
+    verified: false
+    note: "Shared Sotho-Tswana evidence; requires surrounding tokens."
+distinctive_lexemes:
+  - form: "dumelang"
+    language: "sot"
+    gloss: "greeting"
+    citation: "Doke & Mofokeng (1957)"
+    verified: false
+    note: "Greeting form is broadly Sotho-Tswana; local usage may not distinguish language."
+  - form: "dumela"
+    language: "tsn"
+    gloss: "greeting"
+    citation: "Cole (1955)"
+    verified: false
+    note: "Greeting form is broadly Sotho-Tswana; local usage may not distinguish language."
+  - form: "lefatse"
+    language: "sot"
+    gloss: "earth/world"
+    citation: "Doke & Mofokeng (1957)"
+    verified: false
+    note: "Candidate lexeme only; verify against reference dictionary and speaker context."
+  - form: "lefatshe"
+    language: "tsn"
+    gloss: "earth/world"
+    citation: "Cole (1955)"
+    verified: false
+    note: "Orthographic sh/tsh contrast can be useful but must be reviewed."
+orthographic_features:
+  - code: "sot_sh_vs_tsn_tsh"
+    languages: ["sot", "tsn"]
+    description: "Some Sesotho/Setwana cognate pairs may differ in sh/tsh spelling."
+    verified: false
+    note: "Use only as ranked evidence, never as a hard rule."
+  - code: "shared_sotho_tswana_orthography"
+    languages: ["sot", "tsn"]
+    description: "Many forms are orthographically identical or near-identical."
+    verified: true
+    note: "This feature should lower confidence when other evidence is absent."
+phonotactic_features:
+  - code: "sotho_tswana_shared_syllable_patterns"
+    languages: ["sot", "tsn"]
+    description: "Shared phonotactic patterns make token-level disambiguation fragile."
+    verified: false
+    note: "Treat as a caution cue."
+confidence_thresholds:
+  high: 0.9
+  medium: 0.7
+  low: 0.45
+  ambiguous_below: 0.7
+  note: "Higher default thresholds reflect greater risk of overconfident Sesotho/Setswana separation."

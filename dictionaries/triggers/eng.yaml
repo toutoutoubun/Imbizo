@@ -1,0 +1,51 @@
+language_code: "eng"
+language_name: "English trigger candidates"
+version: "0.1.0"
+source: "Clyne (1967); Clyne (2003); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+trigger_candidates:
+  proper_nouns:
+    - form: "Johannesburg"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "South African place name used as an English-form trigger candidate; not language-exclusive."
+    - form: "Cape Town"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "English place-name form; may co-occur with Afrikaans/Kaaps equivalents."
+    - form: "Soweto"
+      trigger_type: "proper_noun"
+      verified: false
+      note: "Place name; use as trigger context only, not as a language identifier."
+  domain_specific_borrowings:
+    - form: "laptop"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Technology term commonly borrowed in multilingual speech; project review required."
+    - form: "manager"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Workplace role term; candidate for local trigger analysis."
+    - form: "assignment"
+      trigger_type: "borrowing"
+      verified: false
+      note: "Education-domain candidate; not automatically a trigger."
+  discourse_markers:
+    - form: "okay"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Widely circulated discourse marker; may be language-neutral in local speech."
+    - form: "so"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Discourse marker candidate; requires context."
+    - form: "you know"
+      trigger_type: "discourse_marker"
+      verified: false
+      note: "Multiword discourse marker; tokenize carefully before matching."
+  cognates:
+    - form: "school"
+      trigger_type: "cognate"
+      verified: false
+      note: "Compare with local adapted forms such as isikole only after project review."

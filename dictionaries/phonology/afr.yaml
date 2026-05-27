@@ -1,0 +1,38 @@
+language_code: "afr"
+language_name: "Afrikaans phonological integration cues"
+version: "0.1.0"
+source: "Donaldson (1993); Mesthrie (2008); McCormick (2002)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+transcription_basis: "orthographic_with_optional_audio_review"
+patterns:
+  - feature_type: "vowel_epenthesis"
+    description: "Vowel insertion may occur in some adapted loan forms, but Afrikaans does not share the same noun-class prefix integration as Bantu hosts."
+    example: "English technical term adapted in Afrikaans speech # fictional or paraphrased example"
+    verified: false
+    note: "Do not transfer Nguni or Sotho-Tswana assumptions to Afrikaans."
+    citation: "Donaldson (1993); Mesthrie (2008)"
+  - feature_type: "consonant_cluster_simplification"
+    description: "Some borrowed forms may show cluster simplification or local pronunciation shifts."
+    example: "English loan pronounced with local Afrikaans phonotactics # fictional or paraphrased example"
+    verified: false
+    note: "Requires audio evidence and community-sensitive review, especially for Kaaps."
+    citation: "Donaldson (1993); McCormick (2002)"
+  - feature_type: "click_adaptation_in_non_nguni_hosts"
+    description: "Click-containing names or Nguni words may be adapted in Afrikaans-host contexts."
+    example: "Nguni click name approximated in Afrikaans speech # fictional or paraphrased example"
+    verified: false
+    note: "Highly sensitive; do not score without audio and speaker/context notes."
+    citation: "Mesthrie (2008)"
+  - feature_type: "tonal_reassignment"
+    description: "Tone is not usually represented as a lexical-tone adaptation feature in Afrikaans orthographic transcripts."
+    example: "not_available_for_text_only_afr_project # fictional or paraphrased example"
+    verified: false
+    note: "Leave unavailable unless a specialist project defines a reviewed tonal/prosodic cue."
+    citation: "Mesthrie (2008)"
+  - feature_type: "stress_pattern_shift"
+    description: "English loanwords may shift stress or prosodic timing in Afrikaans or Kaaps speech."
+    example: "English borrowed item with local stress pattern # fictional or paraphrased example"
+    verified: false
+    note: "Requires audio evidence; written token alone is insufficient."
+    citation: "Donaldson (1993); McCormick (2002)"

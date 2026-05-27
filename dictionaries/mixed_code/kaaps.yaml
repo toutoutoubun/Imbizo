@@ -1,0 +1,52 @@
+variety_code: "kaaps"
+variety_name: "Kaaps"
+version: "0.1.0"
+source: "McCormick (2002); Hendricks (2016); Mesthrie (2008)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+social_context: >
+  Kaaps is treated here as a Cape-based, socially and historically situated
+  variety associated with communities whose speech has often been stigmatized
+  or misrepresented. The profile exists so researchers can avoid collapsing
+  Kaaps into standard Afrikaans or generic Afrikaans-English code-switching.
+caveats: >
+  This file is not a standardizing dictionary of Kaaps and must not be used to
+  judge speakers. It is a historical and analytic starting point for projects
+  that explicitly opt into Kaaps-aware annotation. Forms are marked unverified
+  unless reviewed by appropriate speakers and scholars. The profile should
+  preserve local spelling, translanguaging, religious register, class, race,
+  place, and generation notes rather than forcing a single standard.
+lexicon:
+  - form: "dala"
+    gloss_eng: "do/make"
+    source_languages: ["uncertain", "Kaaps", "urban repertoire"]
+    verified: false
+    note: "Circulates beyond Kaaps; include only as project-reviewed evidence."
+  - form: "mos"
+    gloss_eng: "discourse particle"
+    source_languages: ["Afrikaans", "Kaaps"]
+    verified: false
+    note: "Not Kaaps-exclusive; context required."
+  - form: "julle"
+    gloss_eng: "you plural"
+    source_languages: ["Afrikaans", "Kaaps"]
+    verified: false
+    note: "Standard Afrikaans form also; not diagnostic."
+  - form: "wies"
+    gloss_eng: "who is"
+    source_languages: ["Kaaps", "Afrikaans"]
+    verified: false
+    note: "Candidate orthographic representation; verify locally before use."
+morphosyntactic_features:
+  - feature: "afrikaans_related_frame_with_local_variation"
+    description: "Kaaps may share structure with Afrikaans while differing socially, phonologically, lexically, and orthographically."
+    verified: false
+    note: "Do not collapse Kaaps into standard Afrikaans."
+  - feature: "orthographic_variability"
+    description: "Written representations may intentionally reflect local pronunciation or identity."
+    verified: false
+    note: "Preserve raw transcript forms."
+  - feature: "code_mixing_as_ordinary_repertoire"
+    description: "English, Afrikaans, Arabic-derived religious terms, and local lexical resources may co-exist."
+    verified: false
+    note: "Project memos should describe the relevant community context."
