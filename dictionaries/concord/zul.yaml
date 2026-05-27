@@ -1,0 +1,127 @@
+language_code: zul
+language_name: isiZulu
+version: 0.1.0
+source: "Poulos & Msimang (1998); Doke (1927)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+note: "Starter concord candidates only. Every marker needs verification against the cited grammars before being treated as evidence."
+concords:
+  - class_number: 1
+    subject_concord: {forms: ["u-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["m-", "mu-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["om-", "omu-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["wa-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["o-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lo"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: "1a"
+    subject_concord: {forms: ["u-"], verified: false, note: "Subclass behavior needs verification."}
+    object_concord: {forms: ["m-", "mu-"], verified: false, note: "Subclass behavior needs verification."}
+    adjective_concord: {forms: [], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["ka-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["o-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lo"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 2
+    subject_concord: {forms: ["ba-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["ba-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["aba-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["ba-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["aba-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["laba"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: "2a"
+    subject_concord: {forms: ["ba-"], verified: false, note: "Subclass behavior needs verification."}
+    object_concord: {forms: ["ba-"], verified: false, note: "Subclass behavior needs verification."}
+    adjective_concord: {forms: [], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["ka-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["aba-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["laba"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 3
+    subject_concord: {forms: ["u-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["wu-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["om-", "omu-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["wa-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["o-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lo"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 4
+    subject_concord: {forms: ["i-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["yi-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["emi-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["ya-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["e-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["le"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 5
+    subject_concord: {forms: ["li-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["li-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["eli-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["la-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["eli-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["leli"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 6
+    subject_concord: {forms: ["a-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["wa-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["ama-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["a-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["a-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lawa"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 7
+    subject_concord: {forms: ["si-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["si-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["esi-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["sa-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["esi-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lesi"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 8
+    subject_concord: {forms: ["zi-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["zi-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["ezi-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["za-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["ezi-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lezi"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 9
+    subject_concord: {forms: ["i-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["yi-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["en-", "in-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["ya-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["e-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["le"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 10
+    subject_concord: {forms: ["zi-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["zi-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["ezin-", "ezim-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["za-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["ezi-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lezi"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 14
+    subject_concord: {forms: ["bu-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["bu-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["obu-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["ba-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["obu-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lobu"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 15
+    subject_concord: {forms: ["ku-"], verified: false, note: "Needs verification against reference grammar."}
+    object_concord: {forms: ["ku-"], verified: false, note: "Needs verification against reference grammar."}
+    adjective_concord: {forms: ["oku-"], verified: false, note: "Needs verification against reference grammar."}
+    possessive_concord: {forms: ["kwa-"], verified: false, note: "Needs verification against reference grammar."}
+    relative_concord: {forms: ["oku-"], verified: false, note: "Needs verification against reference grammar."}
+    demonstrative: {proximal: ["lokhu"], medial: [], distal: [], verified: false, note: "Needs verification against reference grammar."}
+  - class_number: 16
+    subject_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    object_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    adjective_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    possessive_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    relative_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    demonstrative: {proximal: [], medial: [], distal: [], verified: false, note: "Locative demonstratives need verification."}
+  - class_number: 17
+    subject_concord: {forms: ["ku-"], verified: false, note: "Locative concord needs verification."}
+    object_concord: {forms: ["ku-"], verified: false, note: "Locative concord needs verification."}
+    adjective_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    possessive_concord: {forms: ["kwa-"], verified: false, note: "Locative concord needs verification."}
+    relative_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    demonstrative: {proximal: [], medial: [], distal: [], verified: false, note: "Locative demonstratives need verification."}
+  - class_number: 18
+    subject_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    object_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    adjective_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    possessive_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    relative_concord: {forms: [], verified: false, note: "Locative concord needs verification."}
+    demonstrative: {proximal: [], medial: [], distal: [], verified: false, note: "Locative demonstratives need verification."}

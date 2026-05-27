@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Loanword Integration Profile — {{ project.title }}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #111827;
+      --muted: #374151;
+      --border: #4b5563;
+      --panel: #f9fafb;
+      --panel-strong: #e5e7eb;
+      --accent: #1d4ed8;
+      --accent-ink: #ffffff;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 2rem;
+      color: var(--text);
+      background: #ffffff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    header, section, footer { margin-bottom: 1.5rem; }
+    h1, h2, h3 { line-height: 1.2; }
+    table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
+    th, td { border: 1px solid var(--border); padding: 0.45rem; text-align: left; vertical-align: top; }
+    th { background: var(--panel-strong); }
+    .meta, .methods, .formula-transparency, .stem-card {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 1rem;
+      break-inside: avoid;
+    }
+    .stem-card h2 { margin-top: 0; }
+    .bar-fill { fill: var(--accent); }
+    .bar-bg { fill: #e5e7eb; stroke: var(--border); stroke-width: 1; }
+    .hist-fill { fill: #047857; }
+    .note { color: var(--muted); }
+    .formula-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+    .reproducibility { border-left: 0.3rem solid var(--accent); padding-left: 0.75rem; }
+    @media print {
+      body { margin: 1cm; font-size: 10.5pt; }
+      .stem-card, .formula-transparency { page-break-inside: avoid; }
+      a::after { content: ""; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Loanword Integration Profile</h1>
+    <div class="meta" aria-label="Project metadata">
+      <p><strong>Project:</strong> {{ project.title }}</p>
+      <p><strong>Researcher:</strong> {{ project.researcher }}</p>
+      <p><strong>Date:</strong> {{ project.date }}</p>
+      <p><strong>Dictionary versions:</strong>
+        {% for dictionary in dictionary_versions %}
+          {{ dictionary.label }} {{ dictionary.version }}{% if not loop.last %}; {% endif %}
+        {% else %}
+          none recorded
+        {% endfor %}
+      </p>
+    </div>
+  </header>
+
+  {% for stem in stems %}
+    <article class="stem-card" aria-labelledby="stem-{{ loop.index }}-title">
+      <h2 id="stem-{{ loop.index }}-title">{{ stem.surface }}</h2>
+      <p>
+        <strong>Language of origin:</strong> {{ stem.language_of_origin }};
+        <strong>Total occurrences:</strong> {{ stem.total_occurrences }}
+      </p>
+
+      <section aria-labelledby="class-dist-{{ loop.index }}">
+        <h3 id="class-dist-{{ loop.index }}">Distribution across noun classes</h3>
+        <svg role="img" width="680" height="{{ 34 + (stem.class_distribution | length * 30) }}" viewBox="0 0 680 {{ 34 + (stem.class_distribution | length * 30) }}" aria-labelledby="class-title-{{ loop.index }} class-desc-{{ loop.index }}">
+          <title id="class-title-{{ loop.index }}">Noun-class distribution for {{ stem.surface }}</title>
+          <desc id="class-desc-{{ loop.index }}">Bar chart showing occurrences by noun class for this non-host stem.</desc>
+          {% for item in stem.class_distribution %}
+            {% set y = 24 + ((loop.index0) * 30) %}
+            <text x="0" y="{{ y + 15 }}" fill="#111827">Class {{ item.class_label }}</text>
+            <rect class="bar-bg" x="110" y="{{ y }}" width="420" height="20"></rect>
+            <rect class="bar-fill" x="110" y="{{ y }}" width="{{ item.bar_width | default(item.percent * 4.2) }}" height="20"></rect>
+            <text x="545" y="{{ y + 15 }}" fill="#111827">{{ item.count }} ({{ item.percent }}%)</text>
+          {% endfor %}
+        </svg>
+      </section>
+
+      <section aria-labelledby="hist-{{ loop.index }}">
+        <h3 id="hist-{{ loop.index }}">Integration-score histogram</h3>
+        <svg role="img" width="680" height="170" viewBox="0 0 680 170" aria-labelledby="hist-title-{{ loop.index }} hist-desc-{{ loop.index }}">
+          <title id="hist-title-{{ loop.index }}">Integration-score histogram for {{ stem.surface }}</title>
+          <desc id="hist-desc-{{ loop.index }}">Histogram of transparent integration scores from zero to one.</desc>
+          {% for bin in stem.integration_histogram %}
+            {% set x = 40 + (loop.index0 * 60) %}
+            {% set h = bin.height | default(bin.percent * 1.2) %}
+            <rect class="hist-fill" x="{{ x }}" y="{{ 135 - h }}" width="42" height="{{ h }}"></rect>
+            <text x="{{ x }}" y="154" fill="#111827">{{ bin.label }}</text>
+          {% endfor %}
+        </svg>
+      </section>
+
+      <section>
+        <h3>Example utterances</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Speaker</th>
+              <th>Context</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for example in stem.examples[:5] %}
+              <tr>
+                <td>{{ example.timestamp }}</td>
+                <td>{{ example.speaker_id }}</td>
+                <td>{{ example.context }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="3">No example utterances selected for this stem.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </article>
+  {% else %}
+    <p>No non-host stems matched the report criteria.</p>
+  {% endfor %}
+
+  <footer>
+    <section class="methods">
+      <h2>Methods note</h2>
+      <p>
+        This report summarizes loanword integration evidence using transparent
+        noun-class, concord, frequency, and researcher-review fields. It is
+        intended for comparison with code-switching and borrowing accounts
+        rather than automatic interpretation (Poplack, 1980; Muysken, 2000;
+        Myers-Scotton, 2002).
+      </p>
+      <p><strong>Dictionary snapshot:</strong> {{ dictionary_snapshot_note | default("See formula transparency block.") }}</p>
+    </section>
+    {% set reproduce_report_label = "Loanword Integration" %}
+    {% include "partials/formula_transparency.html.j2" %}
+  </footer>
+</body>
+</html>
+

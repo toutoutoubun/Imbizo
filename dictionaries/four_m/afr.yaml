@@ -1,0 +1,46 @@
+language_code: afr
+language_name: Afrikaans
+version: 0.1.0
+source: "Myers-Scotton (2002); Jake, Myers-Scotton & Gross (2002)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+four_m_hints:
+  content:
+    - form: "boek"
+      english_gloss: "book"
+      type_justification: "Lexical noun used as a content-morpheme example."
+      verified: false
+      note: "Needs Afrikaans specialist review before being treated as canonical."
+    - form: "koop"
+      english_gloss: "buy"
+      type_justification: "Lexical verb used as a content-morpheme example."
+      verified: false
+      note: "Needs Afrikaans specialist review."
+  early_system:
+    - form: "-e"
+      english_gloss: "plural suffix candidate"
+      type_justification: "Candidate early system morpheme linked to number on a noun."
+      verified: false
+      note: "Afrikaans plural morphology is variable; verify form and classification."
+    - form: "-s"
+      english_gloss: "plural suffix candidate"
+      type_justification: "Candidate early system morpheme linked to number on a noun."
+      verified: false
+      note: "Afrikaans plural morphology is variable; verify form and classification."
+  bridge_late_system:
+    - form: "van"
+      english_gloss: "of/from"
+      type_justification: "Candidate bridge morpheme linking nominal material."
+      verified: false
+      note: "Needs review against the 4-M framework and Afrikaans grammar."
+  outsider_late_system:
+    - form: "het"
+      english_gloss: "perfect auxiliary"
+      type_justification: "Candidate late system morpheme in clause structure."
+      verified: false
+      note: "Needs review; not all auxiliary uses should be treated alike."
+    - form: "word"
+      english_gloss: "passive auxiliary candidate"
+      type_justification: "Candidate late system morpheme dependent on clause structure."
+      verified: false
+      note: "Needs review before use."

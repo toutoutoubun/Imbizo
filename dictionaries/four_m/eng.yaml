@@ -1,0 +1,46 @@
+language_code: eng
+language_name: English
+version: 0.1.0
+source: "Myers-Scotton (2002); Jake, Myers-Scotton & Gross (2002)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+four_m_hints:
+  content:
+    - form: "book"
+      english_gloss: "book"
+      type_justification: "Lexical noun used as a content-morpheme example in 4-M style analysis."
+      verified: false
+      note: "Needs human review before use as a canonical project hint."
+    - form: "buy"
+      english_gloss: "buy"
+      type_justification: "Lexical verb used as a content-morpheme example."
+      verified: false
+      note: "Needs human review before use as a canonical project hint."
+  early_system:
+    - form: "-s"
+      english_gloss: "plural marker"
+      type_justification: "Candidate early system morpheme because it is conceptually linked to a noun's number."
+      verified: false
+      note: "4-M classification needs review against Myers-Scotton (2002)."
+    - form: "a"
+      english_gloss: "indefinite article"
+      type_justification: "Candidate early system morpheme linked to nominal reference."
+      verified: false
+      note: "Article classification should be reviewed for the intended analytic tradition."
+  bridge_late_system:
+    - form: "of"
+      english_gloss: "of"
+      type_justification: "Candidate bridge late system morpheme linking elements inside a larger phrase."
+      verified: false
+      note: "Needs review against Jake, Myers-Scotton & Gross (2002)."
+  outsider_late_system:
+    - form: "-s"
+      english_gloss: "third-person singular agreement"
+      type_justification: "Candidate outsider late system morpheme because agreement depends on information outside the verb stem."
+      verified: false
+      note: "Ambiguous with plural -s; parser must use context."
+    - form: "-ed"
+      english_gloss: "past tense"
+      type_justification: "Candidate late system morpheme; tense/aspect classification needs theoretical review."
+      verified: false
+      note: "Needs human review."

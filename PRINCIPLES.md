@@ -106,6 +106,71 @@ related forms for isiZulu, isiXhosa, Sesotho, and Setswana. Suggestions are
 displayed as suggestions, never forced segmentations. Manual segmentation
 history is preserved per token.
 
+## Why Morphology Matters
+
+Whitespace tokenization is a convenient habit, but it is not a neutral
+description of Bantu languages. It comes from writing systems, school
+grammars, colonial-era standardization, and software traditions that often
+treat the space-delimited word as the obvious unit of analysis. For languages
+where prefixes, concords, extensions, tense/aspect markers, locatives, and
+borrowed stems interact inside and around the written word, that assumption can
+flatten the very structure under study. A local workbench for South African
+code-switching must not pretend that what is easy for a tokenizer is the same
+as what is meaningful for a researcher (Demuth, 2000). The first question
+should be what the research situation requires, not what a generic NLP pipeline
+can count most quickly.
+
+Surface Matrix Language and Embedded Language labels are useful, but on their
+own they underdetermine what is happening in the data. If a token contains an
+English-origin stem inside an isiZulu or Sesotho frame, the language label can
+tell us where the stem comes from. It cannot tell us whether the stem has been
+drawn into a noun-class pattern, whether concord agreement links it to
+surrounding material, whether a system morpheme comes from the host grammar, or
+whether the example is better understood as alternation, insertion, borrowing,
+or something more locally specific. Poplack's constraint-based tradition,
+Muysken's typology, and Myers-Scotton's Matrix Language Frame model ask
+different questions, but all of them become weaker if the evidence is reduced
+to whole-token language labels (Poplack, 1980; Muysken, 2000;
+Myers-Scotton, 1993; Myers-Scotton, 2002).
+
+The 4-M model is therefore not decorative metadata. It is the minimum
+interpretive infrastructure needed to make many MLF claims testable rather
+than assertional. If a researcher says that one language supplies the
+grammatical frame, the project should be able to show which morphemes were
+treated as content morphemes, which were treated as early system morphemes,
+which were treated as bridge or outsider late system morphemes, and which
+concord links support or complicate that reading. The software must help make
+the chain of evidence visible. It must not replace the chain of reasoning with
+a single opaque label.
+
+The v1.0 integration score follows the same principle. It is exposed,
+documented, and editable because the researcher's theoretical position is not
+the software's to decide. A scholar working in a Poplack-informed account may
+weight evidence differently from a scholar using Muysken's typology or an MLF
+account. A community researcher may decide that local speaker judgment matters
+more than a shipped dictionary. The app should support that decision by
+showing the weights, recording provenance, and exporting enough data for
+readers to reconstruct the calculation. A hidden score would be faster to
+present, but less honest.
+
+Future contributors must be especially careful here. It will always be
+tempting to "improve accuracy" by hardcoding a theoretical assumption: to make
+one concord pattern automatically prove a Matrix Language, to treat a prefix as
+unambiguously one class in every variety, or to collapse Tsotsitaal, Iscamtho,
+Kaaps, and other local practices into standardized-language expectations. That
+kind of improvement would be an erosion of the project. Accuracy without
+interpretive humility is not accuracy in humanities research.
+
+Morphology-aware design is also part of the decolonial posture of this
+codebase. Decolonial computing asks us to examine the power relations embedded
+in technical defaults (Ali, 2016). The CARE Principles remind us that
+communities have authority over how data about them is governed and interpreted
+(Carroll et al., 2020). Postcolonial digital humanities critiques warn against
+platforms that absorb local knowledge into generic categories (Risam, 2018).
+For Imbizo-CS, respecting those warnings means refusing to let a tokenizer, a
+dictionary, or a metric silently settle a question that belongs to the
+researcher and the speech community.
+
 ## Why Bundled ASR Is Deferred
 
 Automatic speech recognition is valuable, but bundled high-end ASR would

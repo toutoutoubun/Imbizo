@@ -26,6 +26,84 @@ subscription, API key, telemetry, or internet connection for core work.
   M-index, I-index, burstiness, trigger tables, and KWIC concordance.
 - Export CSV, XLSX, JSON, EAF, TextGrid, HTML, PDF, and quotation extracts.
 
+## What's New In v1.0
+
+Version 1.0 adds three optional layers for researchers who need to study how
+borrowed or inserted material is integrated into Bantu-language grammatical
+frames. These tools are not automatic interpretation. They are local,
+reviewable annotation aids that keep the researcher in control.
+
+Noun class:
+
+- You can record a noun-class number, matched prefix, and source for a token.
+- The Noun Class panel reads local YAML dictionaries for isiZulu, isiXhosa,
+  Sesotho, and Setswana and suggests possible classes by string matching.
+- Shipped dictionary entries that need review are marked `verified: false`,
+  so you can see uncertainty instead of inheriting it silently.
+- Project-local dictionary overrides live inside your project folder and travel
+  with project exports.
+
+Concord:
+
+- You can ask Imbizo-CS to show concord candidates for a selected class-tagged
+  head noun.
+- Candidate concord tokens are found through pure dictionary prefix matching,
+  not machine learning.
+- Confirmed, uncertain, or rejected links are stored in the local SQLite
+  database and logged in provenance.
+- Concord evidence can feed a transparent integration score, whose weights are
+  visible and editable for sensitivity analysis.
+
+4-M and MLF audit:
+
+- The annotation grid can store optional 4-M tags: `content`,
+  `early_system`, `bridge_late_system`, and `outsider_late_system`.
+- The MLF audit report summarizes whether reviewed system morphemes appear
+  consistent with a single Matrix Language, mixed, or insufficiently annotated.
+- The verdict is advisory. It never overwrites your Matrix Language, Embedded
+  Language, switch-type, or memo annotations.
+
+Here is a short fictional walkthrough:
+
+```text
+Ngithenge i-laptop entsha izolo.
+# fictional or paraphrased; verify with a reference grammar for publication
+```
+
+First, annotate the token languages as you normally would. You might label the
+stem in `i-laptop` as English-origin while treating the surrounding utterance
+as isiZulu. Next, open the Noun Class panel and review suggestions for
+`i-laptop`. If class 9 is appropriate for your analysis, accept it or override
+it with your own note. Then click "Show concord candidates" to inspect whether
+`entsha` should be recorded as a concord relation. If you confirm the link, the
+project stores that decision with dictionary version and provenance. Finally,
+use the 4-M dropdown to tag reviewed morphemes. The MLF audit report will then
+show whether your reviewed system-morpheme evidence looks consistent, mixed, or
+still under-annotated.
+
+Read more in [docs/noun_classes.md](docs/noun_classes.md) and
+[docs/four_m_model.md](docs/four_m_model.md). Those guides are written for
+humanities researchers rather than software developers. They explain how to
+read warnings, when to leave a field blank, and how to cite the relevant
+linguistic framework in a methods chapter.
+
+### v1.0 Limitations
+
+The dictionaries are starter resources, not grammar authorities. Many entries
+are intentionally marked `verified: false` and should be checked against a
+reference grammar, speaker knowledge, or community review before publication.
+
+The sister-language disambiguation problem is deferred to v1.5. Imbizo-CS v1.0
+does not try to decide whether an ambiguous form belongs to isiZulu or isiXhosa,
+or to Sesotho or Setswana. It uses the language label and dictionary you choose.
+
+The app still does not bundle full morphological analyzers. It supports manual
+morpheme splitting, dictionary hints, and reviewed concord links, but it does
+not parse Bantu morphology automatically.
+
+Bundled ASR is also still out of scope. Manual transcription remains the
+default, and future ASR support must stay local, optional, and reviewable.
+
 ## Supported Languages
 
 Default project language labels include:

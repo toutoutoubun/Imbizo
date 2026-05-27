@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MLF Audit — {{ project.title }}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #111827;
+      --muted: #374151;
+      --border: #4b5563;
+      --panel: #f9fafb;
+      --panel-strong: #e5e7eb;
+      --consistent: #047857;
+      --mixed: #92400e;
+      --insufficient: #374151;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 2rem;
+      color: var(--text);
+      background: #ffffff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    header, section, footer { margin-bottom: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
+    th, td { border: 1px solid var(--border); padding: 0.45rem; text-align: left; vertical-align: top; }
+    th { background: var(--panel-strong); }
+    .meta, .methods, .formula-transparency, .drilldown {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 1rem;
+      break-inside: avoid;
+    }
+    .count-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+    .count-card { border: 1px solid var(--border); padding: 0.75rem; background: #ffffff; }
+    .status-consistent { color: var(--consistent); font-weight: 700; }
+    .status-mixed { color: var(--mixed); font-weight: 700; }
+    .status-insufficient_data { color: var(--insufficient); font-weight: 700; }
+    .mini-bg { fill: #e5e7eb; stroke: var(--border); stroke-width: 1; }
+    .mini-content { fill: #1d4ed8; }
+    .mini-early { fill: #047857; }
+    .mini-bridge { fill: #6d28d9; }
+    .mini-outsider { fill: #92400e; }
+    .formula-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+    .reproducibility { border-left: 0.3rem solid #1d4ed8; padding-left: 0.75rem; }
+    @media print {
+      body { margin: 1cm; font-size: 10.5pt; }
+      .drilldown, .formula-transparency { page-break-inside: avoid; }
+      a::after { content: ""; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MLF Audit</h1>
+    <div class="meta" aria-label="Project metadata">
+      <p><strong>Project:</strong> {{ project.title }}</p>
+      <p><strong>Researcher:</strong> {{ project.researcher }}</p>
+      <p><strong>Date:</strong> {{ project.date }}</p>
+    </div>
+  </header>
+
+  <section aria-labelledby="summary-title">
+    <h2 id="summary-title">Summary counts</h2>
+    <div class="count-grid">
+      <div class="count-card"><strong>consistent</strong><br>{{ summary.consistent }}</div>
+      <div class="count-card"><strong>mixed</strong><br>{{ summary.mixed }}</div>
+      <div class="count-card"><strong>insufficient_data</strong><br>{{ summary.insufficient_data }}</div>
+    </div>
+  </section>
+
+  <section aria-labelledby="utterance-table-title">
+    <h2 id="utterance-table-title">Per-utterance audit</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Utterance ID</th>
+          <th>Timestamp</th>
+          <th>Speaker</th>
+          <th>4-M distribution</th>
+          <th>Verdict</th>
+          <th>Recommended researcher action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for utterance in utterances %}
+          <tr>
+            <td>{{ utterance.id }}</td>
+            <td>{{ utterance.timestamp }}</td>
+            <td>{{ utterance.speaker_id }}</td>
+            <td>
+              <svg role="img" width="220" height="34" viewBox="0 0 220 34" aria-labelledby="dist-title-{{ loop.index }} dist-desc-{{ loop.index }}">
+                <title id="dist-title-{{ loop.index }}">4-M distribution for utterance {{ utterance.id }}</title>
+                <desc id="dist-desc-{{ loop.index }}">Mini bar showing content, early system, bridge late system, and outsider late system proportions.</desc>
+                <rect class="mini-bg" x="0" y="7" width="200" height="18"></rect>
+                {% set x = 0 %}
+                {% for part in utterance.four_m_distribution %}
+                  <rect class="mini-{{ part.type_class }}" x="{{ part.x }}" y="7" width="{{ part.width }}" height="18"></rect>
+                {% endfor %}
+              </svg>
+            </td>
+            <td><span class="status-{{ utterance.verdict }}">{{ utterance.verdict }}</span></td>
+            <td>{{ utterance.recommended_action }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6">No utterances have 4-M audit data yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-labelledby="mixed-title">
+    <h2 id="mixed-title">Mixed verdict drill-down</h2>
+    {% for utterance in mixed_utterances %}
+      <article class="drilldown" aria-labelledby="mixed-{{ loop.index }}-title">
+        <h3 id="mixed-{{ loop.index }}-title">{{ utterance.id }} — {{ utterance.timestamp }} — {{ utterance.speaker_id }}</h3>
+        <p>{{ utterance.narrative }}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Token ID</th>
+              <th>Surface</th>
+              <th>Language</th>
+              <th>4-M type</th>
+              <th>Evidence note</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in utterance.evidence %}
+              <tr>
+                <td>{{ item.token_id }}</td>
+                <td>{{ item.surface }}</td>
+                <td>{{ item.language_id }}</td>
+                <td>{{ item.four_m_type }}</td>
+                <td>{{ item.note }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </article>
+    {% else %}
+      <p>No utterances were flagged as mixed.</p>
+    {% endfor %}
+  </section>
+
+  <footer>
+    <section class="methods">
+      <h2>Methods note</h2>
+      <p>
+        The audit summarizes reviewed 4-M tags and reports whether system
+        morpheme evidence appears consistent with one Matrix Language. The
+        verdict is advisory and does not override researcher interpretation
+        (Myers-Scotton, 1993; Myers-Scotton, 2002; Jake, Myers-Scotton &
+        Gross, 2002).
+      </p>
+    </section>
+    {% set reproduce_report_label = "MLF Audit" %}
+    {% include "partials/formula_transparency.html.j2" %}
+  </footer>
+</body>
+</html>
+

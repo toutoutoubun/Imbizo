@@ -1,0 +1,46 @@
+language_code: xho
+language_name: isiXhosa
+version: 0.1.0
+source: "Myers-Scotton (2002); Jake, Myers-Scotton & Gross (2002); Du Plessis & Visser (1992)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+four_m_hints:
+  content:
+    - form: "umntu"
+      english_gloss: "person"
+      type_justification: "Lexical noun candidate for content-morpheme annotation."
+      verified: false
+      note: "Needs isiXhosa specialist review."
+    - form: "-fund-"
+      english_gloss: "learn/read root candidate"
+      type_justification: "Lexical verb-root candidate for content-morpheme annotation."
+      verified: false
+      note: "Root gloss and segmentation need verification."
+  early_system:
+    - form: "aba-"
+      english_gloss: "class 2 noun prefix candidate"
+      type_justification: "Candidate early system morpheme linked to noun class and number."
+      verified: false
+      note: "Needs review before use as a 4-M hint."
+    - form: "ama-"
+      english_gloss: "class 6 noun prefix candidate"
+      type_justification: "Candidate early system morpheme linked to noun class and number."
+      verified: false
+      note: "Needs review before use as a 4-M hint."
+  bridge_late_system:
+    - form: "ka-"
+      english_gloss: "associative/possessive linker candidate"
+      type_justification: "Candidate bridge morpheme linking nominal material."
+      verified: false
+      note: "Form and 4-M classification need verification against reference grammar."
+  outsider_late_system:
+    - form: "u-"
+      english_gloss: "subject concord candidate"
+      type_justification: "Candidate outsider late system morpheme because agreement depends on controller information."
+      verified: false
+      note: "Needs verification; surface form is context-dependent."
+    - form: "ba-"
+      english_gloss: "subject concord candidate"
+      type_justification: "Candidate outsider late system morpheme because agreement depends on controller information."
+      verified: false
+      note: "Needs verification; can overlap with noun-class prefixes."

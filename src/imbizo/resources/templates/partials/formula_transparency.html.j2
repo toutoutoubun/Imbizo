@@ -1,0 +1,42 @@
+<section class="formula-transparency" aria-labelledby="formula-transparency-title">
+  <h2 id="formula-transparency-title">Formula transparency</h2>
+  <div class="formula-grid">
+    <section>
+      <h3>Integration-score weights used</h3>
+      <dl>
+        <dt>Concord evidence</dt>
+        <dd>{{ formula.weights.concord | default("0.35") }}</dd>
+        <dt>Noun-class evidence</dt>
+        <dd>{{ formula.weights.noun_class | default("0.35") }}</dd>
+        <dt>Project frequency</dt>
+        <dd>{{ formula.weights.frequency | default("0.20") }}</dd>
+        <dt>Researcher review</dt>
+        <dd>{{ formula.weights.researcher_review | default("0.10") }}</dd>
+      </dl>
+    </section>
+    <section>
+      <h3>Dictionary versions used</h3>
+      <ul>
+        {% for dictionary in dictionary_versions %}
+          <li>{{ dictionary.label }}: {{ dictionary.version }}{% if dictionary.source %} ({{ dictionary.source }}){% endif %}</li>
+        {% else %}
+          <li>No dictionary snapshot was recorded for this report.</li>
+        {% endfor %}
+      </ul>
+    </section>
+    <section>
+      <h3>Software and schema</h3>
+      <dl>
+        <dt>Imbizo-CS version</dt>
+        <dd>{{ imbizo_version | default("v1.0") }}</dd>
+        <dt>Project schema version</dt>
+        <dd>{{ project_schema_version | default("1.0.0") }}</dd>
+      </dl>
+    </section>
+  </div>
+  <p class="reproducibility">
+    To reproduce this report, open the exported project zip in Imbizo-CS v1.0
+    and run Reports → {{ reproduce_report_label | default("Loanword Integration") }}.
+  </p>
+</section>
+

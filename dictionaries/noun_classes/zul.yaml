@@ -1,0 +1,80 @@
+language_code: zul
+language_name: isiZulu
+version: 0.1.0
+source: "Poulos & Msimang (1998); Doke (1927)"
+last_reviewed_by: "PENDING_HUMAN_REVIEW"
+last_reviewed_on: "YYYY-MM-DD"
+classes:
+  - class_number: 1
+    prefixes: ["umu-", "um-"]
+    semantic_domain: "humans and some animates"
+    verified: true
+  - class_number: "1a"
+    prefixes: ["u-"]
+    semantic_domain: "proper names, kinship terms, person names"
+    verified: false
+    note: "Subclass label 1a is retained for researcher convenience; needs verification against Poulos & Msimang (1998)."
+  - class_number: 2
+    prefixes: ["aba-", "abe-"]
+    semantic_domain: "plural humans and animates"
+    verified: true
+  - class_number: "2a"
+    prefixes: ["o-"]
+    semantic_domain: "plural of class 1a names or kinship terms"
+    verified: false
+    note: "Needs human review for orthographic conventions and proper-name behavior."
+  - class_number: 3
+    prefixes: ["umu-", "um-"]
+    semantic_domain: "plants, body parts, mass or abstract nouns"
+    verified: true
+  - class_number: 4
+    prefixes: ["imi-"]
+    semantic_domain: "plural of class 3"
+    verified: true
+  - class_number: 5
+    prefixes: ["i(li)-", "ili-", "i-"]
+    semantic_domain: "varied nouns, paired objects, some body parts"
+    verified: true
+  - class_number: 6
+    prefixes: ["ama-"]
+    semantic_domain: "plural of class 5 and mass nouns"
+    verified: true
+  - class_number: 7
+    prefixes: ["isi-"]
+    semantic_domain: "languages, instruments, manners, diminutives"
+    verified: true
+  - class_number: 8
+    prefixes: ["izi-"]
+    semantic_domain: "plural of class 7"
+    verified: true
+  - class_number: 9
+    prefixes: ["in-", "im-", "iN-", "i-"]
+    semantic_domain: "animals, objects, borrowed nouns"
+    verified: true
+  - class_number: 10
+    prefixes: ["izin-", "izim-", "iziN-", "izi-"]
+    semantic_domain: "plural of class 9"
+    verified: true
+  - class_number: 14
+    prefixes: ["ubu-"]
+    semantic_domain: "abstract qualities"
+    verified: true
+  - class_number: 15
+    prefixes: ["uku-"]
+    semantic_domain: "infinitives and verbal nouns"
+    verified: true
+  - class_number: 16
+    prefixes: ["pha-", "e-"]
+    semantic_domain: "locative, approximate class 16"
+    verified: false
+    note: "Modern isiZulu locative behavior needs careful verification; do not treat as automatic class assignment."
+  - class_number: 17
+    prefixes: ["ku-"]
+    semantic_domain: "locative, approximate class 17"
+    verified: false
+    note: "Locative class use needs verification against reference grammar and project data."
+  - class_number: 18
+    prefixes: ["mu-", "e-"]
+    semantic_domain: "locative, approximate class 18"
+    verified: false
+    note: "Locative class use is uncertain in this starter dictionary."
