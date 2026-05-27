@@ -1,0 +1,10 @@
+{
+  "app.title": "Imbizo-CS Workbench",
+  "project.new": "New Project",
+  "project.open": "Open Project",
+  "import.file": "Import File",
+  "export.file": "Export",
+  "lid.run": "Run Local LID",
+  "annotation.editor": "Annotation Editor",
+  "error.title": "Something needs attention"
+}

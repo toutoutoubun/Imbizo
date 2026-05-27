@@ -1,0 +1,10 @@
+# Pin release wheels here when preparing an offline release.
+# The core package has one lightweight mandatory runtime dependency: Pydantic v2.
+PySide6>=6.6
+openpyxl>=3.1
+pydantic>=2
+cryptography>=42
+pytest>=8
+hypothesis>=6
+ruff>=0.5
+mypy>=1.10

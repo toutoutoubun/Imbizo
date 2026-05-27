@@ -1,0 +1,13 @@
+GPL-3.0-or-later
+
+Imbizo-CS Workbench is licensed under the GNU General Public License version 3
+or, at your option, any later version.
+
+This project chooses GPLv3-or-later because it protects community access to the
+software and improvements while fitting the project model: Imbizo-CS Workbench
+is a local desktop application, not a network service. AGPLv3 may be considered
+for future server-like components, but such components are out of scope for the
+offline-first MVP.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <https://www.gnu.org/licenses/>.
