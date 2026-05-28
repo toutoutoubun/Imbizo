@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from imbizo.domain.annotations import AnnotationDraft
+from imbizo.services.import_service import ImportService
 
 
 class AnnotationEditorWidget:
@@ -18,6 +20,7 @@ class AnnotationEditorWidget:
         self.context = context
         self.annotation_service = annotation_service
         self.lid_service = lid_service
+        self.import_service = ImportService()
         self.document_id: str | None = None
         self.widget = None
         self.table = None
@@ -45,10 +48,13 @@ class AnnotationEditorWidget:
         layout = QVBoxLayout(root)
         header = QHBoxLayout()
         self.document_selector = QComboBox()
+        import_file = QPushButton("Import File")
+        import_file.clicked.connect(self.import_file)
         run_lid = QPushButton("Run Local LID")
         run_lid.clicked.connect(self.run_lid)
         header.addWidget(QLabel("Document"))
         header.addWidget(self.document_selector)
+        header.addWidget(import_file)
         header.addWidget(run_lid)
         layout.addLayout(header)
         layout.addWidget(QLabel("Waveform: link media to show local waveform peaks."))
@@ -81,6 +87,37 @@ class AnnotationEditorWidget:
             self.document_id = documents[0].id
             self.load_document(documents[0].id)
 
+    def import_file(self) -> None:
+        """Import a local transcript or media file into the open project."""
+
+        from PySide6.QtWidgets import QFileDialog, QMessageBox
+
+        path, _ = QFileDialog.getOpenFileName(
+            self.widget,
+            "Import local file",
+            "",
+            (
+                "Supported files (*.txt *.csv *.tsv *.xml *.eaf *.TextGrid *.textgrid "
+                "*.json *.xlsx *.ods *.wav *.mp3 *.flac *.mp4 *.mkv);;All files (*)"
+            ),
+        )
+        if not path:
+            return
+        try:
+            result = self.import_service.import_file(self.context, Path(path))
+        except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
+            QMessageBox.critical(self.widget, "Import failed", str(exc))
+            return
+
+        self.refresh_documents()
+        if result.bundle.document is not None:
+            self._select_document(result.bundle.document.id)
+        QMessageBox.information(
+            self.widget,
+            "Import complete",
+            f"Imported {result.copied_path.name}: {result.report}",
+        )
+
     def load_document(self, document_id: str) -> None:
         """Load one document into the annotation grid."""
 
@@ -110,6 +147,15 @@ class AnnotationEditorWidget:
         document_id = self.document_selector.currentData()
         if document_id:
             self.load_document(str(document_id))
+
+    def _select_document(self, document_id: str) -> None:
+        if self.document_selector is None:
+            return
+        for index in range(self.document_selector.count()):
+            if self.document_selector.itemData(index) == document_id:
+                self.document_selector.setCurrentIndex(index)
+                self.load_document(document_id)
+                return
 
     def _cell_changed(self, row: int, column: int) -> None:
         if self.table is None or column not in {1, 4}:

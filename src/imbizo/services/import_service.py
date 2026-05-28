@@ -21,6 +21,7 @@ from imbizo.importers.spreadsheet import SpreadsheetImporter
 from imbizo.importers.textgrid import TextGridImporter
 from imbizo.importers.txt import TxtImporter
 from imbizo.importers.video import VideoImporter
+from imbizo.importers.xml_importer import XmlTranscriptImporter
 from imbizo.persistence.repositories import ImportRepository, MediaRepository, TranscriptRepository
 from imbizo.services.provenance_service import ProvenanceService
 
@@ -51,6 +52,7 @@ class ImportService:
             TxtImporter(),
             CsvTranscriptImporter(),
             EafImporter(),
+            XmlTranscriptImporter(),
             TextGridImporter(),
             JsonTranscriptImporter(),
             SpreadsheetImporter(),

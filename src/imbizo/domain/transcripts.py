@@ -15,6 +15,7 @@ class SourceFormat(StrEnum):
     CSV = "csv"
     TSV = "tsv"
     JSON = "json"
+    XML = "xml"
     EAF = "eaf"
     TEXTGRID = "textgrid"
     XLSX = "xlsx"
