@@ -16,7 +16,7 @@ patterns:
     description: "Consonant clusters may be simplified, separated, or adapted in borrowed forms."
     example: "English clinic -> tleliniki-like adapted form # fictional or paraphrased example; verify before use"
     verified: false
-    note: "Example is a schema placeholder and needs speaker review."
+    note: "Example is fictional/paraphrased and needs speaker review before publication."
     citation: "Cole (1955)"
   - feature_type: "click_adaptation_in_non_nguni_hosts"
     description: "Click-containing Nguni forms may be adapted when used in Setswana-host contexts."

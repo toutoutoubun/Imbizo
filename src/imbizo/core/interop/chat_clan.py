@@ -39,7 +39,7 @@ class ChatValidationReport:
     documented_losses: list[str] = field(default_factory=list)
 
 
-def to_chat(project: Project, output_path: Path | None = None, *, utf8: bool = True) -> ChatExportReport | str:
+def to_chat(project: Project, output_path: Path | None = None, *, utf8: bool = False) -> ChatExportReport | str:
     """Export a project to CHAT, or return text when no path is supplied."""
 
     text = _build_chat_text(project, utf8=utf8)
@@ -131,16 +131,16 @@ def _build_chat_text(project: Project, *, utf8: bool) -> str:
     if metadata.get("media_filename"):
         lines.append(f"@Media:\t{metadata['media_filename']}, {metadata.get('media_type', 'audio')}")
     lines.append(f"@Date:\t{datetime.now(UTC).strftime('%d-%b-%Y').upper()}")
-    lines.append(f"@Situation:\t{_clean_chat(metadata.get('description', project.title))}")
+    lines.append(f"@Situation:\t{_clean_chat(metadata.get('description', project.title), utf8=utf8)}")
     lines.append(f"@Comment:\tExported locally by Imbizo-CS Workbench {__version__}; MacWhinney (2000).")
     for utterance_id, utterance_tokens in grouped.items():
         ordered = sorted(utterance_tokens, key=lambda token: token.position)
         speaker = _chat_speaker(ordered[0].speaker_id if ordered else None)
-        lines.append(f"*{speaker}:\t{_main_tier_text(ordered)}")
-        mor = _mor_tier(ordered)
+        lines.append(f"*{speaker}:\t{_main_tier_text(ordered, utf8=utf8)}")
+        mor = _mor_tier(ordered, utf8=utf8)
         if mor:
             lines.append(f"%mor:\t{mor}")
-        memo = _memo_text(ordered)
+        memo = _memo_text(ordered, utf8=utf8)
         if memo:
             lines.append(f"%com:\t{memo}")
         xcom = _xcom_text(utterance_id, ordered)
@@ -151,12 +151,12 @@ def _build_chat_text(project: Project, *, utf8: bool) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _main_tier_text(tokens: list[Token]) -> str:
+def _main_tier_text(tokens: list[Token], *, utf8: bool) -> str:
     parts: list[str] = []
     previous_language: str | None = None
     for token in tokens:
         language = token.language or "und"
-        surface = _clean_chat(token.surface)
+        surface = _clean_chat(token.surface, utf8=utf8)
         if previous_language and language != previous_language:
             parts.append(f"[- @{language}]")
         parts.append(surface)
@@ -164,7 +164,7 @@ def _main_tier_text(tokens: list[Token]) -> str:
     return " ".join(parts) + " ."
 
 
-def _mor_tier(tokens: list[Token]) -> str:
+def _mor_tier(tokens: list[Token], *, utf8: bool) -> str:
     pieces: list[str] = []
     for token in tokens:
         tags: list[str] = []
@@ -175,7 +175,7 @@ def _mor_tier(tokens: list[Token]) -> str:
         if token.four_m_type:
             tags.append(f"4M={token.four_m_type}")
         if tags:
-            pieces.append(f"{_clean_chat(token.surface)}|{'/'.join(tags)}")
+            pieces.append(f"{_clean_chat(token.surface, utf8=utf8)}|{'/'.join(tags)}")
     return " ".join(pieces)
 
 
@@ -194,8 +194,8 @@ def _xcom_text(utterance_id: str, tokens: list[Token]) -> str:
     return " ".join(fragments)
 
 
-def _memo_text(tokens: list[Token]) -> str:
-    memos = [str((token.metadata or {}).get("memo", "")).strip() for token in tokens]
+def _memo_text(tokens: list[Token], *, utf8: bool) -> str:
+    memos = [_clean_chat((token.metadata or {}).get("memo", ""), utf8=utf8) for token in tokens]
     return " | ".join(memo for memo in memos if memo)
 
 
@@ -258,5 +258,8 @@ def _safe_code(value: str) -> str:
     return "".join(char for char in value.lower() if char.isalnum() or char in {"_", "-"}) or "imbizo"
 
 
-def _clean_chat(value: Any) -> str:
-    return str(value).replace("\t", " ").replace("\n", " ").strip()
+def _clean_chat(value: Any, *, utf8: bool = True) -> str:
+    cleaned = str(value).replace("\t", " ").replace("\n", " ").strip()
+    if utf8:
+        return cleaned
+    return cleaned.encode("ascii", errors="xmlcharrefreplace").decode("ascii")

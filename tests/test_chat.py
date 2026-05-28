@@ -34,3 +34,12 @@ def test_chat_validator_accepts_export() -> None:
     report = validate_chat(text)
     assert report.valid
     assert report.documented_losses
+
+
+def test_chat_file_export_is_ascii_safe_by_default(tmp_path: Path) -> None:
+    project = Project("p2", "Unicode Fixture", [Token("t1", "café", "u1", 1, "eng", speaker_id="S01")])
+    report = to_chat(project, tmp_path / "unicode.cha")
+    assert not isinstance(report, str)
+    raw = report.output_path.read_bytes()
+    raw.decode("ascii")
+    assert b"caf&#233;" in raw

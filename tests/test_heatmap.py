@@ -1,4 +1,5 @@
 from pathlib import Path
+import sqlite3
 
 from imbizo.core.annotation import Project, Token
 from imbizo.core.visualisation.heatmap import compute_speaker_scene_language_proportions, load_token_observations, render_speaker_scene_heatmap
@@ -42,3 +43,23 @@ def test_per_language_heatmaps(tmp_path: Path) -> None:
     paths = render_speaker_scene_heatmap(_project(tmp_path), tmp_path / "heatmap.svg", format="svg", per_language=True)
     assert isinstance(paths, list)
     assert {path.suffix for path in paths} == {".svg"}
+
+
+def test_load_token_observations_supports_utterances_schema(tmp_path: Path) -> None:
+    db_path = tmp_path / "project.sqlite"
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE utterances (id TEXT PRIMARY KEY, speaker_id TEXT, scene_id TEXT, sort_order INTEGER, start_time_ms INTEGER)"
+    )
+    conn.execute(
+        "CREATE TABLE tokens (id TEXT PRIMARY KEY, utterance_id TEXT, sort_order INTEGER, language TEXT)"
+    )
+    conn.execute("INSERT INTO utterances VALUES ('u1', 'S1', 'sceneA', 1, 100)")
+    conn.execute("INSERT INTO tokens VALUES ('t1', 'u1', 1, 'zul')")
+    conn.commit()
+    conn.close()
+    observations = load_token_observations(Project("p", "SQLite Project", [], metadata={"database_path": str(db_path)}))
+    assert len(observations) == 1
+    assert observations[0].speaker == "S1"
+    assert observations[0].scene == "sceneA"
+    assert observations[0].language == "zul"

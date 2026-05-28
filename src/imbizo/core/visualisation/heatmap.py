@@ -191,21 +191,61 @@ def _render_language_heatmap(
 
 def _observations_from_connection(conn: sqlite3.Connection) -> list[TokenObservation]:
     conn.row_factory = sqlite3.Row
-    query = """
+    tables = _tables(conn)
+    token_columns = _columns(conn, "tokens")
+    if "tokens" not in tables:
+        return []
+    if "segments" in tables and "segment_id" in token_columns:
+        return _observations_from_relational_schema(conn, parent_table="segments", token_parent_column="segment_id")
+    if "utterances" in tables and "utterance_id" in token_columns:
+        return _observations_from_relational_schema(conn, parent_table="utterances", token_parent_column="utterance_id")
+    return _observations_from_token_table(conn)
+
+
+def _observations_from_relational_schema(
+    conn: sqlite3.Connection,
+    *,
+    parent_table: Literal["segments", "utterances"],
+    token_parent_column: str,
+) -> list[TokenObservation]:
+    tables = _tables(conn)
+    token_columns = _columns(conn, "tokens")
+    parent_columns = _columns(conn, parent_table)
+    annotation_columns = _columns(conn, "annotations") if "annotations" in tables else set()
+    language_columns = _columns(conn, "languages") if "languages" in tables else set()
+    joins = [f"JOIN {parent_table} p ON p.id = t.{token_parent_column}"]
+    speaker_parts = ["p.speaker_id"] if "speaker_id" in parent_columns else []
+    if "speakers" in tables and "speaker_id" in parent_columns:
+        speaker_columns = _columns(conn, "speakers")
+        joins.append("LEFT JOIN speakers sp ON sp.id = p.speaker_id")
+        speaker_parts = [f"sp.{column}" for column in ("label", "display_name", "participant_code") if column in speaker_columns] + speaker_parts
+    scene_parts = ["p.scene_id"] if "scene_id" in parent_columns else []
+    if "scenes" in tables and "scene_id" in parent_columns:
+        scene_columns = _columns(conn, "scenes")
+        joins.append("LEFT JOIN scenes sc ON sc.id = p.scene_id")
+        scene_parts = [f"sc.{column}" for column in ("name", "label") if column in scene_columns] + scene_parts
+    language_parts = ["t.language"] if "language" in token_columns else []
+    if "annotations" in tables and "token_id" in annotation_columns and "language_id" in annotation_columns:
+        status_clause = " AND ann.status = 'active'" if "status" in annotation_columns else ""
+        joins.append(f"LEFT JOIN annotations ann ON ann.token_id = t.id{status_clause}")
+        language_parts.insert(0, "ann.language_id")
+        if "languages" in tables and "id" in language_columns and "code" in language_columns:
+            joins.append("LEFT JOIN languages lang ON lang.id = ann.language_id")
+            language_parts.insert(0, "lang.code")
+    position_expr = "t.sort_order" if "sort_order" in token_columns else ("t.position" if "position" in token_columns else "0")
+    parent_order_expr = "p.sort_order" if "sort_order" in parent_columns else ("p.position" if "position" in parent_columns else "0")
+    start_expr = "p.start_ms" if "start_ms" in parent_columns else ("p.start_time_ms" if "start_time_ms" in parent_columns else "NULL")
+    query = f"""
         SELECT
             t.id AS token_id,
-            t.sort_order AS position,
-            COALESCE(sp.label, s.speaker_id, 'unknown') AS speaker,
-            COALESCE(sc.name, s.scene_id, 'scene_unknown') AS scene,
-            COALESCE(lang.code, ann.language_id, 'und') AS language,
-            s.start_ms AS start_time_ms
+            {position_expr} AS position,
+            {_coalesce(speaker_parts, "'unknown'")} AS speaker,
+            {_coalesce(scene_parts, "'scene_unknown'")} AS scene,
+            {_coalesce(language_parts, "'und'")} AS language,
+            {start_expr} AS start_time_ms
         FROM tokens t
-        JOIN segments s ON s.id = t.segment_id
-        LEFT JOIN speakers sp ON sp.id = s.speaker_id
-        LEFT JOIN scenes sc ON sc.id = s.scene_id
-        LEFT JOIN annotations ann ON ann.token_id = t.id AND ann.status = 'active'
-        LEFT JOIN languages lang ON lang.id = ann.language_id
-        ORDER BY speaker, scene, s.sort_order, t.sort_order
+        {' '.join(joins)}
+        ORDER BY speaker, scene, {parent_order_expr}, {position_expr}
     """
     return [
         TokenObservation(
@@ -218,6 +258,48 @@ def _observations_from_connection(conn: sqlite3.Connection) -> list[TokenObserva
         )
         for row in conn.execute(query).fetchall()
     ]
+
+
+def _observations_from_token_table(conn: sqlite3.Connection) -> list[TokenObservation]:
+    token_columns = _columns(conn, "tokens")
+    position_expr = "sort_order" if "sort_order" in token_columns else ("position" if "position" in token_columns else "0")
+    speaker_expr = "speaker_id" if "speaker_id" in token_columns else "'unknown'"
+    scene_expr = "scene" if "scene" in token_columns else ("scene_id" if "scene_id" in token_columns else "'scene_unknown'")
+    language_expr = "language" if "language" in token_columns else "'und'"
+    start_expr = "start_ms" if "start_ms" in token_columns else ("start_time_ms" if "start_time_ms" in token_columns else "NULL")
+    query = f"""
+        SELECT id AS token_id,
+               {position_expr} AS position,
+               {speaker_expr} AS speaker,
+               {scene_expr} AS scene,
+               {language_expr} AS language,
+               {start_expr} AS start_time_ms
+        FROM tokens
+        ORDER BY speaker, scene, {position_expr}, id
+    """
+    return [
+        TokenObservation(
+            token_id=str(row["token_id"]),
+            speaker=str(row["speaker"] or "unknown"),
+            scene=str(row["scene"] or "scene_unknown"),
+            language=str(row["language"] or "und"),
+            position=int(row["position"] or 0),
+            start_time_ms=int(row["start_time_ms"]) if row["start_time_ms"] is not None else None,
+        )
+        for row in conn.execute(query).fetchall()
+    ]
+
+
+def _tables(conn: sqlite3.Connection) -> set[str]:
+    return {str(row[0]) for row in conn.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall()}
+
+
+def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
+    return {str(row[1]) for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+
+
+def _coalesce(parts: list[str], fallback: str) -> str:
+    return f"COALESCE({', '.join(parts)}, {fallback})" if parts else fallback
 
 
 def _observations_from_tokens(tokens: list[Token]) -> list[TokenObservation]:

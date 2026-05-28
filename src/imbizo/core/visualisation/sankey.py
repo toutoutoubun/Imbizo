@@ -15,7 +15,7 @@ from typing import Literal
 
 from imbizo.core.annotation import Project
 
-from .heatmap import TokenObservation, _escape_xml, _footer, load_token_observations
+from .heatmap import TokenObservation, _escape_xml, _footer, _project_root, load_token_observations
 from .palette import LanguagePalette
 
 
@@ -95,7 +95,7 @@ def _render_flows(flows: list[LanguageFlow], output_path: Path, format: str, pro
     from matplotlib.patches import PathPatch
 
     matplotlib.rcParams["svg.fonttype"] = "path"
-    palette = LanguagePalette()
+    palette = LanguagePalette(_project_root(project))
     languages = sorted({flow.source for flow in flows} | {flow.target for flow in flows}) or ["und"]
     total = sum(flow.count for flow in flows) or 1
     fig, ax = plt.subplots(figsize=(9, max(4, len(languages) * 0.7 + 1.5)), constrained_layout=True)

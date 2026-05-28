@@ -1,68 +1,76 @@
-language_code: "nso-sot-tsn"
-language_name: "Sepedi, Sesotho, and Setswana three-way disambiguation"
+schema_version: "1.0"
+dictionary_kind: "sister_language_disambiguation"
+candidate_languages: ["nso", "sot", "tsn"]
 version: "0.1.0"
-source: "Mojapelo (2007); Lombard (1985); Cole (1955); Doke & Mofokeng (1957)"
-last_reviewed_by: "PENDING_HUMAN_REVIEW"
-last_reviewed_on: "YYYY-MM-DD"
-scope_note: "Experimental three-way starter dictionary. Sepedi support is post-MVP and must be opt-in at project level."
+source:
+  origin_authors: ["Mojapelo (2007)", "Lombard (1985)", "Cole (1955)", "Doke & Mofokeng (1957)", "Mesthrie (2002)"]
+  origin_license: "Compiled from published reference grammars; YAML file licensed CC-BY-4.0"
+review:
+  last_reviewed_by: "PENDING_NATIVE_SPEAKER_REVIEW"
+  last_reviewed_on: null
+caveats: |
+  This three-way starter dictionary is deliberately conservative. Northern
+  Sotho/Sepedi, Sesotho, and Setswana share substantial Sotho-Tswana
+  grammatical material, and their political and orthographic histories do not
+  reduce cleanly to token-level cues. Entries here are unverified suggestions
+  for researcher review, not declarations of language identity.
 distinctive_morphemes:
-  - form: "ke"
-    language: "nso"
-    gloss: "subject/copular form in many Northern Sotho contexts"
-    citation: "Lombard (1985)"
+  - feature: "1sg subject concord/copular form"
+    forms: {nso: "ke", sot: "ke", tsn: "ke"}
+    confidence: 0.10
     verified: false
-    note: "Shared with other Sotho-Tswana languages; included only as contextual evidence."
-  - form: "ke"
-    language: "sot"
-    gloss: "subject/copular form in many Sesotho contexts"
-    citation: "Doke & Mofokeng (1957)"
+    source_citation: "Lombard (1985); Cole (1955); Doke & Mofokeng (1957)"
+    note: "Shared across the comparison set; use only as non-distinctive context."
+  - feature: "class 1 noun prefix"
+    forms: {nso: "mo-", sot: "mo-", tsn: "mo-"}
+    confidence: 0.10
     verified: false
-    note: "Shared form; do not use alone."
-  - form: "ke"
-    language: "tsn"
-    gloss: "subject/copular form in many Setswana contexts"
-    citation: "Cole (1955)"
-    verified: false
-    note: "Shared form; do not use alone."
+    source_citation: "Lombard (1985); Cole (1955); Doke & Mofokeng (1957)"
+    note: "Shared class prefix; included to prevent false distinctiveness."
 distinctive_lexemes:
-  - form: "lefase"
-    language: "nso"
-    gloss: "earth/world"
-    citation: "Mojapelo (2007); Lombard (1985)"
+  - meaning: "earth/world"
+    forms: {nso: "lefase", sot: "lefatse", tsn: "lefatshe"}
+    confidence: 0.70
     verified: false
-    note: "Candidate Sepedi cue; verify against local orthography and dictionary sources."
-  - form: "lefatse"
-    language: "sot"
-    gloss: "earth/world"
-    citation: "Doke & Mofokeng (1957)"
+    source_citation: "Mojapelo (2007); Lombard (1985); Cole (1955); Doke & Mofokeng (1957)"
+    note: "Candidate minimum-pair-style cue; verify against local orthography and speaker judgement."
+  - meaning: "person"
+    forms: {nso: "motho", sot: "motho", tsn: "motho"}
+    confidence: 0.10
     verified: false
-    note: "Candidate Sesotho cue; review before analysis."
-  - form: "lefatshe"
-    language: "tsn"
-    gloss: "earth/world"
-    citation: "Cole (1955)"
+    source_citation: "Lombard (1985); Cole (1955); Doke & Mofokeng (1957)"
+    note: "Shared form; should lower confidence if it is the only evidence."
+  - meaning: "greeting"
+    forms: {nso: "dumelang", sot: "dumelang", tsn: "dumela"}
+    confidence: 0.35
     verified: false
-    note: "Candidate Setswana cue; review before analysis."
+    source_citation: "Cole (1955); Doke & Mofokeng (1957)"
+    note: "Greeting forms circulate across communities; use only with wider context."
 orthographic_features:
   - code: "nso_s_sot_ts_tsn_tsh"
     languages: ["nso", "sot", "tsn"]
     description: "Some cognate sets may differ around s/ts/tsh spellings."
+    confidence: 0.45
     verified: false
+    source_citation: "Mojapelo (2007); Lombard (1985); Cole (1955); Doke & Mofokeng (1957)"
     note: "Experimental cue; requires human review and minimum-pair expansion."
   - code: "shared_sotho_tswana_forms"
     languages: ["nso", "sot", "tsn"]
     description: "Many forms are shared across Northern Sotho, Sesotho, and Setswana."
-    verified: true
+    confidence: 0.0
+    verified: false
+    source_citation: "Mesthrie (2002)"
     note: "When only shared evidence is present, the system should return ambiguous."
 phonotactic_features:
   - code: "sotho_tswana_cluster_caution"
     languages: ["nso", "sot", "tsn"]
-    description: "Surface cluster patterns overlap heavily across the comparison set."
+    description: "Surface phonotactic patterns overlap heavily across the comparison set."
+    confidence: 0.0
     verified: false
-    note: "Use as a confidence-lowering warning."
+    note: "Confidence-lowering caution."
 confidence_thresholds:
   high: 0.92
   medium: 0.75
-  low: 0.5
+  low: 0.50
   ambiguous_below: 0.75
-  note: "Three-way disambiguation should be conservative until reviewed lexicons are available."
+  default_evidence_required: "at least one feature ≥ 0.70 and a margin ≥ 0.15 over the next candidate"

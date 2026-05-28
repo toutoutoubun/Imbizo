@@ -117,8 +117,12 @@ def load_sister_lang_dictionary(path: Path) -> SisterLangDictionary:
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     if "language_code" not in data and "language_pair" in data:
         data["language_code"] = "-".join(str(item) for item in data["language_pair"])
+    if "language_code" not in data and "candidate_languages" in data:
+        data["language_code"] = "-".join(str(item) for item in data["candidate_languages"])
     if "language_name" not in data and "language_pair" in data:
         data["language_name"] = f"{'/'.join(data['language_pair'])} sister-language disambiguation"
+    if "language_name" not in data and "candidate_languages" in data:
+        data["language_name"] = f"{'/'.join(data['candidate_languages'])} sister-language disambiguation"
     if isinstance(data.get("source"), dict):
         data["source"] = "; ".join(str(item) for item in data["source"].get("origin_authors", []))
     required = ["language_code", "language_name", "version", "source"]
@@ -246,19 +250,28 @@ def persist_sister_lang_verdict(
 
     if source not in {"manual", "suggested-accepted", "suggested-overridden", "imported"}:
         raise ValueError("source must be manual, suggested-accepted, suggested-overridden, or imported")
+    token_columns = {str(row[1]) for row in conn.execute("PRAGMA table_info(tokens)").fetchall()}
     evidence_codes = ",".join(item.code for item in verdict.evidence)
-    language = verdict.best_language
-    conn.execute(
-        """
-        UPDATE tokens
-        SET language = COALESCE(?, language),
-            language_source = ?,
-            sister_lang_confidence = ?,
-            sister_lang_evidence = ?
-        WHERE id = ?
-        """,
-        (language, source, verdict.confidence, evidence_codes, token_id),
-    )
+    assignments: list[str] = []
+    values: list[object] = []
+    if "language" in token_columns:
+        assignments.append("language = COALESCE(?, language)")
+        values.append(verdict.best_language)
+    if "language_source" in token_columns:
+        assignments.append("language_source = ?")
+        values.append(source)
+    if "sister_lang_confidence" in token_columns:
+        assignments.append("sister_lang_confidence = ?")
+        values.append(verdict.confidence)
+    if "sister_lang_evidence" in token_columns:
+        assignments.append("sister_lang_evidence = ?")
+        values.append(evidence_codes)
+    if not assignments:
+        raise sqlite3.OperationalError(
+            "tokens table has no sister-language persistence columns; apply the v1.5 migration first."
+        )
+    values.append(token_id)
+    conn.execute(f"UPDATE tokens SET {', '.join(assignments)} WHERE id = ?", values)
 
 
 def _score_morphemes(
