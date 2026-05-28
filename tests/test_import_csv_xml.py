@@ -108,6 +108,24 @@ def test_import_service_imports_single_txt_and_xml_files(tmp_path: Path) -> None
     assert events[-1].stage == "complete"
 
 
+def test_import_service_reports_progress_while_saving_many_rows(tmp_path: Path) -> None:
+    """Large transcript saves should keep emitting progress during SQLite writes."""
+
+    project_root = tmp_path / "project"
+    context = ProjectService().create_project(project_root, ProjectMetadata(project_uuid="", title="Large Import Test"))
+    txt = tmp_path / "large.txt"
+    txt.write_text("\n".join(f"line {index}" for index in range(650)), encoding="utf-8")
+    events: list[ImportProgress] = []
+
+    result = ImportService().import_file(context, txt, ImportOptions(progress_callback=events.append))
+
+    save_events = [event for event in events if event.stage == "save"]
+    assert result.report["segments"] == 650
+    assert len(save_events) >= 3
+    assert any("Saved" in event.message for event in save_events)
+    assert events[-1].stage == "complete"
+
+
 def test_xml_importer_reports_parse_error_as_import_failure(tmp_path: Path) -> None:
     """Malformed XML should show a user-facing import failure, not a traceback."""
 

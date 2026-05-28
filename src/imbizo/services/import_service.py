@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import shutil
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
@@ -78,6 +79,15 @@ def _copy_with_progress(source_path: Path, copied_path: Path, options: ImportOpt
     shutil.copystat(source_path, copied_path)
 
 
+def _save_progress_callback(options: ImportOptions) -> Callable[[str, int, int], None]:
+    """Return a repository callback that maps row-save progress to 85-99%."""
+
+    def update(message: str, done: int, total: int) -> None:
+        _emit_progress(options, "save", message, _scaled(done, total, 85, 99), 100)
+
+    return update
+
+
 class ImportService:
     """Coordinate safe local imports."""
 
@@ -139,7 +149,12 @@ class ImportService:
         if bundle.document:
             bundle.document.import_batch_id = batch_id
             bundle.document.relative_path = str(relative_copied)
-            TranscriptRepository(context.connection).save_document_bundle(bundle.document, bundle.segments, bundle.tokens)
+            TranscriptRepository(context.connection).save_document_bundle(
+                bundle.document,
+                bundle.segments,
+                bundle.tokens,
+                progress_callback=_save_progress_callback(options),
+            )
         ProvenanceService().record(
             context,
             make_provenance_record(
