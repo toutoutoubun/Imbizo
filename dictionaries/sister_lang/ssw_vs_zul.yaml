@@ -1,0 +1,68 @@
+schema_version: "1.0"
+dictionary_kind: "sister_language_disambiguation"
+language_pair: ["ssw", "zul"]
+version: "0.1.0"
+source:
+  origin_authors: ["Ziervogel & Mabuza (1976)", "Poulos & Msimang (1998)", "SADiLaR Siswati resources"]
+  origin_license: "Compiled from published reference grammars and resource metadata; YAML file licensed CC-BY-4.0"
+review:
+  last_reviewed_by: "PENDING_NATIVE_SPEAKER_REVIEW"
+  last_reviewed_on: null
+caveats: |
+  siSwati and isiZulu have substantial Nguni overlap. This file is intentionally
+  conservative and heavily unverified. It should be used only to surface evidence
+  for human review, never to declare a speaker or utterance identity.
+distinctive_morphemes:
+  - feature: "1sg subject concord"
+    ssw_form: "ngi-"
+    zul_form: "ngi-"
+    confidence: 0.10
+    verified: false
+    source_citation: "Ziervogel & Mabuza (1976); Poulos & Msimang (1998)"
+    note: "Shared Nguni form; included to prevent false distinctiveness."
+  - feature: "candidate siSwati palatal/affricate written cue"
+    ssw_form: "dv"
+    zul_form: null
+    confidence: 0.45
+    verified: false
+    source_citation: "Ziervogel & Mabuza (1976)"
+    note: "Orthographic cue only; verify with a siSwati speaker and a current grammar."
+distinctive_lexemes:
+  - meaning: "yes"
+    forms: {ssw: "yebo", zul: "yebo"}
+    confidence: 0.05
+    verified: false
+    source_citation: "Ziervogel & Mabuza (1976); Poulos & Msimang (1998)"
+    note: "Shared response; not distinctive."
+  - meaning: "person"
+    forms: {ssw: "umuntfu", zul: "umuntu"}
+    confidence: 0.60
+    verified: false
+    source_citation: "Ziervogel & Mabuza (1976); Poulos & Msimang (1998)"
+    note: "Candidate spelling contrast; awaiting native-speaker review."
+  - meaning: "to see"
+    forms: {ssw: "kubona", zul: "ukubona"}
+    confidence: 0.30
+    verified: false
+    source_citation: "Ziervogel & Mabuza (1976); Poulos & Msimang (1998)"
+    note: "Infinitive-prefix orthography may depend on tokenisation and register."
+orthographic_features:
+  - code: "ssw_tf_dv_candidates"
+    languages: ["ssw"]
+    description: "Written tf/dv sequences may be candidate siSwati cues in some reference materials."
+    confidence: 0.50
+    verified: false
+    source_citation: "Ziervogel & Mabuza (1976)"
+    note: "Project-tunable and not decisive."
+phonotactic_features:
+  - code: "nguni_overlap_caution"
+    languages: ["ssw", "zul"]
+    description: "Shared Nguni phonotactics make token-level separation fragile."
+    confidence: 0.0
+    verified: false
+    note: "Confidence-lowering caution."
+confidence_thresholds:
+  high: 0.90
+  medium: 0.70
+  low: 0.45
+  ambiguous_below: 0.75

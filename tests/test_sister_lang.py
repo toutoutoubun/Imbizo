@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from imbizo.core.annotation import Token
-from imbizo.core.sister_lang import disambiguate_sister_languages, load_sister_lang_dictionary
+from imbizo.core.sister_lang import SisterLangDisambiguator, disambiguate_sister_languages, load_sister_lang_dictionary
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,3 +28,20 @@ def test_sot_tsn_shared_token_remains_conservative() -> None:
     verdict = disambiguate_sister_languages(token, [], ["sot", "tsn"], {"sot_vs_tsn": dictionary})
     assert verdict.best_language is None
     assert verdict.ambiguous is True
+
+
+def test_disambiguator_strong_nguni_morphemes() -> None:
+    disambiguator = SisterLangDisambiguator(ROOT / "dictionaries/sister_lang")
+    zul = disambiguator.disambiguate(Token(id="z1", surface="ngi-hamba", position=1), [], ["zul", "xho"])
+    xho = disambiguator.disambiguate(Token(id="x1", surface="ndi-hamba", position=1), [], ["zul", "xho"])
+    assert zul.best_language == "zul"
+    assert zul.confidence >= 0.8
+    assert xho.best_language == "xho"
+    assert xho.confidence >= 0.8
+
+
+def test_disambiguator_ambiguous_shared_token_low_confidence() -> None:
+    disambiguator = SisterLangDisambiguator(ROOT / "dictionaries/sister_lang")
+    verdict = disambiguator.disambiguate(Token(id="s1", surface="ke", position=1), [], ["sot", "tsn"])
+    assert verdict.best_language is None
+    assert verdict.confidence < 0.7

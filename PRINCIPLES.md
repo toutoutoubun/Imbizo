@@ -92,6 +92,10 @@ Surface morpheme classification (content, early system, bridge late system, outs
 
 表層の形態素分類（content・early system・bridge late system・outsider late system）は、理論的な好みではない。MLF の下で行われる主張を **単に断言する** のではなく **検証する** ために必要な最小限のインフラである。Imbizo-CS は MLF を研究者に強制しないが、MLF が呼び出される場面では、4-M アノテーション層が主張を反証可能にする。
 
+When Imbizo-CS exports outward to LIDES, the exporter writes a companion losses file documenting which morphology-rich fields cannot travel cleanly. Loss documentation is part of the morphology commitment, not a footnote.
+
+Imbizo-CS が LIDES へ外部出力するとき、exporter は形態論的に豊かなフィールドのうち何が完全には移送できないかを companion losses file に記録する。損失の記録は形態論への誓約の一部であり、脚注ではない。
+
 ### 4. The integration score is exposed and editable
 
 The borrowing-integration score is not a number to be trusted; it is a weighted sum whose weights the researcher can inspect and edit per project. The researcher's theoretical position — whether they hold Poplack's (1980) strict borrowing/codeswitching distinction, or Muysken's (2000) continuum view — is not the software's to decide. The formula is transparent precisely so that disagreement with it can be a methodological choice, not a technical defeat.
@@ -120,6 +124,10 @@ v1.5 で導入された機能群（同系統言語弁別器、triggered switchin
 Tsotsitaal, Iscamtho, Kaaps, Sabela are living urban varieties whose names, boundaries, and social meanings are themselves contested. To allow the software to silently label a span as "Tsotsitaal" on the basis of lexical density would be to **reify** a variety that is, in practice, defined relationally, performatively, and contextually. The detector reports lexical evidence; it never declares variety identity. Identity is the researcher's call, made with attention to speaker, setting, and history.
 
 Tsotsitaal、Iscamtho、Kaaps、Sabela は生きている都市変種であり、その名前・境界・社会的意味自体が争われている。語彙密度に基づいてソフトウェアがスパンを「Tsotsitaal」と静かにラベル付けすることを許せば、それは実践においては関係的・パフォーマティブ・文脈的に定義される変種を **物象化** することになる。検出器は語彙的証拠を報告するが、変種同定を宣言することは決してない。同定は研究者の判断であり、話者・場面・歴史への注意とともに下される。
+
+The sister-language disambiguator follows the same rule: it returns confidence and evidence, never declarations. Weak evidence preserves disagreement instead of hiding it behind a label.
+
+同系統言語弁別器も同じ規則に従う。それは信頼度と証拠を返すが、宣言は返さない。弱い証拠は、不一致をラベルの背後に隠すのではなく保存する。
 
 ### 3. Why community-review packets queue rather than auto-apply
 
@@ -177,6 +185,10 @@ The Tier-2 notification is dismissible. We do not treat researchers as children.
 
 Tier 2 通知は閉じることができる。研究者を子ども扱いしない。しかしライセンス通知はエクスポートされるすべてのレポートのフッターに **自動的に伝播する**。伝播は研究者を保護するためではなく、その成果を受け取る読者・査読者・将来の研究者を尊重するためである。
 
+Static visualisation outputs, including heatmaps and Sankey diagrams, draw their licence-propagation footer from the same registry so figures do not silently detach from resource obligations.
+
+ヒートマップや Sankey 図を含む静的な可視化出力も、同じ registry からライセンス伝播フッターを取得する。図がリソース義務から静かに切り離されることはない。
+
 ### 5. Why our software licence is AGPLv3
 
 We choose AGPLv3 over GPLv3 because:
@@ -216,6 +228,10 @@ In the longer term we aspire to dialogue with Masakhane and DSFSI about re-licen
 Cloud-default software design treats reliable internet, cheap electricity, persistent storage, and corporate-grade authentication as background conditions. For a significant share of the world's researchers — including most of those who would naturally study South African code-switching — none of these conditions hold by default. Offline-first is therefore not a retrospective concession to "less privileged users"; it is a methodological commitment to **not import the infrastructural assumptions of global-North research into a context where they were never warranted**.
 
 クラウドをデフォルトとするソフト設計は、信頼できるインターネット、安価な電力、永続的なストレージ、企業グレードの認証を背景条件として扱う。世界の研究者の相当部分にとって — 南アフリカのコードスイッチングを自然に研究する大半の人々を含む — これらの条件はデフォルトでは成立しない。したがってオフライン・ファーストは、「特権の少ない利用者」への遡及的譲歩ではない。それは **グローバルノースの研究のインフラ的前提を、それが正当化されたことのない文脈に持ち込まない** という方法論的誓約である。
+
+All visualisations render offline with matplotlib and embed SVG text as paths, so sharing a figure does not depend on a recipient having matching fonts, network access, or a web plotting service.
+
+すべての可視化は matplotlib によりオフラインで描画され、SVG ではテキストを path として埋め込む。図の共有は、受信者が同じフォント・ネットワーク接続・Web プロットサービスを持つことに依存しない。
 
 ### 2. Why automation is auxiliary, not authoritative
 

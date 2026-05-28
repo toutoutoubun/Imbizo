@@ -74,10 +74,53 @@ class SisterLangDictionary:
         return [part for part in self.language_code.split("-") if part]
 
 
+class SisterLangDisambiguator:
+    """Load project-local sister-language YAML files and score tokens.
+
+    The disambiguator returns confidence and evidence only. It never writes to
+    the database or declares identity, preserving researcher authority and the
+    sociolinguistic caution recommended by Mesthrie (2002, 2008).
+    """
+
+    def __init__(self, dictionary_dir: Path | None = None) -> None:
+        root = Path(__file__).resolve().parents[3]
+        self.dictionary_dir = dictionary_dir or root / "dictionaries" / "sister_lang"
+        self.dictionaries = self._load_all()
+
+    def disambiguate(
+        self,
+        token: Token,
+        context: list[Token],
+        candidate_languages: list[str],
+    ) -> SisterLangVerdict:
+        """Return an advisory verdict for a token and candidate languages."""
+
+        relevant = {
+            key: dictionary
+            for key, dictionary in self.dictionaries.items()
+            if set(dictionary.languages).intersection(candidate_languages)
+        }
+        return disambiguate_sister_languages(token, context, candidate_languages, relevant)
+
+    def _load_all(self) -> dict[str, SisterLangDictionary]:
+        dictionaries: dict[str, SisterLangDictionary] = {}
+        if not self.dictionary_dir.exists():
+            return dictionaries
+        for path in sorted(self.dictionary_dir.glob("*.yaml")):
+            dictionaries[path.stem] = load_sister_lang_dictionary(path)
+        return dictionaries
+
+
 def load_sister_lang_dictionary(path: Path) -> SisterLangDictionary:
     """Load a sister-language YAML dictionary from a local file."""
 
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if "language_code" not in data and "language_pair" in data:
+        data["language_code"] = "-".join(str(item) for item in data["language_pair"])
+    if "language_name" not in data and "language_pair" in data:
+        data["language_name"] = f"{'/'.join(data['language_pair'])} sister-language disambiguation"
+    if isinstance(data.get("source"), dict):
+        data["source"] = "; ".join(str(item) for item in data["source"].get("origin_authors", []))
     required = ["language_code", "language_name", "version", "source"]
     missing = [key for key in required if not data.get(key)]
     if missing:
@@ -87,12 +130,37 @@ def load_sister_lang_dictionary(path: Path) -> SisterLangDictionary:
         language_name=str(data["language_name"]),
         version=str(data["version"]),
         source=str(data["source"]),
-        distinctive_morphemes=list(data.get("distinctive_morphemes", [])),
-        distinctive_lexemes=list(data.get("distinctive_lexemes", [])),
+        distinctive_morphemes=_normalise_feature_entries(list(data.get("distinctive_morphemes", []))),
+        distinctive_lexemes=_normalise_feature_entries(list(data.get("distinctive_lexemes", []))),
         orthographic_features=list(data.get("orthographic_features", [])),
         phonotactic_features=list(data.get("phonotactic_features", [])),
         confidence_thresholds=dict(data.get("confidence_thresholds", {})),
     )
+
+
+def _normalise_feature_entries(entries: list[dict[str, object]]) -> list[dict[str, object]]:
+    normalised: list[dict[str, object]] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("language") and entry.get("form"):
+            normalised.append(entry)
+            continue
+        for key, value in entry.items():
+            if key.endswith("_form") and value:
+                language = key.removesuffix("_form")
+                item = dict(entry)
+                item["language"] = language
+                item["form"] = value
+                item.setdefault("gloss", entry.get("feature", "distinctive feature"))
+                normalised.append(item)
+        for language, value in (entry.get("forms") or {}).items() if isinstance(entry.get("forms"), dict) else []:
+            item = dict(entry)
+            item["language"] = language
+            item["form"] = value
+            item.setdefault("gloss", entry.get("meaning", entry.get("feature", "distinctive feature")))
+            normalised.append(item)
+    return normalised
 
 
 def disambiguate_sister_languages(
@@ -203,7 +271,8 @@ def _score_morphemes(
         language = str(entry.get("language", ""))
         form = _clean(str(entry.get("form", "")))
         if language in scores and form and text.startswith(form):
-            weight = min(0.35, 0.12 + len(form) / 30)
+            weight = float(entry.get("confidence", 0.12 + len(form) / 30))
+            weight = max(0.0, min(weight, 1.0))
             scores[language] += weight
             evidence.append(
                 EvidenceItem(
@@ -227,7 +296,8 @@ def _score_lexemes(
         language = str(entry.get("language", ""))
         form = _clean(str(entry.get("form", "")))
         if language in scores and form and text == form:
-            weight = 0.45 if entry.get("verified") else 0.3
+            weight = float(entry.get("confidence", 0.45 if entry.get("verified") else 0.3))
+            weight = max(0.0, min(weight, 1.0))
             scores[language] += weight
             evidence.append(
                 EvidenceItem(
