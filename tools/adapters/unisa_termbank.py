@@ -78,29 +78,6 @@ ALLOWED_LICENCE_PROFILES: tuple[dict[str, Any], ...] = (
             ),
         },
     },
-    {
-        "spdx_id": "OER-UNISA",
-        "markers": (
-            "oer",
-            "open educational resource",
-            "unisa open educational resource",
-        ),
-        "origin_license": "OER-UNISA",
-        "licence_classification": {
-            "spdx_id": "OER-UNISA",
-            "tier": 1,
-            "fosl_compatible": True,
-            "combinable_with_agpl": "combination",
-            "commercial_use_restricted": False,
-            "sharealike_required": False,
-            "downstream_obligations": ["attribution"],
-            "redistribution_notice": (
-                "This UNISA / SADiLaR terminology file declares an Open "
-                "Educational Resource rights statement. Converted glossary "
-                "outputs preserve attribution and provenance."
-            ),
-        },
-    },
 )
 
 DISALLOWED_MARKERS: tuple[str, ...] = (

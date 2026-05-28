@@ -74,7 +74,7 @@ The tiering model remains the right structure:
 | --- | --- | --- |
 | UP Multilingual Lexicons | `CC-BY-4.0`, Tier 1, metadata probe required | Acceptable as attributed resource data once source metadata confirms CC-BY-4.0. |
 | African Wordnet | CC-BY-4.0 only when SADiLaR metadata allows | Correctly conservative; files without allowed rights are skipped. |
-| UNISA Termbank | `PER-FILE-SADILAR-METADATA` | Correct: no blanket licence is assumed; only per-file Tier-1 rights are converted. |
+| UNISA Termbank | `PER-FILE-SADILAR-METADATA` | Correct: no blanket licence is assumed; the adapter currently converts only per-file `CC-BY-4.0` rights and skips generic OER / unclear / NC rights. |
 | EXDN | Public-domain historical source | Acceptable with provenance/citation caution; jurisdiction-specific review still recommended for public release bundles. |
 | NCHLT Text Corpora | `CC-BY-2.5-SA`, Tier 1 aggregation | Acceptable as attribution corpus aggregation; note that `SA` here means South Africa, not ShareAlike. |
 | JOHD morph corpora | CC-BY-4.0 when verified | Acceptable after handle/file rights verification. |
@@ -102,11 +102,11 @@ The tiering model remains the right structure:
 These are not blockers for the AGPLv3 Python package itself, but they are
 blockers for a resource bundle that contains the corresponding resource:
 
-- `LICENSES/CC-BY-4.0.txt`, `CC-BY-2.5-SA.txt`, `CC-BY-SA-3.0.txt`,
-  `CC-BY-NC-4.0.txt`, `CC-BY-NC-SA-2.5-ZA.txt`, `MIT.txt`, `APACHE-2.0.txt`,
-  `NWULITE-OBODO-1.0.txt`, and `OER-UNISA.txt` still contain placeholder
-  notices. Replace each with official upstream text before bundling a resource
-  that uses it.
+- `LICENSES/OER-UNISA.txt` is retained only as a historical marker because the
+  UNISA / SADiLaR termbank does not have one blanket OER licence. New converted
+  files should use concrete per-file rights such as `CC-BY-4.0`; generic OER
+  statements are skipped unless project governance later adds a concrete
+  redistributable licence text.
 - PyInstaller desktop bundles need an additional dependency-notice inventory,
   especially for Qt/PySide6.
 - Built-in starter dictionaries are project-authored YAML derived from

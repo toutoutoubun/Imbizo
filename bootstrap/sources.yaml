@@ -152,10 +152,10 @@ sources:
       redistribution_notice: >
         UNISA / SADiLaR terminology exports are not treated as having a single
         blanket licence. The adapter reads each XML file's own rights metadata
-        and converts only files whose metadata resolves to the Tier-1 allow-list
-        such as CC-BY-4.0 or an explicit UNISA OER declaration. Missing,
-        unclear, NonCommercial, or otherwise incompatible rights statements are
-        skipped rather than silently bundled.
+        and converts only files whose metadata resolves to the Tier-1 allow-list,
+        currently CC-BY-4.0 for this source. Missing, unclear, generic OER,
+        NonCommercial, or otherwise incompatible rights statements are skipped
+        rather than silently bundled.
     license_check_required: true
     expected_sha256: null
     bundle_status: shippable

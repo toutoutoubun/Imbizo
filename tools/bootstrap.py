@@ -368,10 +368,38 @@ def _license_files_for_source(source: Mapping[str, Any]) -> list[Path]:
     if source.get("license_resolution") == "per_file_metadata":
         return [
             PROJECT_ROOT / "LICENSES" / "CC-BY-4.0.txt",
-            PROJECT_ROOT / "LICENSES" / "OER-UNISA.txt",
-            PROJECT_ROOT / "LICENSES" / "CC-BY-NC-4.0.txt",
         ]
-    return [_license_file_for(str(source.get("license", "")))]
+    return _license_files_for(str(source.get("license", "")))
+
+
+def _license_files_for(license_name: str) -> list[Path]:
+    """Return all licence text files implied by a possibly mixed licence name."""
+
+    folded = license_name.casefold()
+    paths: list[Path] = []
+    if "nwulite" in folded or "noodl" in folded or "obodo" in folded or "mixed-noodl" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "NWULITE-OBODO-1.0.txt")
+    if "cc-by-nc-sa" in folded or "cc by-nc-sa" in folded or "cc-by-nc-sa 2.5" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "CC-BY-NC-SA-2.5-ZA.txt")
+    if "cc-by-sa-3.0" in folded or "cc by-sa 3.0" in folded or "sharealike 3.0" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "CC-BY-SA-3.0.txt")
+    if "cc-by-nc-4.0" in folded or "cc by-nc 4.0" in folded or "noncommercial 4.0" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "CC-BY-NC-4.0.txt")
+    if "cc-by-2.5" in folded or "cc by 2.5" in folded or "attribution 2.5" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "CC-BY-2.5-SA.txt")
+    if "cc-by-4.0" in folded or "cc by 4.0" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "CC-BY-4.0.txt")
+    if "oer" in folded or "unisa" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "OER-UNISA.txt")
+    if "public" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "PUBLIC-DOMAIN.txt")
+    if "apache" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "APACHE-2.0.txt")
+    if "mit" in folded:
+        paths.append(PROJECT_ROOT / "LICENSES" / "MIT.txt")
+    if not paths:
+        paths.append(PROJECT_ROOT / "LICENSES" / f"{license_name}.txt")
+    return list(dict.fromkeys(paths))
 
 
 def _license_file_for(license_name: str) -> Path:
