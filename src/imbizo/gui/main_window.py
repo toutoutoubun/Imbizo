@@ -7,6 +7,7 @@ from typing import Any
 
 from imbizo.app.strings import StringCatalog, load_string_catalog
 from imbizo.domain.project import ProjectMetadata
+from imbizo.gui.import_progress import import_file_with_progress
 from imbizo.services.import_service import ImportService
 from imbizo.services.annotation_service import AnnotationService
 from imbizo.services.lid_service import LidService
@@ -194,7 +195,13 @@ class MainWindow:
         title = title.strip() or Path(source).stem
         try:
             context = self.project_service.create_project(project_root, ProjectMetadata(project_uuid="", title=title))
-            result = self.import_service.import_file(context, Path(source))
+            result = import_file_with_progress(
+                self.qt_window,
+                context,
+                Path(source),
+                self.import_service,
+                self.strings.text("project.import_data_progress_title"),
+            )
         except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
             self._show_error(self.strings.text("project.import_data_failed"), str(exc))
             return

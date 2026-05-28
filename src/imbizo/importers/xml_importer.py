@@ -12,8 +12,9 @@ import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from imbizo.app.errors import ImportFailure
 from imbizo.domain.transcripts import SegmentLevel, SourceFormat, TranscriptDocument, TranscriptSegment, split_tokens_preserving_offsets
-from imbizo.importers.base import ImportedBundle, ImportOptions
+from imbizo.importers.base import ImportedBundle, ImportOptions, ImportProgress
 
 
 TEXT_KEYS = ("text", "transcript", "utterance", "content", "value")
@@ -33,6 +34,13 @@ SEGMENT_TAGS = {
 }
 
 
+def _emit_progress(options: ImportOptions, stage: str, message: str, current: int, total: int) -> None:
+    """Notify a GUI or CLI progress observer when one is attached."""
+
+    if options.progress_callback is not None:
+        options.progress_callback(ImportProgress(stage=stage, message=message, current=current, total=total))
+
+
 class XmlTranscriptImporter:
     """Import simple local XML transcript files as utterance segments."""
 
@@ -46,6 +54,7 @@ class XmlTranscriptImporter:
     def import_file(self, path: Path, options: ImportOptions) -> ImportedBundle:
         """Parse generic XML transcript rows into segments and tokens."""
 
+        _emit_progress(options, "parse", "Parsing XML transcript structure", 40, 100)
         document = TranscriptDocument(
             id=str(uuid.uuid4()),
             name=path.stem,
@@ -54,16 +63,22 @@ class XmlTranscriptImporter:
             relative_path=str(path),
             original_filename=path.name,
         )
-        root = ET.parse(path).getroot()
+        try:
+            root = ET.parse(path).getroot()
+        except ET.ParseError as exc:
+            raise ImportFailure(f"Could not parse XML file {path.name}: {exc}") from exc
         candidates = _candidate_elements(root)
         if not candidates:
             candidates = [root]
 
         segments: list[TranscriptSegment] = []
         tokens = []
+        total = max(len(candidates), 1)
         for order, element in enumerate(candidates, start=1):
             text = _element_text(element).strip()
             if not text:
+                if order == 1 or order == total or order % 200 == 0:
+                    _emit_progress(options, "parse", f"Scanned {order:,} of {total:,} XML elements", 45 + int(order / total * 35), 100)
                 continue
             segment = TranscriptSegment(
                 id=str(uuid.uuid4()),
@@ -78,6 +93,8 @@ class XmlTranscriptImporter:
             )
             segments.append(segment)
             tokens.extend(split_tokens_preserving_offsets(segment.id, text))
+            if order == 1 or order == total or order % 200 == 0:
+                _emit_progress(options, "parse", f"Parsed {order:,} of {total:,} XML elements", 45 + int(order / total * 35), 100)
 
         report: dict[str, object] = {"segments": len(segments), "tokens": len(tokens)}
         if not segments:

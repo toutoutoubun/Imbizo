@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Iterable
 
 from imbizo.domain.transcripts import SegmentLevel, SourceFormat, TranscriptDocument, TranscriptSegment, split_tokens_preserving_offsets
-from imbizo.importers.base import ImportedBundle, ImportOptions
+from imbizo.importers.base import ImportedBundle, ImportOptions, ImportProgress
 
 
 TEXT_COLUMNS = {
@@ -28,6 +28,13 @@ END_COLUMNS = {"end_ms", "end", "finish", "offset", "end_time", "終了", "終�
 ID_COLUMNS = {"id", "segment_id", "utterance_id", "ref", "番号"}
 COMMON_NON_TEXT_COLUMNS = START_COLUMNS | END_COLUMNS | ID_COLUMNS | {"speaker", "speaker_id", "話者", "language", "lang"}
 FALLBACK_ENCODINGS = ("utf-8-sig", "utf-8", "cp932", "shift_jis", "latin-1")
+
+
+def _emit_progress(options: ImportOptions, stage: str, message: str, current: int, total: int) -> None:
+    """Notify a GUI or CLI progress observer when one is attached."""
+
+    if options.progress_callback is not None:
+        options.progress_callback(ImportProgress(stage=stage, message=message, current=current, total=total))
 
 
 def _to_int(value: str | None) -> int | None:
@@ -52,6 +59,7 @@ class CsvTranscriptImporter:
     def import_file(self, path: Path, options: ImportOptions) -> ImportedBundle:
         """Parse CSV/TSV rows into segments and tokens."""
 
+        _emit_progress(options, "parse", "Reading delimited transcript", 40, 100)
         text, encoding_used = _read_text_with_fallback(path, options.encoding)
         delimiter = _detect_delimiter(text, path)
         document = TranscriptDocument(
@@ -64,7 +72,8 @@ class CsvTranscriptImporter:
         )
         segments: list[TranscriptSegment] = []
         tokens = []
-        reader = csv.DictReader(text.splitlines(), delimiter=delimiter)
+        lines = text.splitlines()
+        reader = csv.DictReader(lines, delimiter=delimiter)
         if not reader.fieldnames:
             return ImportedBundle(document=document, report={"warning": "No rows found.", "encoding": encoding_used})
 
@@ -74,10 +83,13 @@ class CsvTranscriptImporter:
         end_column = _first_matching(fieldnames, END_COLUMNS)
         id_column = _first_matching(fieldnames, ID_COLUMNS)
 
+        total = max(len(lines) - 1, 1)
         for order, raw_row in enumerate(reader, start=1):
             row = {_clean_header(key): (value or "") for key, value in raw_row.items() if key is not None}
             segment_text = row.get(text_column or "", "")
             if not segment_text.strip():
+                if order == 1 or order == total or order % 500 == 0:
+                    _emit_progress(options, "parse", f"Scanned {order:,} of {total:,} rows", 40 + int(order / total * 40), 100)
                 continue
             segment = TranscriptSegment(
                 id=str(uuid.uuid4()),
@@ -92,6 +104,8 @@ class CsvTranscriptImporter:
             )
             segments.append(segment)
             tokens.extend(split_tokens_preserving_offsets(segment.id, segment_text))
+            if order == 1 or order == total or order % 500 == 0:
+                _emit_progress(options, "parse", f"Parsed {order:,} of {total:,} rows", 40 + int(order / total * 40), 100)
 
         report: dict[str, object] = {
             "segments": len(segments),

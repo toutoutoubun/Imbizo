@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from imbizo.domain.annotations import AnnotationDraft
+from imbizo.gui.import_progress import import_file_with_progress
 from imbizo.services.import_service import ImportService
 
 
@@ -104,7 +105,13 @@ class AnnotationEditorWidget:
         if not path:
             return
         try:
-            result = self.import_service.import_file(self.context, Path(path))
+            result = import_file_with_progress(
+                self.widget,
+                self.context,
+                Path(path),
+                self.import_service,
+                "Importing local file",
+            )
         except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
             QMessageBox.critical(self.widget, "Import failed", str(exc))
             return

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
@@ -10,12 +11,26 @@ from imbizo.domain.media import MediaAsset
 from imbizo.domain.transcripts import Token, TranscriptDocument, TranscriptSegment
 
 
+@dataclass(slots=True, frozen=True)
+class ImportProgress:
+    """Human-readable progress event emitted during local imports."""
+
+    stage: str
+    message: str
+    current: int
+    total: int
+
+
+ProgressCallback = Callable[[ImportProgress], None]
+
+
 @dataclass(slots=True)
 class ImportOptions:
     """Options used while importing a copied local file."""
 
     linked_media_asset_id: str | None = None
     encoding: str = "utf-8"
+    progress_callback: ProgressCallback | None = None
 
 
 @dataclass(slots=True)
