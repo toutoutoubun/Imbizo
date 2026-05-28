@@ -27,7 +27,7 @@ import type { LucideIcon } from 'lucide-react';
 
 interface ConcordLink {
   id: string;
-  label: string;
+  labelKey: string;
   candidateTokenIds: string[];
 }
 
@@ -185,8 +185,8 @@ const initialTokens: TokenData[] = [
     integrationComponents: { classPrefix: 0.35, concordLink: 0.21, inflection: 0.12, frequency: 0.062 },
     nounClass: '9',
     concordLinks: [
-      { id: 'c1', label: 'class-9 prefix candidate', candidateTokenIds: ['6', '9'] },
-      { id: 'c2', label: 'embedded English stem candidate', candidateTokenIds: ['2', '3', '4', '5', '6'] },
+      { id: 'c1', labelKey: 'annotation.concord.class9PrefixCandidate', candidateTokenIds: ['6', '9'] },
+      { id: 'c2', labelKey: 'annotation.concord.embeddedEnglishStemCandidate', candidateTokenIds: ['2', '3', '4', '5', '6'] },
     ],
     userTags: ['loanword', 'device'],
     memo: 'Fictional example showing integration-score controls.',
@@ -247,7 +247,7 @@ const initialTokens: TokenData[] = [
     integrationScore: null,
     integrationComponents: { classPrefix: 0, concordLink: 0, inflection: 0, frequency: 0 },
     nounClass: '1',
-    concordLinks: [{ id: 'c3', label: 'class-1 noun candidate', candidateTokenIds: ['9'] }],
+    concordLinks: [{ id: 'c3', labelKey: 'annotation.concord.class1NounCandidate', candidateTokenIds: ['9'] }],
     userTags: ['kinship'],
     memo: '',
     confidence: 0.96,
@@ -375,35 +375,35 @@ const initialTokens: TokenData[] = [
 ];
 
 const highlightModes: HighlightModeOption[] = [
-  { id: 'language', label: 'by language', icon: Languages },
-  { id: '4m', label: 'by 4-M', icon: Type },
-  { id: 'switch', label: 'by switch type', icon: GitBranch },
-  { id: 'trigger', label: 'by trigger', icon: Target },
-  { id: 'mixed', label: 'by mixed-code', icon: Blend },
-  { id: 'integration', label: 'by integration', icon: TrendingUp },
+  { id: 'language', label: 'annotation.highlight.language', icon: Languages },
+  { id: '4m', label: 'annotation.highlight.fourM', icon: Type },
+  { id: 'switch', label: 'annotation.highlight.switch', icon: GitBranch },
+  { id: 'trigger', label: 'annotation.highlight.trigger', icon: Target },
+  { id: 'mixed', label: 'annotation.highlight.mixed', icon: Blend },
+  { id: 'integration', label: 'annotation.highlight.integration', icon: TrendingUp },
 ];
 
 const languageLegend = [
-  { name: 'English', color: 'bg-lang-english', glyph: '●', code: 'eng' },
-  { name: 'Afrikaans', color: 'bg-lang-afrikaans', glyph: '▲', code: 'afr' },
-  { name: 'isiZulu', color: 'bg-lang-isizulu', glyph: '■', code: 'zul' },
-  { name: 'isiXhosa', color: 'bg-lang-isixhosa', glyph: '◆', code: 'xho' },
-  { name: 'Sesotho', color: 'bg-lang-sesotho', glyph: '★', code: 'sot' },
-  { name: 'Setswana', color: 'bg-lang-setswana', glyph: '✚', code: 'tsn' },
-  { name: 'Other', color: 'bg-lang-other', glyph: '✱', code: 'oth' },
-  { name: 'Unknown', color: 'bg-lang-unknown', glyph: '◐', code: 'unk' },
+  { nameKey: 'app.languages.english', color: 'bg-lang-english', glyph: '●', code: 'eng' },
+  { nameKey: 'app.languages.afrikaans', color: 'bg-lang-afrikaans', glyph: '▲', code: 'afr' },
+  { nameKey: 'app.languages.isizulu', color: 'bg-lang-isizulu', glyph: '■', code: 'zul' },
+  { nameKey: 'app.languages.isixhosa', color: 'bg-lang-isixhosa', glyph: '◆', code: 'xho' },
+  { nameKey: 'app.languages.sesotho', color: 'bg-lang-sesotho', glyph: '★', code: 'sot' },
+  { nameKey: 'app.languages.setswana', color: 'bg-lang-setswana', glyph: '✚', code: 'tsn' },
+  { nameKey: 'app.languages.other', color: 'bg-lang-other', glyph: '✱', code: 'oth' },
+  { nameKey: 'app.languages.unknown', color: 'bg-lang-unknown', glyph: '◐', code: 'unk' },
 ];
 
-const languageOptions: Array<{ value: TokenLanguage | ''; label: string }> = [
-  { value: '', label: 'Not set' },
-  { value: 'english', label: 'English' },
-  { value: 'afrikaans', label: 'Afrikaans' },
-  { value: 'isizulu', label: 'isiZulu' },
-  { value: 'isixhosa', label: 'isiXhosa' },
-  { value: 'sesotho', label: 'Sesotho' },
-  { value: 'setswana', label: 'Setswana' },
-  { value: 'other', label: 'Other' },
-  { value: 'unknown', label: 'Unknown' },
+const languageOptionValues: Array<{ value: TokenLanguage | ''; labelKey: string }> = [
+  { value: '', labelKey: 'annotation.notSet' },
+  { value: 'english', labelKey: 'app.languages.english' },
+  { value: 'afrikaans', labelKey: 'app.languages.afrikaans' },
+  { value: 'isizulu', labelKey: 'app.languages.isizulu' },
+  { value: 'isixhosa', labelKey: 'app.languages.isixhosa' },
+  { value: 'sesotho', labelKey: 'app.languages.sesotho' },
+  { value: 'setswana', labelKey: 'app.languages.setswana' },
+  { value: 'other', labelKey: 'app.languages.other' },
+  { value: 'unknown', labelKey: 'app.languages.unknown' },
 ];
 
 const projectSettings = {
@@ -420,10 +420,6 @@ function readPaneWidth(): number {
     return stored;
   }
   return 36;
-}
-
-function scoreLabel(score: number | null): string {
-  return score === null ? 'Not computed' : score.toFixed(3);
 }
 
 function highlightLabelKey(mode: HighlightMode): string {
@@ -454,6 +450,18 @@ export function AnnotationEditor() {
   const fourMSelectRef = useRef<HTMLSelectElement | null>(null);
   const undoStackRef = useRef<TokenData[][]>([]);
   const redoStackRef = useRef<TokenData[][]>([]);
+  const languageOptions = useMemo(
+    () => languageOptionValues.map((option) => ({ value: option.value, label: t(option.labelKey) })),
+    [t]
+  );
+  const fourMOptions = useMemo(
+    () =>
+      (['unassigned', 'content', 'early_system', 'bridge_late', 'outsider_late'] as FourMType[]).map((value) => ({
+        value,
+        label: t(`annotation.fourMTypes.${value}`),
+      })),
+    [t]
+  );
 
   const selectedToken = tokens.find((token) => token.id === selectedTokenId) ?? tokens[0];
   const selectedIndex = Math.max(tokens.findIndex((token) => token.id === selectedTokenId), 0);
@@ -614,7 +622,7 @@ export function AnnotationEditor() {
           </Button>
         </div>
         <div className="h-16 bg-subtle-bg rounded-sm border border-border flex items-center justify-center">
-          <svg className="w-full h-full" viewBox="0 0 800 64" role="img" aria-label="Audio waveform preview">
+          <svg className="w-full h-full" viewBox="0 0 800 64" role="img" aria-label={t('annotation.waveformPreview')}>
             {Array.from({ length: 100 }).map((_, index) => {
               const height = waveformHeights[index % waveformHeights.length];
               return (
@@ -636,7 +644,7 @@ export function AnnotationEditor() {
 
       <PanelGroup direction="horizontal" className="flex-1 overflow-hidden">
         <Panel defaultSize={100 - paneWidth} minSize={45}>
-          <main className="h-full overflow-auto p-6" aria-label="Transcript tokens">
+          <main className="h-full overflow-auto p-6" aria-label={t('annotation.transcriptTokens')}>
             <div className="max-w-3xl">
               <div className="flex flex-wrap gap-1.5 leading-loose">
                 {tokens.map((token, index) => (
@@ -672,7 +680,7 @@ export function AnnotationEditor() {
 
         <PanelResizeHandle
           className="w-1 border-l border-r border-border bg-subtle-bg hover:bg-primary/20 focus:outline focus:outline-2 focus:outline-primary"
-          aria-label="Resize annotation pane"
+          aria-label={t('annotation.resizePane')}
         />
 
         <Panel
@@ -684,7 +692,7 @@ export function AnnotationEditor() {
             localStorage.setItem(STORAGE_PANE_WIDTH, String(size));
           }}
         >
-          <aside className="h-full border-l border-border overflow-auto bg-card" aria-label="Annotation pane">
+          <aside className="h-full border-l border-border overflow-auto bg-card" aria-label={t('annotation.paneLabel')}>
             {selectedToken ? (
               <div className="p-6 space-y-4">
                 <div>
@@ -710,7 +718,7 @@ export function AnnotationEditor() {
 
                   {selectedToken.isAuto && (
                     <div className="flex items-center gap-2 text-[12px] text-secondary-text">
-                      <span className="px-2 py-0.5 bg-muted rounded-sm">AUTO</span>
+                      <span className="px-2 py-0.5 bg-muted rounded-sm">{t('annotation.badges.auto')}</span>
                       <Button size="sm" variant="ghost" onClick={() => updateSelectedToken({ isAuto: false })}>
                         {t('annotation.actions.override')}
                       </Button>
@@ -735,10 +743,10 @@ export function AnnotationEditor() {
                     <legend className="text-[12px] text-secondary-text mb-1 block">{t('annotation.fields.switchType')}</legend>
                     <div className="space-y-2">
                       {[
-                        ['intra', 'intra-sentential'],
-                        ['inter', 'inter-sentential'],
-                        ['extra', 'extra-sentential'],
-                        ['none', 'none'],
+                        ['intra', 'annotation.switchTypes.intra'],
+                        ['inter', 'annotation.switchTypes.inter'],
+                        ['extra', 'annotation.switchTypes.extra'],
+                        ['none', 'annotation.switchTypes.none'],
                       ].map(([value, label]) => (
                         <label key={value} className="flex items-center gap-2">
                           <input
@@ -749,7 +757,7 @@ export function AnnotationEditor() {
                             onChange={() => updateSelectedToken({ switchType: value as SwitchType })}
                             className="w-4 h-4"
                           />
-                          <span className="text-[14px]">{label}</span>
+                          <span className="text-[14px]">{t(label)}</span>
                         </label>
                       ))}
                     </div>
@@ -758,13 +766,7 @@ export function AnnotationEditor() {
                   <Select
                     ref={fourMSelectRef}
                     label={t('annotation.fields.fourMType')}
-                    options={[
-                      { value: 'unassigned', label: 'Unassigned' },
-                      { value: 'content', label: 'Content morpheme' },
-                      { value: 'early_system', label: 'Early system morpheme' },
-                      { value: 'bridge_late', label: 'Bridge late system morpheme' },
-                      { value: 'outsider_late', label: 'Outsider late system morpheme' },
-                    ]}
+                    options={fourMOptions}
                     value={selectedToken.fourMType}
                     onChange={(event) => updateSelectedToken({ fourMType: event.target.value as FourMType })}
                   />
@@ -773,7 +775,7 @@ export function AnnotationEditor() {
                     <Input
                       label={t('annotation.fields.nounClass')}
                       type="number"
-                      placeholder="e.g., 9"
+                      placeholder={t('annotation.nounClassExample')}
                       value={selectedToken.nounClass}
                       onChange={(event) => updateSelectedToken({ nounClass: event.target.value })}
                     />
@@ -785,7 +787,7 @@ export function AnnotationEditor() {
                       <div className="space-y-2">
                         {selectedToken.concordLinks.map((link) => (
                           <div key={link.id} className="border border-border rounded-sm p-2">
-                            <div className="text-[12px] mb-2">{link.label}</div>
+                            <div className="text-[12px] mb-2">{t(link.labelKey)}</div>
                             <Button
                               size="sm"
                               variant="outline"
@@ -816,7 +818,7 @@ export function AnnotationEditor() {
                             checked={selectedToken.triggerRole === role}
                             onChange={() => updateSelectedToken({ triggerRole: role })}
                           />
-                          {role}
+                          {t(`annotation.triggerRoles.${role}`)}
                         </label>
                       ))}
                     </div>
@@ -830,10 +832,10 @@ export function AnnotationEditor() {
                       <Select
                         label={t('annotation.fields.mixedCodeVariety')}
                         options={[
-                          { value: '', label: 'Not set' },
+                          { value: '', label: t('annotation.notSet') },
                           ...projectSettings.enabledMixedCodeVarieties.map((variety) => ({
                             value: variety,
-                            label: variety,
+                            label: t(`annotation.mixedVarieties.${variety}`),
                           })),
                         ]}
                         value={selectedToken.mixedCodeVariety ?? ''}
@@ -846,7 +848,9 @@ export function AnnotationEditor() {
 
                   <section className="space-y-2">
                     <div className="text-[12px] text-secondary-text">{t('annotation.fields.integrationScore')}</div>
-                    <div className="text-[18px] font-mono">{scoreLabel(selectedToken.integrationScore)}</div>
+                    <div className="text-[18px] font-mono">
+                      {selectedToken.integrationScore === null ? t('annotation.scoreNotComputed') : selectedToken.integrationScore.toFixed(3)}
+                    </div>
                     <button
                       type="button"
                       className="text-[12px] text-primary hover:underline focus:outline focus:outline-2 focus:outline-primary"
@@ -857,11 +861,11 @@ export function AnnotationEditor() {
                     </button>
                     {showIntegrationDetails && (
                       <div className="border border-border rounded-sm p-3 text-[12px] space-y-1 bg-background">
-                        <div className="font-mono">0.35 × class_prefix + 0.35 × concord_link + 0.20 × inflection + 0.10 × frequency</div>
-                        <div>class_prefix: {selectedToken.integrationComponents.classPrefix.toFixed(3)}</div>
-                        <div>concord_link: {selectedToken.integrationComponents.concordLink.toFixed(3)}</div>
-                        <div>inflection: {selectedToken.integrationComponents.inflection.toFixed(3)}</div>
-                        <div>frequency: {selectedToken.integrationComponents.frequency.toFixed(3)}</div>
+                        <div className="font-mono">{t('annotation.integration.formula')}</div>
+                        <div>{t('annotation.integration.classPrefix')}: {selectedToken.integrationComponents.classPrefix.toFixed(3)}</div>
+                        <div>{t('annotation.integration.concordLink')}: {selectedToken.integrationComponents.concordLink.toFixed(3)}</div>
+                        <div>{t('annotation.integration.inflection')}: {selectedToken.integrationComponents.inflection.toFixed(3)}</div>
+                        <div>{t('annotation.integration.frequency')}: {selectedToken.integrationComponents.frequency.toFixed(3)}</div>
                       </div>
                     )}
                   </section>
@@ -874,7 +878,7 @@ export function AnnotationEditor() {
                           key={tag}
                           type="button"
                           className="px-2 py-0.5 bg-muted rounded-sm text-[11px] hover:bg-subtle-bg"
-                          aria-label={`Remove tag ${tag}`}
+                          aria-label={t('annotation.removeTag', { tag })}
                           onClick={() => removeTag(tag)}
                         >
                           {tag} ×
@@ -882,7 +886,7 @@ export function AnnotationEditor() {
                       ))}
                     </div>
                     <Input
-                      aria-label="Add user tag"
+                      aria-label={t('annotation.addUserTag')}
                       placeholder={t('annotation.tagPlaceholder')}
                       value={newTag}
                       onChange={(event) => setNewTag(event.target.value)}
@@ -960,7 +964,7 @@ export function AnnotationEditor() {
               <div key={lang.code} className="flex items-center gap-1.5">
                 <div className={`w-3 h-3 ${lang.color} rounded-sm`} />
                 <span className="font-mono">{lang.glyph}</span>
-                <span className="text-secondary-text">{lang.name}</span>
+                <span className="text-secondary-text">{t(lang.nameKey)}</span>
                 <span className="font-mono text-secondary-text">{lang.code}</span>
               </div>
             ))}

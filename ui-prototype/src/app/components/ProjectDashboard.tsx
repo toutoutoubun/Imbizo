@@ -24,11 +24,11 @@ interface ProjectDashboardProps {
 }
 
 const recentActivity = [
-  { id: '1', timestamp: '2026-05-26 14:32:15', action: 'Updated language label for token #2847 from auto-detected English to isiZulu', user: 'Manual override' },
-  { id: '2', timestamp: '2026-05-26 14:28:03', action: 'Added concord link between tokens #2831 (umfana) and #2835 (wakhe)', user: 'Manual annotation' },
-  { id: '3', timestamp: '2026-05-26 14:21:47', action: 'Set switch type for tokens #2820-2823 to intra-sentential', user: 'Manual annotation' },
-  { id: '4', timestamp: '2026-05-26 13:58:12', action: 'Imported transcript segment 15 from ELAN file', user: 'Import operation' },
-  { id: '5', timestamp: '2026-05-26 13:45:29', action: 'Auto-detection completed for segment 15 (342 tokens)', user: 'Auto-LID' },
+  { id: '1', timestamp: '2026-05-26 14:32:15', actionKey: 'app.activity.updatedLanguageLabelDetailed', userKey: 'app.activity.source.manualOverride' },
+  { id: '2', timestamp: '2026-05-26 14:28:03', actionKey: 'app.activity.addedConcordLinkDetailed', userKey: 'app.activity.source.manualAnnotation' },
+  { id: '3', timestamp: '2026-05-26 14:21:47', actionKey: 'app.activity.setSwitchTypeDetailed', userKey: 'app.activity.source.manualAnnotation' },
+  { id: '4', timestamp: '2026-05-26 13:58:12', actionKey: 'app.activity.importedSegmentDetailed', userKey: 'app.activity.source.importOperation' },
+  { id: '5', timestamp: '2026-05-26 13:45:29', actionKey: 'app.activity.autoDetectionCompletedDetailed', userKey: 'app.activity.source.autoLid' },
 ];
 
 export function ProjectDashboard({
@@ -80,13 +80,13 @@ export function ProjectDashboard({
 
             <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-subtle-bg rounded-sm cursor-pointer">
               <FileSpreadsheet className="w-4 h-4 text-secondary-text" />
-              <span className="text-[13px]">Exports</span>
+              <span className="text-[13px]">{t('app.dashboard.exports')}</span>
               <span className="ml-auto text-[11px] text-secondary-text">7</span>
             </div>
 
             <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-subtle-bg rounded-sm cursor-pointer">
               <BarChart3 className="w-4 h-4 text-secondary-text" />
-              <span className="text-[13px]">Reports</span>
+              <span className="text-[13px]">{t('app.nav.reports')}</span>
               <span className="ml-auto text-[11px] text-secondary-text">2</span>
             </div>
           </div>
@@ -106,7 +106,7 @@ export function ProjectDashboard({
                   activeTab === 'overview' ? 'bg-primary text-primary-foreground' : 'hover:bg-subtle-bg'
                 }`}
               >
-                Overview
+                {t('app.nav.overview')}
               </button>
               <button
                 onClick={() => { setActiveTab('editor'); onNavigateToEditor(); }}
@@ -179,21 +179,21 @@ export function ProjectDashboard({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-lang-english rounded-full"></div>
-                        <span className="text-[13px]">English</span>
+                        <span className="text-[13px]">{t('app.languages.english')}</span>
                       </div>
                       <span className="text-[13px] font-mono">62.3%</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-lang-isizulu rounded-full"></div>
-                        <span className="text-[13px]">isiZulu</span>
+                        <span className="text-[13px]">{t('app.languages.isizulu')}</span>
                       </div>
                       <span className="text-[13px] font-mono">34.1%</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-lang-afrikaans rounded-full"></div>
-                        <span className="text-[13px]">Afrikaans</span>
+                        <span className="text-[13px]">{t('app.languages.afrikaans')}</span>
                       </div>
                       <span className="text-[13px] font-mono">3.6%</span>
                     </div>
@@ -201,7 +201,7 @@ export function ProjectDashboard({
                 </div>
 
                 <div className="p-4 border border-border rounded-sm bg-card">
-                  <div className="text-[12px] text-secondary-text mb-1">Last Modified</div>
+                  <div className="text-[12px] text-secondary-text mb-1">{t('app.dashboard.lastModified')}</div>
                   <div className="text-[14px]">2026-05-26 14:32:15</div>
                 </div>
 
@@ -240,8 +240,8 @@ export function ProjectDashboard({
                     <div className="flex items-center gap-3">
                       <BarChart3 className="w-5 h-5 text-secondary-text" />
                       <div>
-                        <div className="text-[14px]">View Metrics Dashboard</div>
-                        <div className="text-[12px] text-secondary-text">Explore visualizations and statistics</div>
+                        <div className="text-[14px]">{t('app.dashboard.viewMetricsDashboard')}</div>
+                        <div className="text-[12px] text-secondary-text">{t('app.dashboard.exploreVisualizations')}</div>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-secondary-text group-hover:text-foreground transition-colors" />
@@ -251,8 +251,8 @@ export function ProjectDashboard({
                     <div className="flex items-center gap-3">
                       <FileSpreadsheet className="w-5 h-5 text-secondary-text" />
                       <div>
-                        <div className="text-[14px]">Export Data</div>
-                        <div className="text-[12px] text-secondary-text">CSV, XLSX, ELAN, or Praat format</div>
+                        <div className="text-[14px]">{t('app.actions.exportData')}</div>
+                        <div className="text-[12px] text-secondary-text">{t('app.dashboard.exportFormats')}</div>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-secondary-text group-hover:text-foreground transition-colors" />
@@ -262,8 +262,8 @@ export function ProjectDashboard({
                     <div className="flex items-center gap-3">
                       <Database className="w-5 h-5 text-secondary-text" />
                       <div>
-                        <div className="text-[14px]">Backup Project</div>
-                        <div className="text-[12px] text-secondary-text">Create a portable zip archive</div>
+                        <div className="text-[14px]">{t('app.dashboard.backupProject')}</div>
+                        <div className="text-[12px] text-secondary-text">{t('app.dashboard.portableZipArchive')}</div>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-secondary-text group-hover:text-foreground transition-colors" />
@@ -279,7 +279,7 @@ export function ProjectDashboard({
           <div className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="w-4 h-4 text-secondary-text" />
-              <h3 className="text-[12px] uppercase text-secondary-text">Recent Activity</h3>
+              <h3 className="text-[12px] uppercase text-secondary-text">{t('app.dashboard.recentActivity')}</h3>
             </div>
             <div className="space-y-3">
               {recentActivity.map((activity) => (
@@ -287,8 +287,8 @@ export function ProjectDashboard({
                   <div className="text-[11px] text-secondary-text font-mono mb-1">
                     {activity.timestamp}
                   </div>
-                  <div className="text-[12px] mb-1">{activity.action}</div>
-                  <div className="text-[11px] text-secondary-text">{activity.user}</div>
+                  <div className="text-[12px] mb-1">{t(activity.actionKey)}</div>
+                  <div className="text-[11px] text-secondary-text">{t(activity.userKey)}</div>
                 </div>
               ))}
             </div>

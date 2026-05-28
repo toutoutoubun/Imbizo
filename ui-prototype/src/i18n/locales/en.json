@@ -32,8 +32,47 @@
       "audio": "Audio",
       "transcripts": "Transcripts",
       "annotations": "Annotations",
+      "exports": "Exports",
+      "lastModified": "Last Modified",
+      "viewMetricsDashboard": "View Metrics Dashboard",
+      "exploreVisualizations": "Explore visualizations and statistics",
+      "exportFormats": "CSV, XLSX, ELAN, or Praat format",
+      "exportFormatsShort": "CSV, XLSX, ELAN, Praat",
+      "backupProject": "Backup Project",
+      "portableZipArchive": "Create a portable zip archive",
       "recentActivity": "Recent Activity",
       "files": "files"
+    },
+    "languages": {
+      "english": "English",
+      "afrikaans": "Afrikaans",
+      "isizulu": "isiZulu",
+      "isixhosa": "isiXhosa",
+      "sesotho": "Sesotho",
+      "setswana": "Setswana",
+      "other": "Other",
+      "unknown": "Unknown",
+      "japanese": "Japanese"
+    },
+    "activity": {
+      "updatedLanguageLabel": "Updated language label for token #2847",
+      "updatedLanguageLabelDetailed": "Updated language label for token #2847 from auto-detected English to isiZulu",
+      "addedConcordLink": "Added concord link between tokens #2831-#2835",
+      "addedConcordLinkDetailed": "Added concord link between tokens #2831 (umfana) and #2835 (wakhe)",
+      "setSwitchType": "Set switch type for tokens #2820-2823",
+      "setSwitchTypeDetailed": "Set switch type for tokens #2820-2823 to intra-sentential",
+      "importedSegment": "Imported transcript segment 15 from ELAN",
+      "importedSegmentDetailed": "Imported transcript segment 15 from ELAN file",
+      "autoDetectionCompleted": "Auto-detection completed for segment 15",
+      "autoDetectionCompletedDetailed": "Auto-detection completed for segment 15 (342 tokens)",
+      "source": {
+        "manualOverride": "Manual override",
+        "manualAnnotation": "Manual annotation",
+        "import": "Import",
+        "importOperation": "Import operation",
+        "autoLid": "Auto-LID",
+        "bulkEdit": "Bulk edit"
+      }
     },
     "views": {
       "spreadsheet": "Spreadsheet View",
@@ -59,6 +98,7 @@
     },
     "nav": {
       "home": "Home",
+      "overview": "Overview",
       "editor": "Editor",
       "spreadsheet": "Spreadsheet",
       "timeline": "Timeline",
@@ -101,6 +141,18 @@
     "tokenId": "Token ID: {{id}} • 00:12.345 - 00:12.678",
     "surfaceForm": "Surface form",
     "selectPrompt": "Select a token to view and edit its annotation",
+    "waveformPreview": "Audio waveform preview",
+    "transcriptTokens": "Transcript tokens",
+    "resizePane": "Resize annotation pane",
+    "paneLabel": "Annotation pane",
+    "notSet": "Not set",
+    "scoreNotComputed": "Not computed",
+    "nounClassExample": "e.g., 9",
+    "addUserTag": "Add user tag",
+    "removeTag": "Remove tag {{tag}}",
+    "badges": {
+      "auto": "AUTO"
+    },
     "fields": {
       "language": "Language",
       "matrixLanguage": "Matrix Language",
@@ -122,6 +174,42 @@
       "clearCandidates": "Clear candidate highlight",
       "howComputed": "How is this computed?"
     },
+    "switchTypes": {
+      "intra": "intra-sentential",
+      "inter": "inter-sentential",
+      "extra": "extra-sentential",
+      "none": "none"
+    },
+    "fourMTypes": {
+      "unassigned": "Unassigned",
+      "content": "Content morpheme",
+      "early_system": "Early system morpheme",
+      "bridge_late": "Bridge late system morpheme",
+      "outsider_late": "Outsider late system morpheme"
+    },
+    "triggerRoles": {
+      "trigger": "trigger",
+      "triggered": "triggered",
+      "none": "none"
+    },
+    "mixedVarieties": {
+      "tsotsitaal": "Tsotsitaal",
+      "iscamtho": "Iscamtho",
+      "kaaps": "Kaaps",
+      "sabela": "Sabela"
+    },
+    "integration": {
+      "formula": "0.35 × class_prefix + 0.35 × concord_link + 0.20 × inflection + 0.10 × frequency",
+      "classPrefix": "class_prefix",
+      "concordLink": "concord_link",
+      "inflection": "inflection",
+      "frequency": "frequency"
+    },
+    "concord": {
+      "class9PrefixCandidate": "class-9 prefix candidate",
+      "embeddedEnglishStemCandidate": "embedded English stem candidate",
+      "class1NounCandidate": "class-1 noun candidate"
+    },
     "empty": {
       "noConcordLinks": "No concord links recorded for this token."
     },
@@ -135,6 +223,27 @@
       "trigger": "by trigger",
       "mixed": "by mixed-code",
       "integration": "by integration"
+    },
+    "tokenAria": {
+      "language": "language {{language}}",
+      "matrix": "matrix {{language}}",
+      "fourM": "4-M {{type}}",
+      "switch": "switch {{type}}",
+      "autoDetected": "auto-detected",
+      "manuallySet": "manually set",
+      "hasConflict": "has conflict"
+    },
+    "provenance": {
+      "label": "Provenance log",
+      "collapse": "Collapse provenance log",
+      "expand": "Expand provenance log",
+      "events": {
+        "changedTokenLanguage": "Changed token #6 language from English to isiZulu",
+        "addedConcordCandidate": "Added concord link candidate for i-laptop",
+        "confirmedProperNounTrigger": "Confirmed English proper noun trigger",
+        "importedTranscriptSegment": "Imported transcript segment 15 from ELAN",
+        "autoLidCompleted": "Auto-LID completed for segment 15"
+      }
     }
   }
 }
