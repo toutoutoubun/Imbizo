@@ -58,11 +58,11 @@ const mockProjects: Project[] = [
 ];
 
 const recentActivity = [
-  { id: '1', timestamp: '2026-05-26 14:32:15', action: 'Updated language label for token #2847', user: 'Manual override' },
-  { id: '2', timestamp: '2026-05-26 14:28:03', action: 'Added concord link between tokens #2831-#2835', user: 'Manual annotation' },
-  { id: '3', timestamp: '2026-05-26 14:21:47', action: 'Set switch type for tokens #2820-2823', user: 'Manual annotation' },
-  { id: '4', timestamp: '2026-05-26 13:58:12', action: 'Imported transcript segment 15 from ELAN', user: 'Import' },
-  { id: '5', timestamp: '2026-05-26 13:45:29', action: 'Auto-detection completed for segment 15', user: 'Auto-LID' },
+  { id: '1', timestamp: '2026-05-26 14:32:15', actionKey: 'app.activity.updatedLanguageLabel', userKey: 'app.activity.source.manualOverride' },
+  { id: '2', timestamp: '2026-05-26 14:28:03', actionKey: 'app.activity.addedConcordLink', userKey: 'app.activity.source.manualAnnotation' },
+  { id: '3', timestamp: '2026-05-26 14:21:47', actionKey: 'app.activity.setSwitchType', userKey: 'app.activity.source.manualAnnotation' },
+  { id: '4', timestamp: '2026-05-26 13:58:12', actionKey: 'app.activity.importedSegment', userKey: 'app.activity.source.import' },
+  { id: '5', timestamp: '2026-05-26 13:45:29', actionKey: 'app.activity.autoDetectionCompleted', userKey: 'app.activity.source.autoLid' },
 ];
 
 export default function App() {
@@ -195,21 +195,21 @@ export default function App() {
                         <div className="flex items-center justify-between text-[12px]">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-lang-english rounded-full"></div>
-                            <span>English</span>
+                            <span>{t('app.languages.english')}</span>
                           </div>
                           <span className="font-mono">62.3%</span>
                         </div>
                         <div className="flex items-center justify-between text-[12px]">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-lang-isizulu rounded-full"></div>
-                            <span>isiZulu</span>
+                            <span>{t('app.languages.isizulu')}</span>
                           </div>
                           <span className="font-mono">34.1%</span>
                         </div>
                         <div className="flex items-center justify-between text-[12px]">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-lang-afrikaans rounded-full"></div>
-                            <span>Afrikaans</span>
+                            <span>{t('app.languages.afrikaans')}</span>
                           </div>
                           <span className="font-mono">3.6%</span>
                         </div>
@@ -279,7 +279,7 @@ export default function App() {
                           <Database className="w-4 h-4 text-secondary-text" />
                           <div>
                             <div className="text-[13px]">{t('app.actions.exportData')}</div>
-                            <div className="text-[11px] text-secondary-text">CSV, XLSX, ELAN, Praat</div>
+                            <div className="text-[11px] text-secondary-text">{t('app.dashboard.exportFormatsShort')}</div>
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-secondary-text" />
@@ -331,8 +331,8 @@ export default function App() {
                         <div className="text-[10px] text-secondary-text font-mono mb-1">
                           {activity.timestamp}
                         </div>
-                        <div className="text-[11px] leading-tight mb-1">{activity.action}</div>
-                        <div className="text-[10px] text-secondary-text">{activity.user}</div>
+                        <div className="text-[11px] leading-tight mb-1">{t(activity.actionKey)}</div>
+                        <div className="text-[10px] text-secondary-text">{t(activity.userKey)}</div>
                       </div>
                     ))}
                   </div>
@@ -395,13 +395,13 @@ export default function App() {
                   value={i18n.language}
                   onChange={(event) => i18n.changeLanguage(event.target.value)}
                 >
-                  <option value="en">English</option>
-                  <option value="ja">日本語</option>
-                  <option value="af">Afrikaans</option>
-                  <option value="zul">isiZulu</option>
-                  <option value="xho">isiXhosa</option>
-                  <option value="sot">Sesotho</option>
-                  <option value="tsn">Setswana</option>
+                  <option value="en">{t('app.languages.english')}</option>
+                  <option value="ja">{t('app.languages.japanese')}</option>
+                  <option value="af">{t('app.languages.afrikaans')}</option>
+                  <option value="zul">{t('app.languages.isizulu')}</option>
+                  <option value="xho">{t('app.languages.isixhosa')}</option>
+                  <option value="sot">{t('app.languages.sesotho')}</option>
+                  <option value="tsn">{t('app.languages.setswana')}</option>
                 </select>
                 <p className="text-[11px] text-secondary-text mt-2">{t('app.settings.languageHelp')}</p>
               </div>

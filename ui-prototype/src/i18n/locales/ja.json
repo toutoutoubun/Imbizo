@@ -32,8 +32,47 @@
       "audio": "音声",
       "transcripts": "文字起こし",
       "annotations": "アノテーション",
+      "exports": "書き出し",
+      "lastModified": "最終更新",
+      "viewMetricsDashboard": "指標ダッシュボードを見る",
+      "exploreVisualizations": "可視化と統計を確認する",
+      "exportFormats": "CSV、XLSX、ELAN、または Praat 形式",
+      "exportFormatsShort": "CSV、XLSX、ELAN、Praat",
+      "backupProject": "プロジェクトをバックアップ",
+      "portableZipArchive": "持ち運び可能な zip アーカイブを作成",
       "recentActivity": "最近の活動",
       "files": "ファイル"
+    },
+    "languages": {
+      "english": "英語",
+      "afrikaans": "アフリカーンス語",
+      "isizulu": "isiZulu",
+      "isixhosa": "isiXhosa",
+      "sesotho": "Sesotho",
+      "setswana": "Setswana",
+      "other": "その他",
+      "unknown": "不明",
+      "japanese": "日本語"
+    },
+    "activity": {
+      "updatedLanguageLabel": "トークン #2847 の言語ラベルを更新",
+      "updatedLanguageLabelDetailed": "トークン #2847 の言語ラベルを自動検出の英語から isiZulu に更新",
+      "addedConcordLink": "トークン #2831-#2835 の一致リンクを追加",
+      "addedConcordLinkDetailed": "トークン #2831 (umfana) と #2835 (wakhe) の一致リンクを追加",
+      "setSwitchType": "トークン #2820-2823 のスイッチ種別を設定",
+      "setSwitchTypeDetailed": "トークン #2820-2823 を文内スイッチに設定",
+      "importedSegment": "ELAN から文字起こしセグメント 15 をインポート",
+      "importedSegmentDetailed": "ELAN ファイルから文字起こしセグメント 15 をインポート",
+      "autoDetectionCompleted": "セグメント 15 の自動検出が完了",
+      "autoDetectionCompletedDetailed": "セグメント 15 の自動検出が完了 (342 トークン)",
+      "source": {
+        "manualOverride": "手動上書き",
+        "manualAnnotation": "手動アノテーション",
+        "import": "インポート",
+        "importOperation": "インポート操作",
+        "autoLid": "Auto-LID",
+        "bulkEdit": "一括編集"
+      }
     },
     "views": {
       "spreadsheet": "スプレッドシート表示",
@@ -59,6 +98,7 @@
     },
     "nav": {
       "home": "ホーム",
+      "overview": "概要",
       "editor": "エディタ",
       "spreadsheet": "表",
       "timeline": "時系列",
@@ -101,6 +141,18 @@
     "tokenId": "トークンID: {{id}} • 00:12.345 - 00:12.678",
     "surfaceForm": "表層形",
     "selectPrompt": "トークンを選択するとアノテーションを表示・編集できます",
+    "waveformPreview": "音声波形プレビュー",
+    "transcriptTokens": "文字起こしトークン",
+    "resizePane": "アノテーションペインの幅を変更",
+    "paneLabel": "アノテーションペイン",
+    "notSet": "未設定",
+    "scoreNotComputed": "未計算",
+    "nounClassExample": "例: 9",
+    "addUserTag": "ユーザータグを追加",
+    "removeTag": "タグ {{tag}} を削除",
+    "badges": {
+      "auto": "AUTO"
+    },
     "fields": {
       "language": "言語",
       "matrixLanguage": "マトリックス言語",
@@ -122,6 +174,42 @@
       "clearCandidates": "候補ハイライトを消す",
       "howComputed": "これはどう計算されますか？"
     },
+    "switchTypes": {
+      "intra": "文内",
+      "inter": "文間",
+      "extra": "タグ・スイッチ",
+      "none": "なし"
+    },
+    "fourMTypes": {
+      "unassigned": "未割り当て",
+      "content": "内容形態素",
+      "early_system": "早期システム形態素",
+      "bridge_late": "橋渡し後期システム形態素",
+      "outsider_late": "外部後期システム形態素"
+    },
+    "triggerRoles": {
+      "trigger": "トリガー",
+      "triggered": "トリガーされた側",
+      "none": "なし"
+    },
+    "mixedVarieties": {
+      "tsotsitaal": "Tsotsitaal",
+      "iscamtho": "Iscamtho",
+      "kaaps": "Kaaps",
+      "sabela": "Sabela"
+    },
+    "integration": {
+      "formula": "0.35 × class_prefix + 0.35 × concord_link + 0.20 × inflection + 0.10 × frequency",
+      "classPrefix": "class_prefix",
+      "concordLink": "concord_link",
+      "inflection": "inflection",
+      "frequency": "frequency"
+    },
+    "concord": {
+      "class9PrefixCandidate": "クラス9接頭辞候補",
+      "embeddedEnglishStemCandidate": "埋め込み英語語幹候補",
+      "class1NounCandidate": "クラス1名詞候補"
+    },
     "empty": {
       "noConcordLinks": "このトークンには一致リンクが記録されていません。"
     },
@@ -135,6 +223,27 @@
       "trigger": "トリガー別",
       "mixed": "混合コード別",
       "integration": "統合度別"
+    },
+    "tokenAria": {
+      "language": "言語 {{language}}",
+      "matrix": "マトリックス {{language}}",
+      "fourM": "4-M {{type}}",
+      "switch": "スイッチ {{type}}",
+      "autoDetected": "自動検出",
+      "manuallySet": "手動設定",
+      "hasConflict": "競合あり"
+    },
+    "provenance": {
+      "label": "Provenance ログ",
+      "collapse": "Provenance ログを折りたたむ",
+      "expand": "Provenance ログを展開",
+      "events": {
+        "changedTokenLanguage": "トークン #6 の言語を英語から isiZulu に変更",
+        "addedConcordCandidate": "i-laptop の一致リンク候補を追加",
+        "confirmedProperNounTrigger": "英語固有名詞トリガーを確認",
+        "importedTranscriptSegment": "ELAN から文字起こしセグメント 15 をインポート",
+        "autoLidCompleted": "セグメント 15 の Auto-LID が完了"
+      }
     }
   }
 }

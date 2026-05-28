@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { clsx } from 'clsx';
 
 export type TokenLanguage =
@@ -86,21 +87,22 @@ function integrationOpacity(score: number | null | undefined): string {
   return 'opacity-40';
 }
 
-function buildAriaLabel(props: TokenProps): string {
+function buildAriaLabel(props: TokenProps, t: (key: string, options?: Record<string, string>) => string): string {
   return [
-    `${props.text}, language ${props.language}`,
-    props.matrixLanguage ? `matrix ${props.matrixLanguage}` : null,
-    props.fourMType && props.fourMType !== 'unassigned' ? `4-M ${props.fourMType}` : null,
-    props.switchType && props.switchType !== 'none' ? `switch ${props.switchType}` : null,
-    props.triggerRole && props.triggerRole !== 'none' ? props.triggerRole : null,
-    props.isAuto ? 'auto-detected' : 'manually set',
-    props.hasConflict ? 'has conflict' : null,
+    `${props.text}, ${t('annotation.tokenAria.language', { language: props.language })}`,
+    props.matrixLanguage ? t('annotation.tokenAria.matrix', { language: props.matrixLanguage }) : null,
+    props.fourMType && props.fourMType !== 'unassigned' ? t('annotation.tokenAria.fourM', { type: props.fourMType }) : null,
+    props.switchType && props.switchType !== 'none' ? t('annotation.tokenAria.switch', { type: props.switchType }) : null,
+    props.triggerRole && props.triggerRole !== 'none' ? t(`annotation.triggerRoles.${props.triggerRole}`) : null,
+    props.isAuto ? t('annotation.tokenAria.autoDetected') : t('annotation.tokenAria.manuallySet'),
+    props.hasConflict ? t('annotation.tokenAria.hasConflict') : null,
   ]
     .filter(Boolean)
     .join(', ');
 }
 
 export function Token(props: TokenProps) {
+  const { t } = useTranslation();
   const {
     text,
     language,
@@ -135,7 +137,7 @@ export function Token(props: TokenProps) {
       data-highlight-mode={highlightMode}
       data-trigger-role={triggerRole}
       data-mixed-code-variety={mixedCodeVariety ?? undefined}
-      aria-label={buildAriaLabel(props)}
+      aria-label={buildAriaLabel(props, t)}
       aria-pressed={isSelected}
       className={clsx(
         'inline-flex items-center relative px-1.5 h-7 border rounded-sm',
@@ -171,7 +173,7 @@ export function Token(props: TokenProps) {
       </span>
       {isAuto && !hasConflict && (
         <span className="absolute bottom-0.5 left-0.5 text-[9px] leading-none text-secondary-text" aria-hidden="true">
-          AUTO
+          {t('annotation.badges.auto')}
         </span>
       )}
       {hasConflict && (

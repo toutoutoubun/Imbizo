@@ -32,8 +32,47 @@
       "audio": null,
       "transcripts": null,
       "annotations": null,
+      "exports": null,
+      "lastModified": null,
+      "viewMetricsDashboard": null,
+      "exploreVisualizations": null,
+      "exportFormats": null,
+      "exportFormatsShort": null,
+      "backupProject": null,
+      "portableZipArchive": null,
       "recentActivity": null,
       "files": null
+    },
+    "languages": {
+      "english": null,
+      "afrikaans": null,
+      "isizulu": null,
+      "isixhosa": null,
+      "sesotho": null,
+      "setswana": null,
+      "other": null,
+      "unknown": null,
+      "japanese": null
+    },
+    "activity": {
+      "updatedLanguageLabel": null,
+      "updatedLanguageLabelDetailed": null,
+      "addedConcordLink": null,
+      "addedConcordLinkDetailed": null,
+      "setSwitchType": null,
+      "setSwitchTypeDetailed": null,
+      "importedSegment": null,
+      "importedSegmentDetailed": null,
+      "autoDetectionCompleted": null,
+      "autoDetectionCompletedDetailed": null,
+      "source": {
+        "manualOverride": null,
+        "manualAnnotation": null,
+        "import": null,
+        "importOperation": null,
+        "autoLid": null,
+        "bulkEdit": null
+      }
     },
     "views": {
       "spreadsheet": null,
@@ -59,6 +98,7 @@
     },
     "nav": {
       "home": null,
+      "overview": null,
       "editor": null,
       "spreadsheet": null,
       "timeline": null,
@@ -101,6 +141,18 @@
     "tokenId": null,
     "surfaceForm": null,
     "selectPrompt": null,
+    "waveformPreview": null,
+    "transcriptTokens": null,
+    "resizePane": null,
+    "paneLabel": null,
+    "notSet": null,
+    "scoreNotComputed": null,
+    "nounClassExample": null,
+    "addUserTag": null,
+    "removeTag": null,
+    "badges": {
+      "auto": null
+    },
     "fields": {
       "language": null,
       "matrixLanguage": null,
@@ -122,6 +174,42 @@
       "clearCandidates": null,
       "howComputed": null
     },
+    "switchTypes": {
+      "intra": null,
+      "inter": null,
+      "extra": null,
+      "none": null
+    },
+    "fourMTypes": {
+      "unassigned": null,
+      "content": null,
+      "early_system": null,
+      "bridge_late": null,
+      "outsider_late": null
+    },
+    "triggerRoles": {
+      "trigger": null,
+      "triggered": null,
+      "none": null
+    },
+    "mixedVarieties": {
+      "tsotsitaal": null,
+      "iscamtho": null,
+      "kaaps": null,
+      "sabela": null
+    },
+    "integration": {
+      "formula": null,
+      "classPrefix": null,
+      "concordLink": null,
+      "inflection": null,
+      "frequency": null
+    },
+    "concord": {
+      "class9PrefixCandidate": null,
+      "embeddedEnglishStemCandidate": null,
+      "class1NounCandidate": null
+    },
     "empty": {
       "noConcordLinks": null
     },
@@ -135,6 +223,27 @@
       "trigger": null,
       "mixed": null,
       "integration": null
+    },
+    "tokenAria": {
+      "language": null,
+      "matrix": null,
+      "fourM": null,
+      "switch": null,
+      "autoDetected": null,
+      "manuallySet": null,
+      "hasConflict": null
+    },
+    "provenance": {
+      "label": null,
+      "collapse": null,
+      "expand": null,
+      "events": {
+        "changedTokenLanguage": null,
+        "addedConcordCandidate": null,
+        "confirmedProperNounTrigger": null,
+        "importedTranscriptSegment": null,
+        "autoLidCompleted": null
+      }
     }
   }
 }
