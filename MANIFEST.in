@@ -1,0 +1,26 @@
+include CHANGELOG.md
+include CITATION.cff
+include INSTALL_OFFLINE.md
+include LICENSE
+include PRINCIPLES.md
+include README.md
+include requirements.txt
+include requirements-offline.txt
+
+recursive-include bootstrap *.yaml
+recursive-include dictionaries *.md *.yaml .gitkeep
+recursive-include docs *.md
+recursive-include examples *.md
+recursive-include LICENSES *.md *.txt
+recursive-include packaging *.md *.spec
+recursive-include scripts *.py
+recursive-include src/imbizo/resources *.json *.yaml *.txt *.j2 *.css *.md
+recursive-include tests *.py
+recursive-include tools *.py
+
+prune downloads/raw
+prune ui-prototype/node_modules
+prune ui-prototype/coverage
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude .DS_Store
