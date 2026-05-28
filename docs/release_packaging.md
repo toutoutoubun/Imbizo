@@ -42,6 +42,13 @@ report dependencies are absent, either install the corresponding optional group
 from the audited wheelhouse or record the missing optional dependency in the
 release notes.
 
+Before creating a dictionary or processing-resource bootstrap bundle, replace
+any `LICENSES/*.txt` file that says `REPLACE THIS FILE WITH THE VERBATIM
+LICENSE TEXT` with the official upstream licence text. The source repository may
+carry those placeholders as audit reminders, but `tools/bootstrap.py` and
+`tools/make_bundle.py` refuse to convert or bundle a resource whose licence file
+is still a placeholder.
+
 ## Build The Package
 
 Build the source distribution and wheel locally:

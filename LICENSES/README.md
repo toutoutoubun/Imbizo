@@ -39,4 +39,4 @@ primary license file above is the compliance anchor except for metadata-gated
 sources such as `unisa_termbank`, where the adapter must read each XML file's
 rights statement and write the resolved licence into the converted YAML.
 
-Files containing `REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT` are deliberate placeholders. `tools/check_compliance.py` fails if imported dictionaries are shipped while a matching license file remains a placeholder.
+Files containing `REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT` are deliberate placeholders for sources whose official text still needs release-manager verification. They are acceptable in the source tree as audit reminders, but they are not acceptable in a generated bootstrap bundle or converted imported dictionary. `tools/bootstrap.py`, `tools/make_bundle.py`, and `tools/check_compliance.py` reject matching placeholder files before shipping imported resources.

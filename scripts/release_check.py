@@ -47,6 +47,7 @@ def main(argv: list[str] | None = None) -> int:
     results: list[CheckResult] = []
     results.extend(_check_required_files())
     results.extend(_check_metadata_consistency())
+    results.extend(_check_software_license_text())
     results.extend(_check_entry_points())
     results.extend(_check_tracked_artifacts())
     results.extend(_run_release_subchecks())
@@ -106,6 +107,21 @@ def _check_metadata_consistency() -> list[CheckResult]:
         ),
     ]
     return results
+
+
+def _check_software_license_text() -> list[CheckResult]:
+    """Verify the root LICENSE file carries the declared AGPLv3 text."""
+
+    text = (ROOT / "LICENSE").read_text(encoding="utf-8", errors="replace")
+    has_agpl = "GNU AFFERO GENERAL PUBLIC LICENSE" in text and "Version 3" in text
+    stale_gpl_notice = "GPL-3.0-or-later" in text or "GNU General Public License version 3" in text
+    return [
+        CheckResult(
+            "root LICENSE is AGPLv3",
+            has_agpl and not stale_gpl_notice,
+            "AGPLv3 text present" if has_agpl and not stale_gpl_notice else "root LICENSE does not match AGPLv3 declaration",
+        )
+    ]
 
 
 def _read_package_version() -> str:

@@ -26,6 +26,12 @@ from tools.adapters.utils.provenance import sha256_of
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "downloads" / "raw"
 PROVENANCE_DIR = PROJECT_ROOT / "dictionaries" / "imported" / "_provenance"
+PLACEHOLDER_LICENSE_MARKERS = (
+    "REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT",
+    "PLACEHOLDER",
+    "TODO",
+    "TBD",
+)
 
 
 @click.command()
@@ -200,9 +206,7 @@ def _process_source(
             return _summary(source_id, "skipped-license-pending", license_name, [], 0)
         return _summary(source_id, "skipped-needs-license-approval", license_name, [], 0)
 
-    for license_file in _license_files_for_source(source):
-        if not license_file.exists():
-            raise click.ClickException(f"License file missing for {source_id}: {license_file}")
+    _verify_source_license_files(source)
     if not offline:
         _verify_online_license_metadata(source)
 
@@ -284,6 +288,30 @@ def _verify_online_license_metadata(source: Mapping[str, Any]) -> None:
             f"Could not confirm required license metadata for {source.get('id')} at {probe_url}. "
             f"Expected one of: {', '.join(markers)}"
         )
+
+
+def _verify_source_license_files(source: Mapping[str, Any]) -> None:
+    """Refuse bootstrap when a required licence file is missing or a placeholder."""
+
+    source_id = str(source.get("id", "<unknown>"))
+    for license_file in _license_files_for_source(source):
+        if not license_file.exists():
+            raise click.ClickException(f"License file missing for {source_id}: {license_file}")
+        if _looks_like_placeholder_license(license_file.read_text(encoding="utf-8", errors="replace")):
+            raise click.ClickException(
+                f"License file for {source_id} is still a placeholder: {license_file}. "
+                "Replace it with the verbatim upstream licence text before bootstrap or bundle creation."
+            )
+
+
+def _looks_like_placeholder_license(text: str) -> bool:
+    """Return True when a licence text is a release-time placeholder."""
+
+    stripped = text.strip()
+    if not stripped:
+        return True
+    folded = stripped.casefold()
+    return any(marker.casefold() in folded for marker in PLACEHOLDER_LICENSE_MARKERS)
 
 
 def _extract_bundle(bundle_path: Path) -> Path:
