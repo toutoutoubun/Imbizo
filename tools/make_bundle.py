@@ -21,6 +21,7 @@ from tools.adapters.utils.provenance import sha256_of
 from tools.bootstrap import (
     _license_files_for_source,
     _source_tier,
+    _verify_source_license_files,
     _verify_online_license_metadata,
     download_url,
 )
@@ -64,6 +65,7 @@ def main(manifest_path: Path, out_path: Path, include_nc_data: bool, include_com
         if source.get("opt_in_flag") == "include_asr" and not include_asr:
             click.echo(f"Skipping {source.get('id')}: ASR opt-in not requested")
             continue
+        _verify_source_license_files(source)
         _verify_online_license_metadata(source)
         raw_files = _download_source(source, bundle_root / "raw")
         for raw_file in raw_files:
