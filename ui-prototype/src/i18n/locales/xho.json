@@ -1,0 +1,140 @@
+{
+  "app": {
+    "title": null,
+    "tagline": null,
+    "actions": {
+      "newProject": null,
+      "openProject": null,
+      "importZip": null,
+      "createNewProject": null,
+      "importFromZip": null,
+      "exportData": null
+    },
+    "welcome": {
+      "recentProjects": null,
+      "noRecentProjects": null,
+      "createFirstProject": null,
+      "lastOpened": null
+    },
+    "dashboard": {
+      "projectMetrics": null,
+      "totalTokens": null,
+      "languages": null,
+      "dictionaries": null,
+      "quickActions": null,
+      "annotationEditor": null,
+      "continueAnnotating": null,
+      "spreadsheetView": null,
+      "tabularDataView": null,
+      "metricsDashboard": null,
+      "viewStatistics": null,
+      "projectFiles": null,
+      "audio": null,
+      "transcripts": null,
+      "annotations": null,
+      "recentActivity": null,
+      "files": null
+    },
+    "views": {
+      "spreadsheet": null,
+      "spreadsheetDescription": null,
+      "timeline": null,
+      "timelineDescription": null,
+      "metrics": null,
+      "metricsDescription": null,
+      "reports": null,
+      "reportsDescription": null,
+      "settings": null,
+      "settingsDescription": null
+    },
+    "status": {
+      "offlineReady": null,
+      "offline": null,
+      "online": null,
+      "tokens": null
+    },
+    "settings": {
+      "language": null,
+      "languageHelp": null
+    },
+    "nav": {
+      "home": null,
+      "editor": null,
+      "spreadsheet": null,
+      "timeline": null,
+      "metrics": null,
+      "reports": null,
+      "settings": null
+    },
+    "menu": {
+      "file": null,
+      "edit": null,
+      "view": null,
+      "window": null,
+      "help": null,
+      "newProject": null,
+      "openProject": null,
+      "save": null,
+      "export": null,
+      "quit": null,
+      "undo": null,
+      "redo": null,
+      "find": null,
+      "replace": null,
+      "zoomIn": null,
+      "zoomOut": null,
+      "resetZoom": null,
+      "toggleSidebar": null,
+      "toggleStatusBar": null,
+      "minimize": null,
+      "zoom": null,
+      "bringAllToFront": null,
+      "documentation": null,
+      "principles": null,
+      "releaseNotes": null,
+      "about": null
+    }
+  },
+  "annotation": {
+    "title": null,
+    "currentMode": null,
+    "tokenId": null,
+    "surfaceForm": null,
+    "selectPrompt": null,
+    "fields": {
+      "language": null,
+      "matrixLanguage": null,
+      "embeddedLanguage": null,
+      "switchType": null,
+      "fourMType": null,
+      "nounClass": null,
+      "concordLinks": null,
+      "triggerRole": null,
+      "mixedCodeVariety": null,
+      "integrationScore": null,
+      "userTags": null,
+      "researcherMemo": null,
+      "confidence": null
+    },
+    "actions": {
+      "override": null,
+      "showCandidates": null,
+      "clearCandidates": null,
+      "howComputed": null
+    },
+    "empty": {
+      "noConcordLinks": null
+    },
+    "mixedCodeAdvisory": null,
+    "memoPlaceholder": null,
+    "tagPlaceholder": null,
+    "highlight": {
+      "language": null,
+      "fourM": null,
+      "switch": null,
+      "trigger": null,
+      "mixed": null,
+      "integration": null
+    }
+  }
+}

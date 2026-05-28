@@ -1,0 +1,267 @@
+@custom-variant dark (&:is(.dark *));
+
+/* Imbizo-CS Workbench Design System */
+:root {
+  /* Base palette - warm, paper-like tones */
+  --background: #FAFAF7;
+  --foreground: #1C1B1A;
+  --secondary-text: #5A5754;
+  --border: #D4D1CB;
+  --subtle-bg: #F0EDE6;
+
+  /* Accent colors - earth tones */
+  --primary: #8B5A2B; /* Deep ochre/amber */
+  --primary-foreground: #FAFAF7;
+  --secondary: #2C5F5D; /* Deep teal */
+  --secondary-foreground: #FAFAF7;
+  --warning: #A0522D;
+  --warning-foreground: #FAFAF7;
+  --destructive: #8B2C2C; /* Deep red-brown */
+  --destructive-foreground: #FAFAF7;
+  --success: #4F6F52; /* Muted green */
+  --success-foreground: #FAFAF7;
+
+  /* UI elements */
+  --card: #FFFFFF;
+  --card-foreground: #1C1B1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1C1B1A;
+  --muted: #F0EDE6;
+  --muted-foreground: #5A5754;
+  --accent: #8B5A2B;
+  --accent-foreground: #FAFAF7;
+  --input: #D4D1CB;
+  --input-background: #FFFFFF;
+  --ring: #8B5A2B;
+
+  /* Language token colors (Wong 2011 colourblind-safe palette) */
+  --lang-english: #0072B2;
+  --lang-afrikaans: #E69F00;
+  --lang-isizulu: #009E73;
+  --lang-isixhosa: #CC79A7;
+  --lang-sesotho: #56B4E9;
+  --lang-setswana: #D55E00;
+  --lang-other: #F0E442;
+  --lang-unknown: #999999;
+
+  /* Typography */
+  --font-size: 14px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Spacing (8px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Border radius - minimal, retro-modern */
+  --radius: 2px;
+  --radius-md: 4px;
+
+  /* Sidebar colors */
+  --sidebar: #F0EDE6;
+  --sidebar-foreground: #1C1B1A;
+  --sidebar-primary: #8B5A2B;
+  --sidebar-primary-foreground: #FAFAF7;
+  --sidebar-accent: #F0EDE6;
+  --sidebar-accent-foreground: #1C1B1A;
+  --sidebar-border: #D4D1CB;
+  --sidebar-ring: #8B5A2B;
+}
+
+/* Dark theme - thoughtfully inverted */
+.dark {
+  --background: #1C1B1A;
+  --foreground: #FAFAF7;
+  --secondary-text: #B3AEA7;
+  --border: #3A3834;
+  --subtle-bg: #2A2926;
+
+  --primary: #B87A42; /* Lighter ochre for dark mode */
+  --primary-foreground: #1C1B1A;
+  --secondary: #3D7E7A;
+  --secondary-foreground: #FAFAF7;
+  --warning: #C97D52;
+  --warning-foreground: #1C1B1A;
+  --destructive: #B54C4C;
+  --destructive-foreground: #FAFAF7;
+  --success: #6B8F6E;
+  --success-foreground: #1C1B1A;
+
+  --card: #2A2926;
+  --card-foreground: #FAFAF7;
+  --popover: #2A2926;
+  --popover-foreground: #FAFAF7;
+  --muted: #3A3834;
+  --muted-foreground: #B3AEA7;
+  --accent: #B87A42;
+  --accent-foreground: #1C1B1A;
+  --input: #3A3834;
+  --input-background: #2A2926;
+  --ring: #B87A42;
+
+  /* Language colors remain the same for consistency */
+  --lang-english: #0072B2;
+  --lang-afrikaans: #E69F00;
+  --lang-isizulu: #009E73;
+  --lang-isixhosa: #CC79A7;
+  --lang-sesotho: #56B4E9;
+  --lang-setswana: #D55E00;
+  --lang-other: #F0E442;
+  --lang-unknown: #999999;
+
+  --sidebar: #2A2926;
+  --sidebar-foreground: #FAFAF7;
+  --sidebar-primary: #B87A42;
+  --sidebar-primary-foreground: #1C1B1A;
+  --sidebar-accent: #3A3834;
+  --sidebar-accent-foreground: #FAFAF7;
+  --sidebar-border: #3A3834;
+  --sidebar-ring: #B87A42;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-secondary-text: var(--secondary-text);
+  --color-border: var(--border);
+  --color-subtle-bg: var(--subtle-bg);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-ring: var(--ring);
+
+  /* Language colors */
+  --color-lang-english: var(--lang-english);
+  --color-lang-afrikaans: var(--lang-afrikaans);
+  --color-lang-isizulu: var(--lang-isizulu);
+  --color-lang-isixhosa: var(--lang-isixhosa);
+  --color-lang-sesotho: var(--lang-sesotho);
+  --color-lang-setswana: var(--lang-setswana);
+  --color-lang-other: var(--lang-other);
+  --color-lang-unknown: var(--lang-unknown);
+
+  /* Spacing */
+  --space-1: var(--space-1);
+  --space-2: var(--space-2);
+  --space-3: var(--space-3);
+  --space-4: var(--space-4);
+  --space-6: var(--space-6);
+  --space-8: var(--space-8);
+  --space-12: var(--space-12);
+  --space-16: var(--space-16);
+
+  /* Border radius */
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-md);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /**
+  * Imbizo-CS Workbench Typography Scale
+  * Compact, density-favouring type system
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.3;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  p {
+    font-size: 14px;
+    font-weight: var(--font-weight-regular);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+    color: var(--secondary-text);
+  }
+
+  button {
+    font-size: 14px;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input, textarea, select {
+    font-size: 14px;
+    font-weight: var(--font-weight-regular);
+    line-height: 1.5;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', 'Consolas', 'Monaco', monospace;
+    font-feature-settings: "tnum" 1;
+  }
+}
