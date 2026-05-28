@@ -40,7 +40,7 @@ Suggested BibTeX templates:
   title = {UNISA Multilingual Linguistic Terminology},
   author = {{UNISA SADiLaR node}},
   url = {https://repo.sadilar.org/},
-  note = {Cite the SADiLaR handle and Lexonomy export checksum used}
+  note = {Cite the SADiLaR handle, Lexonomy export checksum, and per-file rights statement recorded in the converted YAML}
 }
 
 @misc{exdn_macvicar_1935,
@@ -50,6 +50,11 @@ Suggested BibTeX templates:
   note = {Public-domain historical source; cite also the linked-data conversion used}
 }
 ```
+
+UNISA / SADiLaR termbank files are metadata-gated rather than treated as one
+blanket OER resource. The adapter records the actual XML rights statement in
+each converted YAML file and skips files whose rights are missing, unclear, or
+outside the Tier-1 allow-list.
 
 ## Rebuilding the Dictionaries
 

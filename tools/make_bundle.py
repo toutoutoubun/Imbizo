@@ -19,7 +19,7 @@ import yaml
 
 from tools.adapters.utils.provenance import sha256_of
 from tools.bootstrap import (
-    _license_file_for,
+    _license_files_for_source,
     _source_tier,
     _verify_online_license_metadata,
     download_url,
@@ -69,10 +69,10 @@ def main(manifest_path: Path, out_path: Path, include_nc_data: bool, include_com
         for raw_file in raw_files:
             checksum = sha256_of(raw_file)
             checksum_lines.append(f"{checksum}  raw/{raw_file.name}")
-        license_file = _license_file_for(str(source.get("license", "")))
-        if not license_file.exists():
-            raise click.ClickException(f"License file missing: {license_file}")
-        shutil.copy2(license_file, bundle_root / "LICENSES" / license_file.name)
+        for license_file in _license_files_for_source(source):
+            if not license_file.exists():
+                raise click.ClickException(f"License file missing: {license_file}")
+            shutil.copy2(license_file, bundle_root / "LICENSES" / license_file.name)
         entries.append(
             {
                 "id": source["id"],

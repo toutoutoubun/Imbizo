@@ -23,7 +23,8 @@ is a combination, an aggregation-only resource, or a community-governed overlay.
 | SPDX id | Full text file | Resources | AGPLv3 compatibility note |
 | --- | --- | --- | --- |
 | `CC-BY-4.0` | `LICENSES/CC-BY-4.0.txt` | `up_multilingual_lexicons`, `african_wordnet`, `morph_annotated_corpora` when verified | Compatible for Imbizo-CS resource use with attribution preserved. |
-| `OER-UNISA` | `LICENSES/OER-UNISA.txt` | `unisa_termbank` | Treated as Tier-1 OER after SADiLaR metadata verification. |
+| `OER-UNISA` | `LICENSES/OER-UNISA.txt` | `unisa_termbank` files only when the XML rights metadata explicitly declares UNISA OER | Treated as Tier-1 OER after per-file SADiLaR metadata verification. |
+| `PER-FILE-SADILAR-METADATA` | not a licence text; see the concrete licence files named in each converted YAML | `unisa_termbank` manifest entry before conversion | The source is mixed/metadata-gated. The adapter converts only Tier-1 files and writes the actual resolved licence, such as `CC-BY-4.0` or `OER-UNISA`, into output YAML. |
 | `Public-Domain` | `LICENSES/PUBLIC-DOMAIN.txt` | `exdn` | No copyright restriction asserted; citation remains a provenance norm. |
 | `CC-BY-2.5-SA` | `LICENSES/CC-BY-2.5-SA.txt` | `nchlt_text_corpora` | Aggregation-only corpus resource; attribution required. Here `SA` means South Africa, not ShareAlike. |
 | `Apache-2.0-OR-MIT` | `LICENSES/APACHE-2.0.txt`, `LICENSES/MIT.txt` | `za_lex` | Permissive software/resource scripts; per-language data licence files must remain attached. |
