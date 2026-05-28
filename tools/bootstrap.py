@@ -200,9 +200,9 @@ def _process_source(
             return _summary(source_id, "skipped-license-pending", license_name, [], 0)
         return _summary(source_id, "skipped-needs-license-approval", license_name, [], 0)
 
-    license_file = _license_file_for(license_name)
-    if not license_file.exists():
-        raise click.ClickException(f"License file missing for {source_id}: {license_file}")
+    for license_file in _license_files_for_source(source):
+        if not license_file.exists():
+            raise click.ClickException(f"License file missing for {source_id}: {license_file}")
     if not offline:
         _verify_online_license_metadata(source)
 
@@ -223,6 +223,8 @@ def _process_source(
         metadata["retrieved_sha256"] = actual_sha
         metadata["current_url"] = raw_path.name
         metadata["include_asr"] = include_asr
+        metadata["include_nc_data"] = include_nc_data
+        metadata["include_community"] = include_community
         output_dirs = [PROJECT_ROOT / str(path) for path in source.get("output_dirs", [])]
         output_files.extend(adapter.convert(raw_path, output_dirs, metadata))
 
@@ -332,6 +334,16 @@ def _license_approved(source_id: str) -> bool:
         if item.strip()
     }
     return source_id in approved
+
+
+def _license_files_for_source(source: Mapping[str, Any]) -> list[Path]:
+    if source.get("license_resolution") == "per_file_metadata":
+        return [
+            PROJECT_ROOT / "LICENSES" / "CC-BY-4.0.txt",
+            PROJECT_ROOT / "LICENSES" / "OER-UNISA.txt",
+            PROJECT_ROOT / "LICENSES" / "CC-BY-NC-4.0.txt",
+        ]
+    return [_license_file_for(str(source.get("license", "")))]
 
 
 def _license_file_for(license_name: str) -> Path:

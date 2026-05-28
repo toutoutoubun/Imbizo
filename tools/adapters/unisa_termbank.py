@@ -1,8 +1,16 @@
-"""Adapter for UNISA Lexonomy linguistic terminology XML exports."""
+"""Adapter for UNISA / SADiLaR Lexonomy linguistic terminology XML exports.
+
+UNISA / SADiLaR terminology exports do not necessarily share one blanket
+licence. This adapter therefore reads the rights statement embedded in each
+XML file and converts only files whose metadata resolves to a Tier-1 licence.
+Unknown, missing, or NonCommercial rights statements are skipped rather than
+being silently re-labelled as OER.
+"""
 
 from __future__ import annotations
 
 from collections import defaultdict
+import logging
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -36,9 +44,71 @@ LANG_MAP: dict[str, str] = {
 
 CAVEATS = (
     "This file was converted automatically from a UNISA / SADiLaR Lexonomy "
-    "terminology export. Entries are unverified; treat them as starting "
-    "suggestions, not authoritative claims. Definitions are preserved where "
-    "the source XML provides them."
+    "terminology export after reading the source file's own rights metadata. "
+    "Entries are unverified; treat them as starting suggestions, not "
+    "authoritative claims. Definitions are preserved where the source XML "
+    "provides them. Files whose rights metadata is missing, unclear, or "
+    "outside the Tier-1 allow-list are skipped rather than assumed to be OER."
+)
+
+LOGGER = logging.getLogger(__name__)
+
+ALLOWED_LICENCE_PROFILES: tuple[dict[str, Any], ...] = (
+    {
+        "spdx_id": "CC-BY-4.0",
+        "markers": (
+            "cc-by-4.0",
+            "cc by 4.0",
+            "creative commons attribution 4.0",
+            "creative commons attribution international 4.0",
+        ),
+        "origin_license": "CC-BY-4.0",
+        "licence_classification": {
+            "spdx_id": "CC-BY-4.0",
+            "tier": 1,
+            "fosl_compatible": True,
+            "combinable_with_agpl": "combination",
+            "commercial_use_restricted": False,
+            "sharealike_required": False,
+            "downstream_obligations": ["attribution"],
+            "redistribution_notice": (
+                "This UNISA / SADiLaR terminology file declares CC-BY-4.0 in "
+                "its own rights metadata. Converted glossary outputs preserve "
+                "attribution and provenance."
+            ),
+        },
+    },
+    {
+        "spdx_id": "OER-UNISA",
+        "markers": (
+            "oer",
+            "open educational resource",
+            "unisa open educational resource",
+        ),
+        "origin_license": "OER-UNISA",
+        "licence_classification": {
+            "spdx_id": "OER-UNISA",
+            "tier": 1,
+            "fosl_compatible": True,
+            "combinable_with_agpl": "combination",
+            "commercial_use_restricted": False,
+            "sharealike_required": False,
+            "downstream_obligations": ["attribution"],
+            "redistribution_notice": (
+                "This UNISA / SADiLaR terminology file declares an Open "
+                "Educational Resource rights statement. Converted glossary "
+                "outputs preserve attribution and provenance."
+            ),
+        },
+    },
+)
+
+DISALLOWED_MARKERS: tuple[str, ...] = (
+    "cc-by-nc",
+    "cc by-nc",
+    "noncommercial",
+    "non-commercial",
+    "all rights reserved",
 )
 
 
@@ -59,6 +129,20 @@ class UNISATermbankAdapter(SourceAdapter):
         output_dir.mkdir(parents=True, exist_ok=True)
         raw_sha = sha256_of(raw_path)
         tree = etree.parse(str(raw_path))
+        rights = _extract_rights_statement(tree.getroot())
+        licence_profile = _licence_profile_for_rights(rights)
+        if licence_profile is None:
+            LOGGER.warning(
+                "Skipping UNISA termbank file %s because rights metadata is missing or not Tier-1 allowed: %s",
+                raw_path,
+                rights or "MISSING",
+            )
+            return []
+
+        file_metadata = dict(source_metadata)
+        file_metadata["origin_license"] = licence_profile["origin_license"]
+        file_metadata["license"] = licence_profile["origin_license"]
+        file_metadata["licence_classification"] = dict(licence_profile["licence_classification"])
         entries_by_lang: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
         for index, entry_node in enumerate(_entry_nodes(tree.getroot()), start=1):
@@ -85,12 +169,13 @@ class UNISATermbankAdapter(SourceAdapter):
                 dictionary_kind="glossaries",
                 language_code=iso,
                 language_pair=None,
-                source_metadata=source_metadata,
+                source_metadata=file_metadata,
                 raw_sha256=raw_sha,
                 adapter_path="tools/adapters/unisa_termbank.py",
                 adapter_version=self.adapter_version,
                 caveats=CAVEATS,
             )
+            header["source"]["rights_statement"] = rights
             out_path = output_dir / f"unisa_linguistic_terminology_{iso}.yaml"
             out_path.write_text(
                 yaml.safe_dump({**header, "entries": entries}, allow_unicode=True, sort_keys=False),
@@ -98,6 +183,39 @@ class UNISATermbankAdapter(SourceAdapter):
             )
             written.append(out_path)
         return written
+
+
+def _extract_rights_statement(root: etree._Element) -> str:
+    """Return rights / licence text declared in the XML metadata, if present."""
+
+    values: list[str] = []
+    metadata_nodes = root.xpath(
+        ".//*[local-name()='rights' or local-name()='license' or local-name()='licence']"
+    )
+    for node in metadata_nodes:
+        text = " ".join(node.itertext()).strip()
+        if text:
+            values.append(text)
+    for node in root.xpath(".//*[@rights or @license or @licence]"):
+        for attribute in ("rights", "license", "licence"):
+            value = node.get(attribute)
+            if value:
+                values.append(value.strip())
+    return " | ".join(dict.fromkeys(values))
+
+
+def _licence_profile_for_rights(rights: str) -> Mapping[str, Any] | None:
+    """Resolve a rights statement to a Tier-1 licence profile or None."""
+
+    folded = rights.casefold()
+    if not folded:
+        return None
+    if any(marker in folded for marker in DISALLOWED_MARKERS):
+        return None
+    for profile in ALLOWED_LICENCE_PROFILES:
+        if any(marker in folded for marker in profile["markers"]):
+            return profile
+    return None
 
 
 def _entry_nodes(root: etree._Element) -> list[etree._Element]:

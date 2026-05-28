@@ -137,20 +137,25 @@ sources:
     origin: SADiLaR / UNISA node Lexonomy export
     url: https://repo.sadilar.org/
     format: xml
-    license: OER-UNISA
+    license: PER-FILE-SADILAR-METADATA
+    license_resolution: per_file_metadata
     licence_classification:
-      spdx_id: OER-UNISA
+      spdx_id: PER-FILE-SADILAR-METADATA
       tier: 1
       fosl_compatible: true
       combinable_with_agpl: combination
       commercial_use_restricted: false
       sharealike_required: false
       downstream_obligations:
-        - attribution
+        - per_file_rights_verification
+        - attribution_when_declared
       redistribution_notice: >
-        UNISA linguistic terminology is treated as a Tier-1 OER resource. The
-        imported glossary files preserve source attribution and should not be
-        represented as human-verified Imbizo-CS terminology until reviewed.
+        UNISA / SADiLaR terminology exports are not treated as having a single
+        blanket licence. The adapter reads each XML file's own rights metadata
+        and converts only files whose metadata resolves to the Tier-1 allow-list
+        such as CC-BY-4.0 or an explicit UNISA OER declaration. Missing,
+        unclear, NonCommercial, or otherwise incompatible rights statements are
+        skipped rather than silently bundled.
     license_check_required: true
     expected_sha256: null
     bundle_status: shippable
@@ -160,8 +165,9 @@ sources:
     origin_authors:
       - UNISA SADiLaR node
     notes: >
-      The release bundle must include the audited Lexonomy XML export and the
-      matching OER declaration text.
+      Do not assume a blanket OER licence. Release bundles must preserve the
+      audited XML rights metadata. Converted YAML files carry the actual
+      per-file licence classification used by the adapter.
 
   - id: exdn
     name: English-Xhosa Dictionary for Nurses
