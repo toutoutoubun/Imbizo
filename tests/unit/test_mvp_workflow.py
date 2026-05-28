@@ -68,6 +68,10 @@ def test_local_project_import_annotate_lid_metrics_export(tmp_path: Path) -> Non
             ExportRequest(format_name=format_name, destination=exports / f"annotations.{suffix}", options=ExportOptions()),
         )
         assert Path(record.relative_path).exists()
+        citation = Path(record.relative_path).with_name(Path(record.relative_path).name + ".CITATION.cff")
+        citation_text = citation.read_text(encoding="utf-8")
+        assert "AGPL-3.0-or-later" in citation_text
+        assert "10.0000/imbizo-cs-workbench.placeholder" not in citation_text
 
 
 def test_json_xlsx_and_ods_importers(tmp_path: Path) -> None:

@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from imbizo import __version__
 from imbizo.app.errors import ExportFailure
 from imbizo.app.time import utc_now
 from imbizo.core.security import require_local_export_destination
@@ -93,9 +94,8 @@ class ExportService:
         citation = f"""cff-version: 1.2.0
 message: "If you use this Imbizo-CS export, cite the software and preserve the project provenance."
 title: "Imbizo-CS Workbench export from {context.metadata.title}"
-version: "0.1.0"
-doi: "10.0000/imbizo-cs-workbench.placeholder"
-license: "GPL-3.0-or-later"
+version: "{__version__}"
+license: "AGPL-3.0-or-later"
 authors:
   - name: "Imbizo-CS Workbench Contributors"
 """
