@@ -269,6 +269,34 @@ Trigger word or phrase:
 A word or phrase that may help explain a switch, following trigger-based coding
 in language-contact analysis (Clyne, 2003).
 
+## Installing A Release Package
+
+Imbizo-CS Workbench can be installed as a local Python package from the release
+wheel:
+
+```bash
+python -m pip install imbizo_cs_workbench-1.5.0-py3-none-any.whl
+imbizo-cs --help
+```
+
+For an air-gapped machine, use the offline bundle and install with `--no-index`
+so pip cannot contact a package index:
+
+```bash
+python -m pip install --no-index --find-links wheelhouse imbizo-cs-workbench
+```
+
+Maintainers preparing a release should run:
+
+```bash
+make release-check
+make release-build
+```
+
+The build writes wheel, source distribution, `SHA256SUMS.txt`, and a JSON
+release manifest into `dist/`. Full maintainer instructions are in
+[docs/release_packaging.md](docs/release_packaging.md).
+
 ## Running From Source
 
 For command-line workflows and tests:
@@ -294,7 +322,7 @@ Use the included [CITATION.cff](CITATION.cff). A plain-text citation can begin:
 
 ```text
 Imbizo-CS Workbench Contributors. (2026). Imbizo-CS Workbench
-(Version 0.1.0) [Computer software]. DOI placeholder:
+(Version 1.5.0) [Computer software]. DOI placeholder:
 10.0000/imbizo-cs-workbench.placeholder
 ```
 

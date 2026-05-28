@@ -1,11 +1,11 @@
 cff-version: 1.2.0
 message: "If you use Imbizo-CS Workbench in a thesis, article, dataset, or teaching material, please cite it."
 title: "Imbizo-CS Workbench"
-version: "0.1.0"
+version: "1.5.0"
 doi: "10.0000/imbizo-cs-workbench.placeholder"
-date-released: "2026-05-27"
-license: "GPL-3.0-or-later"
+date-released: "2026-05-28"
+license: "AGPL-3.0-or-later"
 authors:
   - name: "Imbizo-CS Workbench Contributors"
-repository-code: "https://example.invalid/imbizo-cs-workbench"
+repository-code: "https://github.com/toutoutoubun/Imbizo"
 abstract: "A fully local, offline-first analysis suite for code-switching in South African languages, designed for humanities and qualitative-interview research."

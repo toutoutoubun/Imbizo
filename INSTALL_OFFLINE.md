@@ -9,12 +9,22 @@ A full release should provide:
 
 - A Windows standalone build made with PyInstaller.
 - A Linux standalone build made with PyInstaller.
-- A source archive.
+- A Python wheel and source archive.
 - A local wheelhouse containing pinned open-source Python wheels.
-- Checksums for all release files.
+- `SHA256SUMS.txt` and `release_manifest_v<version>.json` for all release
+  files.
 
 The standalone build is the simplest option for researchers who do not use the
 command line.
+
+Maintainers prepare these artifacts with:
+
+```bash
+make release-check
+make release-build
+make wheelhouse
+make offline-bundle
+```
 
 ## Install From A Wheelhouse
 
@@ -27,8 +37,13 @@ python -m pip wheel .[gui,xlsx] --wheel-dir wheelhouse
 Or create a transfer bundle:
 
 ```bash
-python scripts/create_offline_bundle.py imbizo-offline-bundle --include-fasttext-lid
+python scripts/create_offline_bundle.py imbizo-offline-bundle
 ```
+
+If you need the optional fastText LID model, download and audit it separately,
+then pass `--fasttext-lid-file /path/to/lid.176.ftz`. The bundle script no
+longer downloads model files directly; network access for bootstrap resources is
+restricted to `tools/bootstrap.py` and `tools/make_bundle.py`.
 
 Copy the repository archive and the `wheelhouse/` folder to the offline machine
 with a USB drive or other local storage.
@@ -225,10 +240,10 @@ preserved.
 
 ```bash
 mkdir -p imbizo-cs-v1.5-offline/wheels
-python -m pip download --dest imbizo-cs-v1.5-offline/wheels imbizo-cs-workbench==1.5.0
+python -m pip wheel ".[gui,xlsx,security,reports]" --wheel-dir imbizo-cs-v1.5-offline/wheels
 cp -R dictionaries imbizo-cs-v1.5-offline/dictionaries
 cp -R docs imbizo-cs-v1.5-offline/docs
-cp README.md PRINCIPLES.md INSTALL_OFFLINE.md imbizo-cs-v1.5-offline/
+cp README.md PRINCIPLES.md INSTALL_OFFLINE.md CITATION.cff CHANGELOG.md imbizo-cs-v1.5-offline/
 find imbizo-cs-v1.5-offline -type f -print0 | sort -z | xargs -0 sha256sum > imbizo-cs-v1.5-offline/SHA256SUMS.txt
 zip -r imbizo-cs-v1.5-offline.zip imbizo-cs-v1.5-offline
 sha256sum imbizo-cs-v1.5-offline.zip > imbizo-cs-v1.5-offline.zip.sha256
