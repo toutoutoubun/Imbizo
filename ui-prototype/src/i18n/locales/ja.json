@@ -1,0 +1,140 @@
+{
+  "app": {
+    "title": "Imbizo-CS Workbench",
+    "tagline": "南アフリカ諸言語のコードスイッチングをローカルで分析する、オフラインファーストの研究環境",
+    "actions": {
+      "newProject": "新規プロジェクト",
+      "openProject": "プロジェクトを開く",
+      "importZip": "Zipからインポート",
+      "createNewProject": "新規プロジェクトを作成",
+      "importFromZip": "zipからインポート",
+      "exportData": "データを書き出す"
+    },
+    "welcome": {
+      "recentProjects": "最近のプロジェクト",
+      "noRecentProjects": "最近のプロジェクトはありません",
+      "createFirstProject": "最初のプロジェクトを作成",
+      "lastOpened": "最終オープン: {{date}}"
+    },
+    "dashboard": {
+      "projectMetrics": "プロジェクト指標",
+      "totalTokens": "総トークン数",
+      "languages": "言語",
+      "dictionaries": "辞書",
+      "quickActions": "クイック操作",
+      "annotationEditor": "アノテーションエディタ",
+      "continueAnnotating": "アノテーションを続ける",
+      "spreadsheetView": "スプレッドシート表示",
+      "tabularDataView": "表形式で表示",
+      "metricsDashboard": "指標ダッシュボード",
+      "viewStatistics": "統計を見る",
+      "projectFiles": "プロジェクトファイル",
+      "audio": "音声",
+      "transcripts": "文字起こし",
+      "annotations": "アノテーション",
+      "recentActivity": "最近の活動",
+      "files": "ファイル"
+    },
+    "views": {
+      "spreadsheet": "スプレッドシート表示",
+      "spreadsheetDescription": "アノテーションの表形式表示",
+      "timeline": "タイムライン表示",
+      "timelineDescription": "ELAN風のタイムライン表示",
+      "metrics": "指標ダッシュボード",
+      "metricsDescription": "可視化と統計",
+      "reports": "レポート",
+      "reportsDescription": "レポートの生成と書き出し",
+      "settings": "設定",
+      "settingsDescription": "アプリケーションとプロジェクト設定"
+    },
+    "status": {
+      "offlineReady": "オフライン準備完了",
+      "offline": "オフライン",
+      "online": "オンライン",
+      "tokens": "{{count}} トークン"
+    },
+    "settings": {
+      "language": "表示言語",
+      "languageHelp": "翻訳はローカルに同梱されます。オンライン翻訳サービスは使いません。"
+    },
+    "nav": {
+      "home": "ホーム",
+      "editor": "エディタ",
+      "spreadsheet": "表",
+      "timeline": "時系列",
+      "metrics": "指標",
+      "reports": "レポート",
+      "settings": "設定"
+    },
+    "menu": {
+      "file": "ファイル",
+      "edit": "編集",
+      "view": "表示",
+      "window": "ウィンドウ",
+      "help": "ヘルプ",
+      "newProject": "新規プロジェクト...",
+      "openProject": "プロジェクトを開く...",
+      "save": "保存",
+      "export": "書き出し...",
+      "quit": "終了",
+      "undo": "取り消し",
+      "redo": "やり直し",
+      "find": "検索...",
+      "replace": "置換...",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "resetZoom": "ズームをリセット",
+      "toggleSidebar": "サイドバー切替",
+      "toggleStatusBar": "ステータスバー切替",
+      "minimize": "最小化",
+      "zoom": "ズーム",
+      "bringAllToFront": "すべて前面へ",
+      "documentation": "ドキュメント",
+      "principles": "PRINCIPLES.md",
+      "releaseNotes": "リリースノート",
+      "about": "Imbizo-CS Workbenchについて"
+    }
+  },
+  "annotation": {
+    "title": "アノテーション",
+    "currentMode": "現在のモード",
+    "tokenId": "トークンID: {{id}} • 00:12.345 - 00:12.678",
+    "surfaceForm": "表層形",
+    "selectPrompt": "トークンを選択するとアノテーションを表示・編集できます",
+    "fields": {
+      "language": "言語",
+      "matrixLanguage": "マトリックス言語",
+      "embeddedLanguage": "埋め込み言語",
+      "switchType": "スイッチ種別",
+      "fourMType": "4-M 種別",
+      "nounClass": "名詞クラス",
+      "concordLinks": "一致リンク",
+      "triggerRole": "トリガー役割",
+      "mixedCodeVariety": "混合コード変種",
+      "integrationScore": "統合スコア",
+      "userTags": "ユーザータグ",
+      "researcherMemo": "研究者メモ",
+      "confidence": "信頼度"
+    },
+    "actions": {
+      "override": "上書き",
+      "showCandidates": "候補を発話内で表示",
+      "clearCandidates": "候補ハイライトを消す",
+      "howComputed": "これはどう計算されますか？"
+    },
+    "empty": {
+      "noConcordLinks": "このトークンには一致リンクが記録されていません。"
+    },
+    "mixedCodeAdvisory": "混合コード変種の語彙を検出することは、Tsotsitaalの話者やテキストを同定することと同じではありません。話者、場面、歴史を考慮してください。",
+    "memoPlaceholder": "このトークンについてメモを追加...",
+    "tagPlaceholder": "タグを入力してEnter",
+    "highlight": {
+      "language": "言語別",
+      "fourM": "4-M別",
+      "switch": "スイッチ種別",
+      "trigger": "トリガー別",
+      "mixed": "混合コード別",
+      "integration": "統合度別"
+    }
+  }
+}

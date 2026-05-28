@@ -1,0 +1,140 @@
+{
+  "app": {
+    "title": "Imbizo-CS Workbench",
+    "tagline": "A fully local, offline-first analysis suite for code-switching in South African languages",
+    "actions": {
+      "newProject": "New Project",
+      "openProject": "Open Project",
+      "importZip": "Import from Zip",
+      "createNewProject": "Create new project",
+      "importFromZip": "Import from zip",
+      "exportData": "Export Data"
+    },
+    "welcome": {
+      "recentProjects": "Recent Projects",
+      "noRecentProjects": "No recent projects",
+      "createFirstProject": "Create your first project",
+      "lastOpened": "Last opened: {{date}}"
+    },
+    "dashboard": {
+      "projectMetrics": "Project Metrics",
+      "totalTokens": "Total Tokens",
+      "languages": "Languages",
+      "dictionaries": "Dictionaries",
+      "quickActions": "Quick Actions",
+      "annotationEditor": "Annotation Editor",
+      "continueAnnotating": "Continue annotating",
+      "spreadsheetView": "Spreadsheet View",
+      "tabularDataView": "Tabular data view",
+      "metricsDashboard": "Metrics Dashboard",
+      "viewStatistics": "View statistics",
+      "projectFiles": "Project Files",
+      "audio": "Audio",
+      "transcripts": "Transcripts",
+      "annotations": "Annotations",
+      "recentActivity": "Recent Activity",
+      "files": "files"
+    },
+    "views": {
+      "spreadsheet": "Spreadsheet View",
+      "spreadsheetDescription": "Tabular view of annotations",
+      "timeline": "Timeline View",
+      "timelineDescription": "ELAN-style timeline view",
+      "metrics": "Metrics Dashboard",
+      "metricsDescription": "Visualizations and statistics",
+      "reports": "Reports",
+      "reportsDescription": "Generate and export reports",
+      "settings": "Settings",
+      "settingsDescription": "Application and project configuration"
+    },
+    "status": {
+      "offlineReady": "Offline ready",
+      "offline": "Offline",
+      "online": "Online",
+      "tokens": "{{count}} tokens"
+    },
+    "settings": {
+      "language": "Interface language",
+      "languageHelp": "Translations are bundled locally; no online translation service is used."
+    },
+    "nav": {
+      "home": "Home",
+      "editor": "Editor",
+      "spreadsheet": "Spreadsheet",
+      "timeline": "Timeline",
+      "metrics": "Metrics",
+      "reports": "Reports",
+      "settings": "Settings"
+    },
+    "menu": {
+      "file": "File",
+      "edit": "Edit",
+      "view": "View",
+      "window": "Window",
+      "help": "Help",
+      "newProject": "New Project...",
+      "openProject": "Open Project...",
+      "save": "Save",
+      "export": "Export...",
+      "quit": "Quit",
+      "undo": "Undo",
+      "redo": "Redo",
+      "find": "Find...",
+      "replace": "Replace...",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "resetZoom": "Reset Zoom",
+      "toggleSidebar": "Toggle Sidebar",
+      "toggleStatusBar": "Toggle Status Bar",
+      "minimize": "Minimize",
+      "zoom": "Zoom",
+      "bringAllToFront": "Bring All to Front",
+      "documentation": "Documentation",
+      "principles": "PRINCIPLES.md",
+      "releaseNotes": "Release Notes",
+      "about": "About Imbizo-CS Workbench"
+    }
+  },
+  "annotation": {
+    "title": "Annotation",
+    "currentMode": "Current mode",
+    "tokenId": "Token ID: {{id}} • 00:12.345 - 00:12.678",
+    "surfaceForm": "Surface form",
+    "selectPrompt": "Select a token to view and edit its annotation",
+    "fields": {
+      "language": "Language",
+      "matrixLanguage": "Matrix Language",
+      "embeddedLanguage": "Embedded Language",
+      "switchType": "Switch type",
+      "fourMType": "4-M type",
+      "nounClass": "Noun class",
+      "concordLinks": "Concord links",
+      "triggerRole": "Trigger role",
+      "mixedCodeVariety": "Mixed-code variety",
+      "integrationScore": "Integration score",
+      "userTags": "User tags",
+      "researcherMemo": "Researcher memo",
+      "confidence": "Confidence"
+    },
+    "actions": {
+      "override": "Override",
+      "showCandidates": "Show candidates in utterance",
+      "clearCandidates": "Clear candidate highlight",
+      "howComputed": "How is this computed?"
+    },
+    "empty": {
+      "noConcordLinks": "No concord links recorded for this token."
+    },
+    "mixedCodeAdvisory": "Detecting mixed-code variety lexis is not the same as identifying a Tsotsitaal speaker or text. Consider speaker, setting, and history.",
+    "memoPlaceholder": "Add notes about this token...",
+    "tagPlaceholder": "Add tag and press Enter",
+    "highlight": {
+      "language": "by language",
+      "fourM": "by 4-M",
+      "switch": "by switch type",
+      "trigger": "by trigger",
+      "mixed": "by mixed-code",
+      "integration": "by integration"
+    }
+  }
+}
