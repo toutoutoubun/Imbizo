@@ -141,7 +141,7 @@ project's `dictionaries/imported/_provenance/` directory in your archive.
 | UP Multilingual Lexicons | CC-BY-4.0 | 1 | combination | yes | no | yes |
 | Mafoko / za-mavito | NOODL or CC-BY-NC-SA-2.5-ZA | 3 | aggregation only | restricted where NC rows apply | yes where SA rows apply | no |
 | African Wordnet verified subset | CC-BY-4.0 | 1 | combination | yes | no | yes |
-| UNISA Termbank | Per-file SADiLaR metadata; converted files resolve to CC-BY-4.0 or OER-UNISA when verified | 1 for converted files only | combination after per-file verification | yes for converted Tier-1 files | no for converted Tier-1 files | yes, but unknown / NC files are skipped |
+| UNISA Termbank | Per-file SADiLaR metadata; converted files currently resolve to CC-BY-4.0 when verified | 1 for converted files only | combination after per-file verification | yes for converted Tier-1 files | no for converted Tier-1 files | yes, but generic OER / unknown / NC files are skipped |
 | EXDN | Public Domain | 1 | combination | yes | no | yes |
 | fastText lid.176 compressed | CC-BY-SA-3.0 | 2 | aggregation only | yes | yes | no |
 | fastText lid.176 full | CC-BY-SA-3.0 | 2 | aggregation only | yes | yes | no |

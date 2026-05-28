@@ -1,5 +1,12 @@
 OER-UNISA
 
-REPLACE THIS FILE WITH THE VERBATIM LICENSE TEXT FROM <https://repo.sadilar.org/>
+This file is retained as a historical marker only. It is not a standalone
+licence text and must not be used for new converted resources unless project
+governance adds a concrete UNISA / SADiLaR Open Educational Resource licence
+declaration with redistributable terms.
 
-Canonical URL: https://repo.sadilar.org/
+For current releases, UNISA / SADiLaR termbank resources are resolved from each
+source file's own rights metadata. The bootstrap adapter converts only concrete
+Tier-1 rights currently allow-listed as CC-BY-4.0. Generic OER, unclear,
+NonCommercial, or incompatible statements are skipped rather than silently
+treated as redistributable package data.
