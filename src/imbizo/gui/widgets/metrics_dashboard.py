@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -9,26 +10,77 @@ from typing import Any
 from imbizo import __version__
 from imbizo.core.visualisation.heatmap import render_speaker_scene_heatmap
 from imbizo.core.visualisation.sankey import render_language_transition_sankey
+from imbizo.services.metrics_service import MetricsRequest, MetricsService
 
 
 class MetricsDashboardWidget:
-    """Metric request and result display."""
+    """Metric request and result display for local code-switching analysis."""
 
-    def __init__(self, project: Any | None = None) -> None:
+    def __init__(self, project: Any | None = None, metrics_service: MetricsService | None = None) -> None:
         self.project = project
+        self.metrics_service = metrics_service or MetricsService()
         self.tabs = None
+        self.metrics_table = None
+        self.summary_label = None
 
     def build(self) -> Any:
         """Build and return a PySide6 widget."""
 
-        from PySide6.QtWidgets import QTabWidget, QTableWidget
+        from PySide6.QtWidgets import QLabel, QPushButton, QTableWidget, QTabWidget, QVBoxLayout, QWidget
 
         self.tabs = QTabWidget()
-        table = QTableWidget(0, 4)
-        table.setHorizontalHeaderLabels(["Metric", "Scope", "Value", "Inputs"])
-        self.tabs.addTab(table, "Metrics")
+        metrics_page = QWidget()
+        layout = QVBoxLayout(metrics_page)
+        self.summary_label = QLabel(
+            "Local analysis uses manual/imported language labels first, then advisory Local LID labels when available."
+        )
+        self.summary_label.setWordWrap(True)
+        run_button = QPushButton("Run local code-switching analysis")
+        run_button.clicked.connect(self.run_local_analysis)
+        self.metrics_table = QTableWidget(0, 4)
+        self.metrics_table.setHorizontalHeaderLabels(["Metric", "Scope", "Value", "Inputs"])
+        layout.addWidget(self.summary_label)
+        layout.addWidget(run_button)
+        layout.addWidget(self.metrics_table)
+        self.tabs.addTab(metrics_page, "Metrics")
         self.tabs.addTab(self.build_speaker_scene_profile_tab(), "Speaker & Scene Profile")
         return self.tabs
+
+    def run_local_analysis(self) -> list[Any]:
+        """Compute local code-switching metrics and render them in the table.
+
+        This is the visible end-to-end NLP analysis path: imported/manual/auto
+        token language labels are treated as advisory evidence, adjacent
+        language changes become switch points, and transparent code-switching
+        indices are persisted in the project database.
+        """
+
+        project = self._require_project()
+        if not hasattr(project, "connection"):
+            raise RuntimeError("Local code-switching analysis requires an opened Imbizo project.")
+        run = self.metrics_service.compute_metrics(project, MetricsRequest())
+        results = self.metrics_service.get_results(project, run.id)
+        self._render_metric_results(results)
+        return results
+
+    def _render_metric_results(self, results: list[Any]) -> None:
+        """Render metric results in the dashboard table."""
+
+        if self.metrics_table is None:
+            return
+        self.metrics_table.setRowCount(len(results))
+        for row_index, result in enumerate(results):
+            self.metrics_table.setItem(row_index, 0, self._item(_metric_label(result.metric_name)))
+            self.metrics_table.setItem(row_index, 1, self._item(result.scope_type))
+            self.metrics_table.setItem(row_index, 2, self._item(_format_value(result.value)))
+            self.metrics_table.setItem(row_index, 3, self._item(str(result.input_count)))
+        self.metrics_table.resizeColumnsToContents()
+        if self.summary_label is not None:
+            annotated_inputs = max((result.input_count for result in results), default=0)
+            self.summary_label.setText(
+                f"Computed {len(results)} local code-switching metrics from {annotated_inputs:,} token rows. "
+                "Automatic labels remain advisory and can be overridden."
+            )
 
     def build_speaker_scene_profile_tab(self) -> Any:
         """Build the visualisation tab with export and caption actions."""
@@ -96,3 +148,34 @@ class MetricsDashboardWidget:
         if self.project is None:
             raise RuntimeError("A project must be loaded before exporting dashboard figures.")
         return self.project
+
+    def _item(self, text: str) -> Any:
+        from PySide6.QtWidgets import QTableWidgetItem
+
+        return QTableWidgetItem(text)
+
+
+def _metric_label(metric_name: str) -> str:
+    """Return a readable label for one metric key."""
+
+    return {
+        "language_proportion": "Language proportions",
+        "switch_count": "Switch count",
+        "switch_density": "Switch density per 100 tokens",
+        "dominant_language": "Dominant language by segment",
+        "m_index": "M-index",
+        "i_index": "I-index",
+        "burstiness": "Switch burstiness",
+        "trigger_cooccurrence": "Trigger co-occurrence",
+        "kwic": "KWIC rows",
+    }.get(metric_name, metric_name)
+
+
+def _format_value(value: Any) -> str:
+    """Format metric values without hiding their structure."""
+
+    if isinstance(value, float):
+        return f"{value:.4f}"
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True)
+    return str(value)
