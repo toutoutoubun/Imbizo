@@ -10,18 +10,26 @@ from typing import Any
 from imbizo import __version__
 from imbizo.core.visualisation.heatmap import render_speaker_scene_heatmap
 from imbizo.core.visualisation.sankey import render_language_transition_sankey
-from imbizo.services.metrics_service import MetricsRequest, MetricsService
+from imbizo.services.metrics_service import MetricsService
+from imbizo.services.nlp_analysis_service import NlpAnalysisOptions, NlpAnalysisService
 
 
 class MetricsDashboardWidget:
     """Metric request and result display for local code-switching analysis."""
 
-    def __init__(self, project: Any | None = None, metrics_service: MetricsService | None = None) -> None:
+    def __init__(
+        self,
+        project: Any | None = None,
+        metrics_service: MetricsService | None = None,
+        nlp_analysis_service: NlpAnalysisService | None = None,
+    ) -> None:
         self.project = project
         self.metrics_service = metrics_service or MetricsService()
+        self.nlp_analysis_service = nlp_analysis_service or NlpAnalysisService(metrics_service=self.metrics_service)
         self.tabs = None
         self.metrics_table = None
         self.summary_label = None
+        self._active_progress_dialog = None
 
     def build(self) -> Any:
         """Build and return a PySide6 widget."""
@@ -35,7 +43,7 @@ class MetricsDashboardWidget:
             "Local analysis uses manual/imported language labels first, then advisory Local LID labels when available."
         )
         self.summary_label.setWordWrap(True)
-        run_button = QPushButton("Run local code-switching analysis")
+        run_button = QPushButton("Run full local NLP analysis")
         run_button.clicked.connect(self.run_local_analysis)
         self.metrics_table = QTableWidget(0, 4)
         self.metrics_table.setHorizontalHeaderLabels(["Metric", "Scope", "Value", "Inputs"])
@@ -47,20 +55,36 @@ class MetricsDashboardWidget:
         return self.tabs
 
     def run_local_analysis(self) -> list[Any]:
-        """Compute local code-switching metrics and render them in the table.
+        """Run the local NLP pipeline and render code-switching metrics.
 
-        This is the visible end-to-end NLP analysis path: imported/manual/auto
-        token language labels are treated as advisory evidence, adjacent
-        language changes become switch points, and transparent code-switching
-        indices are persisted in the project database.
+        This is the visible end-to-end analysis path: Local LID, advisory
+        switch profiling, noun-class hinting, trigger-candidate detection, and
+        transparent metrics all run on the researcher's machine. Manual labels
+        remain authoritative and automatic labels remain overridable.
         """
 
         project = self._require_project()
         if not hasattr(project, "connection"):
             raise RuntimeError("Local code-switching analysis requires an opened Imbizo project.")
-        run = self.metrics_service.compute_metrics(project, MetricsRequest())
-        results = self.metrics_service.get_results(project, run.id)
+        progress = self._progress_callback("Running full local NLP analysis")
+        try:
+            report = self.nlp_analysis_service.run(
+                project,
+                NlpAnalysisOptions(run_mixed_code=False),
+                progress_callback=progress,
+            )
+        finally:
+            self._close_progress_dialog()
+        if not report.metrics_run_id:
+            return []
+        results = self.metrics_service.get_results(project, report.metrics_run_id)
         self._render_metric_results(results)
+        if self.summary_label is not None:
+            stage_labels = ", ".join(f"{stage.name}:{stage.status}" for stage in report.stages)
+            self.summary_label.setText(
+                f"Completed local NLP analysis from {max((result.input_count for result in results), default=0):,} token rows. "
+                f"Report: {Path(report.report_path).name}. Stages: {stage_labels}."
+            )
         return results
 
     def _render_metric_results(self, results: list[Any]) -> None:
@@ -148,6 +172,47 @@ class MetricsDashboardWidget:
         if self.project is None:
             raise RuntimeError("A project must be loaded before exporting dashboard figures.")
         return self.project
+
+    def _progress_callback(self, title: str) -> Any:
+        """Return a GUI progress callback when Qt is active, otherwise None."""
+
+        try:
+            from PySide6.QtCore import Qt
+            from PySide6.QtWidgets import QApplication, QProgressDialog
+        except Exception:
+            return None
+        app = QApplication.instance()
+        if app is None or self.tabs is None:
+            return None
+        dialog = QProgressDialog(self.tabs)
+        self._active_progress_dialog = dialog
+        dialog.setWindowTitle(title)
+        dialog.setLabelText("Preparing local NLP analysis")
+        dialog.setRange(0, 100)
+        dialog.setValue(0)
+        dialog.setCancelButton(None)
+        dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        dialog.setMinimumDuration(0)
+        dialog.show()
+        QApplication.processEvents()
+
+        def update(message: str, current: int, total: int) -> None:
+            dialog.setLabelText(message)
+            dialog.setMaximum(max(total, 1))
+            dialog.setValue(max(0, min(current, total)))
+            QApplication.processEvents()
+            if current >= total:
+                dialog.close()
+
+        return update
+
+    def _close_progress_dialog(self) -> None:
+        """Close the local analysis progress dialog if one is open."""
+
+        dialog = self._active_progress_dialog
+        if dialog is not None:
+            dialog.close()
+            self._active_progress_dialog = None
 
     def _item(self, text: str) -> Any:
         from PySide6.QtWidgets import QTableWidgetItem
