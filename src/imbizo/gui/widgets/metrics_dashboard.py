@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from datetime import UTC, datetime
+import os
 from pathlib import Path
 from typing import Any
 
 from imbizo import __version__
 from imbizo.core.visualisation.heatmap import render_speaker_scene_heatmap
 from imbizo.core.visualisation.sankey import render_language_transition_sankey
+from imbizo.persistence.repositories import LanguageRepository
 from imbizo.services.metrics_service import MetricsService
 from imbizo.services.nlp_analysis_service import NlpAnalysisOptions, NlpAnalysisService
 
@@ -34,7 +37,7 @@ class MetricsDashboardWidget:
     def build(self) -> Any:
         """Build and return a PySide6 widget."""
 
-        from PySide6.QtWidgets import QLabel, QPushButton, QTableWidget, QTabWidget, QVBoxLayout, QWidget
+        from PySide6.QtWidgets import QLabel, QHeaderView, QPushButton, QTableWidget, QTabWidget, QVBoxLayout, QWidget
 
         self.tabs = QTabWidget()
         metrics_page = QWidget()
@@ -47,6 +50,12 @@ class MetricsDashboardWidget:
         run_button.clicked.connect(self.run_local_analysis)
         self.metrics_table = QTableWidget(0, 4)
         self.metrics_table.setHorizontalHeaderLabels(["Metric", "Scope", "Value", "Inputs"])
+        self.metrics_table.setWordWrap(True)
+        header = self.metrics_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         layout.addWidget(self.summary_label)
         layout.addWidget(run_button)
         layout.addWidget(self.metrics_table)
@@ -92,13 +101,21 @@ class MetricsDashboardWidget:
 
         if self.metrics_table is None:
             return
+        language_labels = self._language_labels()
         self.metrics_table.setRowCount(len(results))
         for row_index, result in enumerate(results):
             self.metrics_table.setItem(row_index, 0, self._item(_metric_label(result.metric_name)))
             self.metrics_table.setItem(row_index, 1, self._item(result.scope_type))
-            self.metrics_table.setItem(row_index, 2, self._item(_format_value(result.value)))
-            self.metrics_table.setItem(row_index, 3, self._item(str(result.input_count)))
-        self.metrics_table.resizeColumnsToContents()
+            self.metrics_table.setItem(
+                row_index,
+                2,
+                self._item(
+                    _format_metric_value(result.metric_name, result.value, language_labels),
+                    tooltip=_format_raw_value(result.value),
+                ),
+            )
+            self.metrics_table.setItem(row_index, 3, self._item(f"{result.input_count:,}"))
+        self.metrics_table.resizeRowsToContents()
         if self.summary_label is not None:
             annotated_inputs = max((result.input_count for result in results), default=0)
             self.summary_label.setText(
@@ -173,9 +190,27 @@ class MetricsDashboardWidget:
             raise RuntimeError("A project must be loaded before exporting dashboard figures.")
         return self.project
 
+    def _language_labels(self) -> dict[str, str]:
+        """Return language IDs mapped to compact display codes."""
+
+        project = self._require_project()
+        if not hasattr(project, "connection"):
+            return {}
+        try:
+            languages = LanguageRepository(project.connection).list_languages()
+        except Exception:
+            return {}
+        labels: dict[str, str] = {}
+        for language in languages:
+            labels[language.id] = language.code
+            labels[language.code] = language.code
+        return labels
+
     def _progress_callback(self, title: str) -> Any:
         """Return a GUI progress callback when Qt is active, otherwise None."""
 
+        if os.environ.get("PYTEST_CURRENT_TEST"):
+            return None
         try:
             from PySide6.QtCore import Qt
             from PySide6.QtWidgets import QApplication, QProgressDialog
@@ -214,10 +249,13 @@ class MetricsDashboardWidget:
             dialog.close()
             self._active_progress_dialog = None
 
-    def _item(self, text: str) -> Any:
+    def _item(self, text: str, tooltip: str | None = None) -> Any:
         from PySide6.QtWidgets import QTableWidgetItem
 
-        return QTableWidgetItem(text)
+        item = QTableWidgetItem(text)
+        if tooltip:
+            item.setToolTip(tooltip)
+        return item
 
 
 def _metric_label(metric_name: str) -> str:
@@ -236,11 +274,50 @@ def _metric_label(metric_name: str) -> str:
     }.get(metric_name, metric_name)
 
 
-def _format_value(value: Any) -> str:
-    """Format metric values without hiding their structure."""
+def _format_metric_value(metric_name: str, value: Any, language_labels: dict[str, str]) -> str:
+    """Format one metric for researchers instead of exposing raw storage JSON."""
 
     if isinstance(value, float):
         return f"{value:.4f}"
+    if metric_name == "language_proportion" and isinstance(value, dict):
+        parts = [
+            f"{_language_label(language_id, language_labels)}: {float(proportion) * 100:.2f}%"
+            for language_id, proportion in sorted(value.items(), key=lambda item: str(item[0]))
+        ]
+        return "; ".join(parts) if parts else "No labelled tokens"
+    if metric_name == "dominant_language" and isinstance(value, dict):
+        counts = Counter(_language_label(language_id, language_labels) for language_id in value.values())
+        parts = [f"{language}: {count:,} segments" for language, count in sorted(counts.items())]
+        return "; ".join(parts) if parts else "No dominant-language evidence"
+    if metric_name == "trigger_cooccurrence" and value == {}:
+        return "No trigger co-occurrences in current labels"
+    if metric_name == "kwic" and value == []:
+        return "No KWIC pattern supplied"
+    if metric_name == "switch_count" and isinstance(value, int):
+        return f"{value:,}"
+    if metric_name == "switch_density" and isinstance(value, (float, int)):
+        return f"{float(value):.4f} per 100 tokens"
+    if metric_name in {"m_index", "i_index", "burstiness"} and isinstance(value, (float, int)):
+        return f"{float(value):.4f}"
     if isinstance(value, (dict, list)):
         return json.dumps(value, ensure_ascii=False, sort_keys=True)
     return str(value)
+
+
+def _format_raw_value(value: Any) -> str:
+    """Return the exact stored metric value for tooltips and audit checks."""
+
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2)
+    return str(value)
+
+
+def _language_label(raw_id: object, language_labels: dict[str, str]) -> str:
+    """Convert internal language IDs such as `lang-sot` into compact codes."""
+
+    raw = str(raw_id)
+    if raw in language_labels:
+        return language_labels[raw]
+    if raw.startswith("lang-") and len(raw) > 5:
+        return raw[5:]
+    return raw

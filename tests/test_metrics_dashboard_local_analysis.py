@@ -61,4 +61,7 @@ def test_metrics_dashboard_table_populates_when_qt_available(tmp_path: Path) -> 
     assert dashboard.metrics_table.rowCount() == len(results)
     rendered_metrics = {dashboard.metrics_table.item(row, 0).text() for row in range(dashboard.metrics_table.rowCount())}
     assert "Switch count" in rendered_metrics
+    rendered_values = [dashboard.metrics_table.item(row, 2).text() for row in range(dashboard.metrics_table.rowCount())]
+    assert any("eng:" in value and "sot:" in value for value in rendered_values)
+    assert all("lang-eng" not in value and "lang-sot" not in value for value in rendered_values)
     app.quit()
