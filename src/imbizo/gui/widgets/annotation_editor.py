@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,7 @@ from imbizo.gui.lid_progress import run_lid_with_progress
 from imbizo.services.import_service import ImportService
 
 MAX_VISIBLE_TOKEN_ROWS = 1000
+LOGGER = logging.getLogger(__name__)
 
 
 class AnnotationEditorWidget:
@@ -29,6 +31,8 @@ class AnnotationEditorWidget:
         self.widget = None
         self.table = None
         self.status_label = None
+        self.import_file_button = None
+        self.run_lid_button = None
         self.languages_by_name: dict[str, str] = {}
         self.language_names_by_id: dict[str, str] = {}
         self._repair_attempted_document_ids: set[str] = set()
@@ -55,14 +59,20 @@ class AnnotationEditorWidget:
         layout = QVBoxLayout(root)
         header = QHBoxLayout()
         self.document_selector = QComboBox()
-        import_file = QPushButton("Import File")
-        import_file.clicked.connect(self.import_file)
-        run_lid = QPushButton("Run Local LID")
-        run_lid.clicked.connect(self.run_lid)
+        self.import_file_button = QPushButton("Import File")
+        self.import_file_button.setObjectName("annotation-import-file")
+        self.import_file_button.setToolTip(
+            "Import TXT, CSV, TSV, XML, EAF, TextGrid, JSON, XLSX, ODS, audio, or video into this project."
+        )
+        self.import_file_button.clicked.connect(lambda _checked=False: self.import_file())
+        self.run_lid_button = QPushButton("Run Local LID")
+        self.run_lid_button.setObjectName("annotation-run-local-lid")
+        self.run_lid_button.setToolTip("Run fully local language identification for the selected document.")
+        self.run_lid_button.clicked.connect(lambda _checked=False: self.run_lid())
         header.addWidget(QLabel("Document"))
         header.addWidget(self.document_selector)
-        header.addWidget(import_file)
-        header.addWidget(run_lid)
+        header.addWidget(self.import_file_button)
+        header.addWidget(self.run_lid_button)
         layout.addLayout(header)
         layout.addWidget(QLabel("Waveform: link media to show local waveform peaks."))
         self.status_label = QLabel("No token rows loaded")
@@ -76,7 +86,7 @@ class AnnotationEditorWidget:
         layout.addWidget(self.memo)
         self.widget = root
         self.refresh_documents()
-        self.document_selector.currentIndexChanged.connect(self._document_changed)
+        self.document_selector.currentIndexChanged.connect(lambda _index: self._document_changed())
         return root
 
     def refresh_documents(self) -> None:
@@ -101,6 +111,7 @@ class AnnotationEditorWidget:
 
         from PySide6.QtWidgets import QFileDialog, QMessageBox
 
+        self._set_status("Opening import file dialog...")
         path, _ = QFileDialog.getOpenFileName(
             self.widget,
             "Import local file",
@@ -109,10 +120,13 @@ class AnnotationEditorWidget:
                 "Supported files (*.txt *.csv *.tsv *.xml *.eaf *.TextGrid *.textgrid "
                 "*.json *.xlsx *.ods *.wav *.mp3 *.flac *.mp4 *.mkv);;All files (*)"
             ),
+            options=QFileDialog.Option.DontUseNativeDialog,
         )
         if not path:
+            self._set_status("Import cancelled.")
             return
         try:
+            self._set_status(f"Importing {Path(path).name}...")
             result = import_file_with_progress(
                 self.widget,
                 self.context,
@@ -121,12 +135,14 @@ class AnnotationEditorWidget:
                 "Importing local file",
             )
         except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
+            self._set_status(f"Import failed: {exc}")
             QMessageBox.critical(self.widget, "Import failed", str(exc))
             return
 
         self.refresh_documents()
         if result.bundle.document is not None:
             self._select_document(result.bundle.document.id)
+        self._set_status(f"Imported {result.copied_path.name}: {result.report}")
         QMessageBox.information(
             self.widget,
             "Import complete",
@@ -152,16 +168,23 @@ class AnnotationEditorWidget:
         self.table.setRowCount(len(visible_rows))
         for row_index, row in enumerate(visible_rows):
             self.table.setItem(row_index, 0, self._item(row.token.token_text, row.token.id))
-            self.table.setItem(row_index, 1, self._item(self._language_name(row.annotation.language_id if row.annotation else None), row.token.id))
-            self.table.setItem(row_index, 2, self._item(row.annotation.source.value if row.annotation else "", row.token.id))
-            self.table.setItem(row_index, 3, self._item(str(row.annotation.researcher_confidence or row.annotation.auto_confidence or "") if row.annotation else "", row.token.id))
+            language_name = self._language_name(row.annotation.language_id if row.annotation else None)
+            confidence = ""
+            if row.annotation:
+                confidence = str(row.annotation.researcher_confidence or row.annotation.auto_confidence or "")
+            source = row.annotation.source.value if row.annotation else ""
+            self.table.setItem(row_index, 1, self._item(language_name, row.token.id))
+            self.table.setItem(row_index, 2, self._item(source, row.token.id))
+            self.table.setItem(row_index, 3, self._item(confidence, row.token.id))
             self.table.setItem(row_index, 4, self._item(row.annotation.memo if row.annotation else "", row.token.id))
         self.table.setUpdatesEnabled(True)
         self.table.blockSignals(False)
         if self.status_label is not None:
             if len(state.rows) > len(visible_rows):
+                total_rows = f"{len(state.rows):,}"
                 self.status_label.setText(
-                    f"Showing first {len(visible_rows):,} of {len(state.rows):,} token rows. Use the Spreadsheet tab search for focused review."
+                    f"Showing first {len(visible_rows):,} of {total_rows} token rows. "
+                    "Use the Spreadsheet tab search for focused review."
                 )
             else:
                 self.status_label.setText(f"{len(state.rows):,} token rows")
@@ -171,18 +194,30 @@ class AnnotationEditorWidget:
 
         from PySide6.QtWidgets import QMessageBox
 
+        self._set_status("Starting Local LID...")
         if not self.document_id:
-            QMessageBox.information(self.widget, "No document selected", "Import or select a transcript before running Local LID.")
+            self._set_status("No document selected for Local LID.")
+            QMessageBox.information(
+                self.widget,
+                "No document selected",
+                "Import or select a transcript before running Local LID.",
+            )
             return
         try:
             report = run_lid_with_progress(self.widget, self.context, self.document_id, self.lid_service)
         except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
+            self._set_status(f"Local LID failed: {exc}")
             QMessageBox.critical(self.widget, "Local LID failed", str(exc))
             return
         self.load_document(self.document_id)
         method_note = f"\nProvider: {report.provider_method}."
         if report.provider_message:
             method_note += f"\nNote: {report.provider_message}"
+        self._set_status(
+            "Local LID complete: "
+            f"{report.auto_annotations_count:,} auto labels, "
+            f"{report.suggestions_count:,} suggestions."
+        )
         QMessageBox.information(
             self.widget,
             "Local LID complete",
@@ -268,3 +303,16 @@ class AnnotationEditorWidget:
         item = QTableWidgetItem(text)
         item.setData(256, token_id)
         return item
+
+    def _set_status(self, message: str) -> None:
+        """Update the visible status line and emit a console log for GUI actions."""
+
+        LOGGER.info("Annotation editor: %s", message)
+        if self.status_label is not None:
+            self.status_label.setText(message)
+        try:
+            from PySide6.QtWidgets import QApplication
+
+            QApplication.processEvents()
+        except Exception:  # noqa: BLE001 - status updates must never break GUI actions.
+            LOGGER.debug("Could not process Qt events during status update", exc_info=True)
