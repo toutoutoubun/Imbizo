@@ -115,3 +115,47 @@ def test_baseline_lid_without_env_uses_heuristic_not_cwd(monkeypatch) -> None:
 
     assert prediction.language_code == "eng"
     assert prediction.evidence["method"] == "heuristic"
+
+
+def test_heuristic_lid_handles_common_contractions_and_sesotho_markers(monkeypatch) -> None:
+    """The no-model fallback should cover common transcript tokens."""
+
+    monkeypatch.delenv("IMBIZO_FASTTEXT_LID_MODEL", raising=False)
+    provider = BaselineLidProvider()
+
+    predictions = provider.predict(
+        ["I'm", "you're", "awake", "got", "questions", "ao", "tsalanang"],
+        LidOptions(max_languages=1),
+    )
+
+    assert [scores[0].language_code for scores in predictions[:5]] == ["eng", "eng", "eng", "eng", "eng"]
+    assert [scores[0].language_code for scores in predictions[5:]] == ["sot", "sot"]
+
+
+def test_local_lid_labels_no_language_sentence_rows_with_context(tmp_path: Path) -> None:
+    """Spreadsheet-style rows without language labels still receive useful LID."""
+
+    context, document = _context_with_document(
+        tmp_path,
+        "I'm so glad you're awake I've got the best news ever\n"
+        "my sources say she is alive\n",
+    )
+
+    report = LidService().run_lid_for_document_report(context, document.id)
+
+    assert report.provider_method == "heuristic"
+    assert report.auto_annotations_count >= 10
+    rows = context.connection.execute(
+        """
+        SELECT tokens.token_text, languages.code FROM annotations
+        JOIN tokens ON tokens.id = annotations.token_id
+        JOIN languages ON languages.id = annotations.language_id
+        WHERE annotations.source = 'auto'
+        ORDER BY tokens.rowid
+        """
+    ).fetchall()
+    auto_codes = {row["token_text"]: row["code"] for row in rows}
+    assert auto_codes["I'm"] == "eng"
+    assert auto_codes["you're"] == "eng"
+    assert auto_codes["awake"] == "eng"
+    assert auto_codes["sources"] == "eng"

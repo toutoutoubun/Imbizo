@@ -13,38 +13,165 @@ from imbizo.lid.providers import LanguageScore, LidOptions
 AFRIKAANS_WORDS = {"die", "en", "van", "ek", "jy", "nie", "het", "ons", "hulle", "met", "maar", "wat"}
 ENGLISH_WORDS = {
     "a",
+    "about",
+    "after",
+    "again",
+    "alive",
+    "all",
     "am",
+    "an",
     "and",
+    "any",
     "are",
+    "as",
+    "awake",
+    "bad",
+    "because",
+    "been",
+    "best",
+    "but",
+    "by",
+    "came",
+    "can",
+    "come",
+    "coordinates",
+    "could",
+    "day",
+    "did",
+    "do",
+    "does",
+    "double",
+    "ever",
     "at",
+    "from",
     "for",
     "friend",
+    "get",
+    "glad",
     "go",
     "going",
+    "good",
+    "got",
+    "had",
+    "has",
+    "have",
+    "he",
     "hello",
     "home",
+    "how",
     "i",
+    "i'd",
+    "i'll",
+    "i'm",
+    "i've",
+    "if",
     "in",
     "is",
+    "it",
+    "it's",
+    "just",
+    "know",
+    "let",
+    "let's",
+    "like",
+    "made",
+    "make",
     "market",
     "my",
+    "need",
+    "new",
+    "news",
+    "no",
+    "not",
+    "now",
     "of",
+    "okay",
+    "old",
+    "people",
+    "question",
+    "questions",
+    "really",
+    "said",
+    "say",
+    "see",
+    "she",
+    "so",
+    "source",
+    "sources",
+    "take",
     "that",
+    "that's",
     "the",
+    "then",
+    "there",
+    "they",
+    "think",
     "this",
+    "time",
     "to",
+    "too",
+    "took",
+    "want",
     "was",
     "we",
     "went",
     "were",
+    "what",
+    "what's",
+    "when",
+    "where",
+    "who",
+    "why",
+    "will",
     "with",
+    "would",
     "you",
+    "you're",
+    "your",
 }
-ZULU_WORDS = {"ngiyabonga", "sawubona", "yebo", "cha", "kahle", "ekhaya", "umuntu", "abantu", "umsebenzi"}
-XHOSA_WORDS = {"enkosi", "molo", "ewe", "hayi", "umntu"}
-SOTHO_TSWANA_WORDS = {"dumela", "ke", "le", "ba", "re"}
+ZULU_WORDS = {"ngiyabonga", "sawubona", "yebo", "cha", "kahle", "ekhaya", "umuntu", "abantu", "umsebenzi", "mina", "wena"}
+XHOSA_WORDS = {"enkosi", "molo", "ewe", "hayi", "umntu", "ndiyabulela", "mna", "wena"}
+SOTHO_TSWANA_WORDS = {
+    "ao",
+    "ba",
+    "batho",
+    "bona",
+    "di",
+    "dumela",
+    "e",
+    "ena",
+    "eo",
+    "feela",
+    "ha",
+    "hape",
+    "ho",
+    "jwang",
+    "ka",
+    "kajeno",
+    "ke",
+    "ko",
+    "le",
+    "ma",
+    "mang",
+    "mme",
+    "mo",
+    "mona",
+    "moo",
+    "motho",
+    "nna",
+    "ntate",
+    "o",
+    "re",
+    "rona",
+    "se",
+    "tsa",
+    "tsalanang",
+    "wena",
+    "ya",
+}
 ZULU_PREFIXES = ("ngiya", "ngi", "uku", "kwa", "aba", "ama", "isi", "ezi", "umu", "imi")
 XHOSA_PREFIXES = ("ndiya", "ndi", "uku", "kwa", "aba", "ama", "isi", "izi", "um", "imi")
+XHOSA_CLICK_CUES = ("qha", "xho", "xol", "xele", "ndix", "ndiq", "isiq")
 SOTHO_TSWANA_PREFIXES = ("ho", "mo", "se", "di", "ma")
 MODEL_FILENAMES = ("lid.176.ftz", "lid.176.bin")
 FASTTEXT_TO_PROJECT_CODE = {
@@ -76,6 +203,7 @@ class BaselineLidProvider:
         self._model: object | None = None
         self.load_error: str = ""
         self.active_method = "heuristic"
+        self._heuristic_cache: dict[str, list[LanguageScore]] = {}
 
     @property
     def is_model_loaded(self) -> bool:
@@ -134,6 +262,9 @@ class BaselineLidProvider:
         return scores
 
     def _predict_one(self, text: str) -> list[LanguageScore]:
+        cached = self._heuristic_cache.get(text)
+        if cached is not None:
+            return cached
         lower = text.lower()
         words = re.findall(r"[a-zA-ZÀ-ÿ']+", lower)
         scores = {"eng": 0.03, "afr": 0.03, "zul": 0.03, "xho": 0.03, "sot": 0.03, "tsn": 0.03}
@@ -156,6 +287,12 @@ class BaselineLidProvider:
                 scores["tsn"] += 0.20
                 evidence["sot"].append(f"shared_word:{word}")
                 evidence["tsn"].append(f"shared_word:{word}")
+            if "-" in word and any(part in ENGLISH_WORDS for part in word.split("-")):
+                scores["eng"] += 0.32
+                evidence["eng"].append(f"hyphen_english_component:{word}")
+            if "'" in word and any(part in ENGLISH_WORDS for part in word.replace("'", " ").split()):
+                scores["eng"] += 0.20
+                evidence["eng"].append(f"apostrophe_english_component:{word}")
             if len(word) >= 4 and any(word.startswith(prefix) for prefix in ZULU_PREFIXES):
                 scores["zul"] += 0.24
                 evidence["zul"].append(f"prefix:{word}")
@@ -167,9 +304,9 @@ class BaselineLidProvider:
                 scores["tsn"] += 0.14
                 evidence["sot"].append(f"shared_prefix:{word}")
                 evidence["tsn"].append(f"shared_prefix:{word}")
-        if re.search(r"[qx]", lower):
+        if any(word.startswith(cue) for word in words for cue in XHOSA_CLICK_CUES):
             scores["xho"] += 0.20
-            evidence["xho"].append("orthography:q_or_x")
+            evidence["xho"].append("orthography:xhosa_click_cue")
         if re.search(r"\b(ngiy|ngi)", lower):
             scores["zul"] += 0.28
             evidence["zul"].append("subject_concord:ngi")
@@ -194,8 +331,11 @@ class BaselineLidProvider:
             reverse=True,
         )
         if ranked[0].confidence < 0.34 or not ranked[0].evidence.get("matched_evidence"):
-            return [LanguageScore("und", 0.5, {"method": "heuristic", "reason": "low evidence", "model_status": self.load_error})]
-        return ranked
+            result = [LanguageScore("und", 0.5, {"method": "heuristic", "reason": "low evidence", "model_status": self.load_error})]
+        else:
+            result = ranked
+        self._heuristic_cache[text] = result
+        return result
 
     def _resolve_model_path(self) -> Path | None:
         if self.model_path is not None:
