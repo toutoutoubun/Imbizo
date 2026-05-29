@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,6 +29,7 @@ def parse_args(argv: Sequence[str]) -> AppLaunchOptions:
 def main(argv: Sequence[str] | None = None) -> int:
     """Launch Imbizo-CS Workbench and return a process exit code."""
 
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     options = parse_args(argv if argv is not None else sys.argv[1:])
     try:
         from PySide6.QtWidgets import QApplication

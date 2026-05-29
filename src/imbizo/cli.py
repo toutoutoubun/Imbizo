@@ -13,6 +13,8 @@ import zipfile
 import click
 
 from imbizo.core.migrations import v1_5
+from imbizo.services.nlp_analysis_service import NlpAnalysisOptions, NlpAnalysisService
+from imbizo.services.project_service import ProjectService
 
 
 IMBIZO_VERSION = "1.5"
@@ -102,6 +104,59 @@ def restore(backup_zip: Path, project_dir: Path) -> None:
     if not report.matched:
         raise click.ClickException("Restored database hash did not match the backup.")
     click.echo("Verification: restored database hash matches the backup.")
+
+
+@click.command(name="analyze")
+@click.option("--project", required=True, type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option("--document-id", default=None, help="Limit analysis to one transcript document ID.")
+@click.option("--skip-lid", is_flag=True, default=False, help="Do not run Local LID before analysis.")
+@click.option(
+    "--include-mixed-code",
+    is_flag=True,
+    default=False,
+    help="Run opt-in mixed-code lexical evidence detection. Results remain advisory.",
+)
+@click.option("--json", "json_output", is_flag=True, default=False, help="Print the full analysis report as JSON.")
+def analyze(project: Path, document_id: str | None, skip_lid: bool, include_mixed_code: bool, json_output: bool) -> None:
+    """Run the fully local NLP analysis pipeline for an Imbizo project."""
+
+    import json
+
+    service = ProjectService()
+    context = service.open_project(project.resolve())
+    updates: list[tuple[str, int, int]] = []
+
+    def progress(message: str, current: int, total: int) -> None:
+        updates.append((message, current, total))
+        if not json_output:
+            click.echo(f"[{current:>3}/{total:<3}] {message}")
+
+    try:
+        report = NlpAnalysisService().run(
+            context,
+            NlpAnalysisOptions(
+                document_id=document_id,
+                run_lid=not skip_lid,
+                run_mixed_code=include_mixed_code,
+            ),
+            progress_callback=progress,
+        )
+    finally:
+        service.close_project(context)
+
+    if json_output:
+        click.echo(json.dumps(report.to_dict(), indent=2, ensure_ascii=False))
+        return
+
+    click.echo("Local NLP analysis complete.")
+    click.echo(f"Report: {report.report_path}")
+    click.echo(f"Metrics run: {report.metrics_run_id or 'not run'}")
+    for stage in report.stages:
+        click.echo(f"  - {stage.name}: {stage.status} ({stage.message})")
+    if report.warnings:
+        click.echo("Warnings:")
+        for warning in report.warnings:
+            click.echo(f"  - {warning}")
 
 
 def restore_project_from_backup(backup_zip: Path, project_dir: Path) -> RestoreReport:
@@ -217,6 +272,7 @@ def _safe_extract_zip(backup_zip: Path, project_dir: Path) -> None:
 
 cli.add_command(migrate)
 cli.add_command(restore)
+cli.add_command(analyze)
 
 
 if __name__ == "__main__":

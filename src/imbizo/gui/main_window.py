@@ -66,7 +66,7 @@ class MainWindow:
         spreadsheet_page = spreadsheet.build()
         self.tabs.addTab(spreadsheet_page, self.strings.text("tab.spreadsheet"))
         self.tabs.addTab(TimelineViewWidget().build(), self.strings.text("tab.timeline"))
-        self.tabs.addTab(MetricsDashboardWidget().build(), self.strings.text("tab.metrics"))
+        self.tabs.addTab(MetricsDashboardWidget(self.context).build(), self.strings.text("tab.metrics"))
         self.tabs.addTab(ProjectSettingsWidget().build(), self.strings.text("tab.project_settings"))
         def refresh_spreadsheet_tab(index: int) -> None:
             if self.tabs and self.tabs.widget(index) is spreadsheet_page:

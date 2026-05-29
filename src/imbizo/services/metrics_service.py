@@ -18,6 +18,7 @@ from imbizo.metrics.language_proportion import language_proportions
 from imbizo.metrics.m_index import m_index
 from imbizo.metrics.switch_density import switch_count, switch_density
 from imbizo.metrics.trigger_tables import trigger_cooccurrence
+from imbizo.domain.annotations import choose_effective_annotation
 from imbizo.persistence.repositories import AnnotationRepository, MetricRepository, TranscriptRepository
 
 
@@ -95,12 +96,23 @@ class MetricsService:
     def _build_dataset(self, context: ProjectContext, document_id: str | None = None) -> MetricsDataset:
         transcript_repo = TranscriptRepository(context.connection)
         annotation_repo = AnnotationRepository(context.connection)
-        rows: list[AnnotatedToken] = []
-        documents = transcript_repo.list_documents()
-        for document in documents:
-            if document_id and document.id != document_id:
-                continue
-            for segment in transcript_repo.list_segments(document.id):
-                for token in transcript_repo.list_tokens(segment.id):
-                    rows.append(AnnotatedToken(token=token, segment=segment, annotation=annotation_repo.get_effective_annotation_for_token(token.id)))
+        documents = [document for document in transcript_repo.list_documents() if not document_id or document.id == document_id]
+        document_ids = {document.id for document in documents}
+        segments = [segment for document in documents for segment in transcript_repo.list_segments(document.id)]
+        segments_by_id = {segment.id: segment for segment in segments if segment.transcript_document_id in document_ids}
+        tokens = [
+            token
+            for document in documents
+            for token in transcript_repo.list_all_tokens(document.id)
+            if token.segment_id in segments_by_id
+        ]
+        annotations_by_token = annotation_repo.list_annotations_for_tokens([token.id for token in tokens])
+        rows = [
+            AnnotatedToken(
+                token=token,
+                segment=segments_by_id[token.segment_id],
+                annotation=choose_effective_annotation(annotations_by_token.get(token.id, [])),
+            )
+            for token in tokens
+        ]
         return MetricsDataset(tokens=rows)
