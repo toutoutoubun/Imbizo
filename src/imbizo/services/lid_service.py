@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import sys
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 
 from imbizo.app.time import utc_now
 from imbizo.domain.annotations import Annotation, AnnotationSource, choose_effective_annotation
@@ -29,6 +31,8 @@ class LidRunReport:
     auto_annotations_count: int
     skipped_unknown_count: int
     preserved_manual_count: int
+    provider_method: str
+    provider_message: str
 
 
 class LidService:
@@ -76,6 +80,8 @@ class LidService:
             transcript_repo = TranscriptRepository(context.connection)
             languages = LanguageRepository(context.connection).list_languages()
             language_codes_by_id = {language.id: language.code for language in languages}
+            if hasattr(self.provider, "configure_search_roots"):
+                self.provider.configure_search_roots(_model_search_roots(context))
             detector = MaskLidDetector(self.provider, languages)
             segments = transcript_repo.list_segments(document_id)
             token_batches = [(segment, transcript_repo.list_tokens(segment.id)) for segment in segments]
@@ -173,6 +179,8 @@ class LidService:
                 auto_annotations_count=len(auto_annotations),
                 skipped_unknown_count=skipped_unknown_count,
                 preserved_manual_count=preserved_manual_count,
+                provider_method=getattr(self.provider, "active_method", self.provider.name),
+                provider_message=getattr(self.provider, "load_error", ""),
             )
         except Exception as exc:
             context.connection.rollback()
@@ -227,3 +235,18 @@ class LidService:
     def _progress(self, options: LidOptions, current: int, message: str) -> None:
         if options.progress_callback is not None:
             options.progress_callback(LidProgress(current=max(0, min(100, current)), total=100, message=message))
+
+
+def _model_search_roots(context: ProjectContext) -> list[Path]:
+    """Return local roots where optional fastText LID resources may live."""
+
+    roots = [context.paths.root, context.paths.root.parent, Path.cwd()]
+    executable = Path(sys.executable).resolve()
+    roots.extend(executable.parents[:4])
+    seen: set[Path] = set()
+    unique: list[Path] = []
+    for root in roots:
+        if root not in seen:
+            seen.add(root)
+            unique.append(root)
+    return unique
