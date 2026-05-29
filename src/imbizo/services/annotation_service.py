@@ -37,7 +37,13 @@ class AnnotationEditorState:
 class AnnotationService:
     """Coordinate transcript and annotation editing."""
 
-    def load_editor_state(self, context: ProjectContext, document_id: str) -> AnnotationEditorState:
+    def load_editor_state(
+        self,
+        context: ProjectContext,
+        document_id: str,
+        *,
+        token_limit: int | None = None,
+    ) -> AnnotationEditorState:
         """Load segments, tokens, effective annotations, languages, and tags."""
 
         transcript_repo = TranscriptRepository(context.connection)
@@ -46,7 +52,7 @@ class AnnotationService:
         segments = transcript_repo.list_segments(document_id)
         segments_by_id = {segment.id: segment for segment in segments}
         annotation_repo = AnnotationRepository(context.connection)
-        tokens = transcript_repo.list_all_tokens(document_id)
+        tokens = transcript_repo.list_all_tokens(document_id, limit=token_limit)
         annotations_by_token = annotation_repo.list_annotations_for_tokens([token.id for token in tokens])
         rows = [
             AnnotationRow(

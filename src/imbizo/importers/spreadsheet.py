@@ -12,13 +12,23 @@ from imbizo.app.errors import ImportFailure
 from imbizo.domain.transcripts import SegmentLevel, SourceFormat, TranscriptDocument, TranscriptSegment, split_tokens_preserving_offsets
 from imbizo.importers.base import ImportedBundle, ImportOptions
 
-TEXT_KEYS = ("text", "transcript", "transcription", "utterance", "utterance_text", "segment_text", "utterance_segment_transcription")
+TEXT_KEYS = (
+    "text",
+    "transcript",
+    "transcription",
+    "utterance",
+    "utterance_text",
+    "segment_text",
+    "utterance_segment_transcription",
+)
+TOKEN_KEYS = ("token", "tokens", "token_text", "word", "surface", "form", "語", "単語", "トークン")
 LANGUAGE_KEYS = ("language", "language_code", "lang", "lang_id", "utterance_segment_lang_id")
 START_KEYS = ("start_ms", "start", "start_time", "begin", "begin_ms")
 END_KEYS = ("end_ms", "end", "end_time", "finish", "finish_ms")
 DURATION_KEYS = ("duration_ms", "duration", "utterance_segment_duration")
 SPEAKER_KEYS = ("speaker", "speaker_id", "utterance_speaker_id")
 ID_KEYS = ("utterance_id", "segment_id", "id")
+HEADER_SCAN_NON_EMPTY_ROWS = 50
 
 
 def _to_int(value: object) -> int | None:
@@ -59,13 +69,40 @@ def _header_keys(value: object) -> list[str]:
 
 def _looks_like_header(row: Iterable[object]) -> bool:
     keys = {key for value in row for key in _header_keys(value)}
-    return any(key in keys for key in TEXT_KEYS)
+    return any(key in keys for key in (*TEXT_KEYS, *TOKEN_KEYS))
+
+
+def _first_non_empty_cell(row: Iterable[object]) -> object | None:
+    """Return the first non-empty cell from a row without assuming headers."""
+
+    for value in row:
+        if value not in (None, ""):
+            return value
+    return None
 
 
 def _rows_from_matrix(matrix: list[tuple[object, ...] | list[object]]) -> tuple[list[dict[str, object]], int]:
     if not matrix:
         return [], 0
-    header_index = next((index for index, row in enumerate(matrix) if _looks_like_header(row)), 0)
+    detected_header_index = None
+    non_empty_seen = 0
+    for index, row in enumerate(matrix):
+        if _first_non_empty_cell(row) in (None, ""):
+            continue
+        non_empty_seen += 1
+        if _looks_like_header(row):
+            detected_header_index = index
+            break
+        if non_empty_seen >= HEADER_SCAN_NON_EMPTY_ROWS:
+            break
+    if detected_header_index is None:
+        parsed_no_header_rows = [
+            {"text": value}
+            for row in matrix
+            if (value := _first_non_empty_cell(row)) not in (None, "")
+        ]
+        return parsed_no_header_rows, 0
+    header_index = detected_header_index
     headers = list(matrix[header_index])
     parsed_rows: list[dict[str, object]] = []
     for row in matrix[header_index + 1 :]:
@@ -132,10 +169,16 @@ class SpreadsheetImporter:
         segments: list[TranscriptSegment] = []
         tokens = []
         token_language_codes: dict[str, str] = {}
+        text_sources: set[str] = set()
         for order, row in enumerate(rows, start=1):
+            text_source = "text"
             text = str(_first(row, TEXT_KEYS) or "").strip()
             if not text:
+                text = str(_first(row, TOKEN_KEYS) or "").strip()
+                text_source = "token"
+            if not text:
                 continue
+            text_sources.add(text_source)
             start_ms = _to_int(_first(row, START_KEYS))
             end_ms = _to_int(_first(row, END_KEYS))
             duration_ms = _to_int(_first(row, DURATION_KEYS))
@@ -169,7 +212,12 @@ class SpreadsheetImporter:
             segments=segments,
             tokens=tokens,
             token_language_codes=token_language_codes,
-            report={"segments": len(segments), "tokens": len(tokens), "imported_language_labels": len(token_language_codes)},
+            report={
+                "segments": len(segments),
+                "tokens": len(tokens),
+                "imported_language_labels": len(token_language_codes),
+                "text_source": ",".join(sorted(text_sources)) if text_sources else None,
+            },
         )
 
     def _read_xlsx(self, path: Path) -> list[dict[str, object]]:

@@ -30,6 +30,8 @@ def test_local_project_import_annotate_lid_metrics_export(tmp_path: Path) -> Non
     annotation_service = AnnotationService()
     state = annotation_service.load_editor_state(context, imported.bundle.document.id)
     assert len(state.rows) == 8
+    limited_state = annotation_service.load_editor_state(context, imported.bundle.document.id, token_limit=3)
+    assert len(limited_state.rows) == 3
 
     english = next(language for language in state.languages if language.code == "eng")
     annotation = annotation_service.save_token_annotation(
@@ -96,6 +98,44 @@ def test_json_xlsx_and_ods_importers(tmp_path: Path) -> None:
     xlsx_result = ImportService().import_file(context, xlsx_source)
     assert xlsx_result.bundle.document is not None
     assert len(xlsx_result.bundle.tokens) == 2
+
+    token_only_source = tmp_path / "token_only.xlsx"
+    token_only_workbook = Workbook()
+    token_only_sheet = token_only_workbook.active
+    token_only_sheet.append(["Token"])
+    token_only_sheet.append(["dumela"])
+    token_only_sheet.append(["friend"])
+    token_only_sheet.append(["tsamaya"])
+    token_only_workbook.save(token_only_source)
+    token_only_result = ImportService().import_file(context, token_only_source)
+    assert token_only_result.bundle.document is not None
+    assert [token.token_text for token in token_only_result.bundle.tokens] == ["dumela", "friend", "tsamaya"]
+    assert token_only_result.bundle.report["text_source"] == "token"
+    assert token_only_result.bundle.report["imported_language_labels"] == 0
+
+    no_header_source = tmp_path / "no_header_one_column.xlsx"
+    no_header_workbook = Workbook()
+    no_header_sheet = no_header_workbook.active
+    no_header_sheet.append([None])
+    no_header_sheet.append([None])
+    no_header_sheet.append(["ao"])
+    no_header_sheet.append(["double-licious"])
+    no_header_sheet.append(["I'm so glad you're awake"])
+    no_header_workbook.save(no_header_source)
+    no_header_result = ImportService().import_file(context, no_header_source)
+    assert no_header_result.bundle.document is not None
+    assert [segment.text_original for segment in no_header_result.bundle.segments] == [
+        "ao",
+        "double-licious",
+        "I'm so glad you're awake",
+    ]
+    assert [token.token_text for token in no_header_result.bundle.tokens[:4]] == [
+        "ao",
+        "double-licious",
+        "I'm",
+        "so",
+    ]
+    assert no_header_result.bundle.report["imported_language_labels"] == 0
 
     path_header_source = tmp_path / "path_headers.xlsx"
     path_workbook = Workbook()

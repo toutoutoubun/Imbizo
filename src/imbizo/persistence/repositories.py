@@ -31,6 +31,7 @@ def _enum_value(value: Any) -> Any:
 
 
 SaveProgressCallback = Callable[[str, int, int], None]
+SQLITE_PARAMETER_BATCH_SIZE = 900
 
 
 def _batched(items: Sequence[Any], size: int) -> Iterable[Sequence[Any]]:
@@ -384,9 +385,11 @@ class TranscriptRepository:
         ).fetchall()
         token_ids = [row["id"] for row in token_rows]
         if token_ids:
-            slots = ",".join("?" for _ in token_ids)
-            self.connection.execute(f"DELETE FROM annotations WHERE token_id IN ({slots})", tuple(token_ids))
-            self.connection.execute(f"DELETE FROM tokens WHERE id IN ({slots})", tuple(token_ids))
+            for token_id_batch in _batched(token_ids, SQLITE_PARAMETER_BATCH_SIZE):
+                slots = ",".join("?" for _ in token_id_batch)
+                parameters = tuple(token_id_batch)
+                self.connection.execute(f"DELETE FROM annotations WHERE token_id IN ({slots})", parameters)
+                self.connection.execute(f"DELETE FROM tokens WHERE id IN ({slots})", parameters)
         self.connection.execute("DELETE FROM segments WHERE transcript_document_id = ?", (document_id,))
         if commit:
             self.connection.commit()
@@ -409,26 +412,33 @@ class TranscriptRepository:
         ).fetchall()
         return [self._token_from_row(row) for row in rows]
 
-    def list_all_tokens(self, document_id: str | None = None) -> list[Token]:
+    def list_all_tokens(self, document_id: str | None = None, *, limit: int | None = None) -> list[Token]:
         """Return tokens, optionally limited to one document."""
 
+        limit_clause = " LIMIT ?" if limit is not None else ""
+        parameters: tuple[object, ...]
         if document_id:
+            parameters = (document_id, limit) if limit is not None else (document_id,)
             rows = self.connection.execute(
-                """
+                f"""
                 SELECT tokens.* FROM tokens
                 JOIN segments ON segments.id = tokens.segment_id
                 WHERE segments.transcript_document_id = ?
                 ORDER BY segments.sort_order, tokens.sort_order
+                {limit_clause}
                 """,
-                (document_id,),
+                parameters,
             ).fetchall()
         else:
+            parameters = (limit,) if limit is not None else ()
             rows = self.connection.execute(
-                """
+                f"""
                 SELECT tokens.* FROM tokens
                 JOIN segments ON segments.id = tokens.segment_id
                 ORDER BY segments.sort_order, tokens.sort_order
-                """
+                {limit_clause}
+                """,
+                parameters,
             ).fetchall()
         return [self._token_from_row(row) for row in rows]
 
@@ -588,16 +598,19 @@ class AnnotationRepository:
 
         if not token_ids:
             return {}
-        parameter_slots = ",".join("?" for _ in token_ids)
-        rows = self.connection.execute(
-            f"SELECT * FROM annotations WHERE token_id IN ({parameter_slots}) ORDER BY updated_at",
-            tuple(token_ids),
-        ).fetchall()
         grouped: dict[str, list[Annotation]] = {token_id: [] for token_id in token_ids}
-        for row in rows:
-            annotation = self._annotation_from_row(row)
-            if annotation.token_id:
-                grouped.setdefault(annotation.token_id, []).append(annotation)
+        for token_id_batch in _batched(tuple(token_ids), SQLITE_PARAMETER_BATCH_SIZE):
+            parameter_slots = ",".join("?" for _ in token_id_batch)
+            rows = self.connection.execute(
+                f"SELECT * FROM annotations WHERE token_id IN ({parameter_slots}) ORDER BY updated_at",
+                tuple(token_id_batch),
+            ).fetchall()
+            for row in rows:
+                annotation = self._annotation_from_row(row)
+                if annotation.token_id:
+                    grouped.setdefault(annotation.token_id, []).append(annotation)
+        for annotations in grouped.values():
+            annotations.sort(key=lambda annotation: annotation.updated_at or "")
         return grouped
 
     def get_effective_annotation_for_token(self, token_id: str) -> Annotation | None:
