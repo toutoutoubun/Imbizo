@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Callable, Iterable
 from typing import Any, Sequence
 
 from imbizo.app.time import utc_now
@@ -27,6 +28,16 @@ from imbizo.domain.transcripts import SegmentLevel, SourceFormat, Token, Transcr
 
 def _enum_value(value: Any) -> Any:
     return getattr(value, "value", value)
+
+
+SaveProgressCallback = Callable[[str, int, int], None]
+
+
+def _batched(items: Sequence[Any], size: int) -> Iterable[Sequence[Any]]:
+    """Yield fixed-size chunks so long SQLite writes can report progress."""
+
+    for start in range(0, len(items), size):
+        yield items[start : start + size]
 
 
 class ProjectRepository:
@@ -382,6 +393,7 @@ class TranscriptRepository:
         document: TranscriptDocument,
         segments: Sequence[TranscriptSegment],
         tokens: Sequence[Token],
+        progress_callback: SaveProgressCallback | None = None,
     ) -> None:
         """Persist one imported transcript bundle."""
 
@@ -403,52 +415,74 @@ class TranscriptRepository:
                 document.notes,
             ),
         )
-        for segment in segments:
-            self.connection.execute(
-                """
-                INSERT OR REPLACE INTO segments (
-                    id, transcript_document_id, media_asset_id, parent_segment_id,
-                    speaker_id, scene_id, segment_level, sort_order, start_ms,
-                    end_ms, text_original, text_normalized, external_ref, notes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    segment.id,
-                    segment.transcript_document_id,
-                    segment.media_asset_id,
-                    segment.parent_segment_id,
-                    segment.speaker_id,
-                    segment.scene_id,
-                    segment.segment_level.value,
-                    segment.sort_order,
-                    segment.start_ms,
-                    segment.end_ms,
-                    segment.text_original,
-                    segment.text_normalized,
-                    segment.external_ref,
-                    segment.notes,
-                ),
+        total = max(len(segments) + len(tokens), 1)
+        done = 0
+        if progress_callback is not None:
+            progress_callback("Preparing transcript rows", done, total)
+
+        segment_sql = """
+            INSERT OR REPLACE INTO segments (
+                id, transcript_document_id, media_asset_id, parent_segment_id,
+                speaker_id, scene_id, segment_level, sort_order, start_ms,
+                end_ms, text_original, text_normalized, external_ref, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        for batch in _batched(segments, 500):
+            self.connection.executemany(
+                segment_sql,
+                [
+                    (
+                        segment.id,
+                        segment.transcript_document_id,
+                        segment.media_asset_id,
+                        segment.parent_segment_id,
+                        segment.speaker_id,
+                        segment.scene_id,
+                        segment.segment_level.value,
+                        segment.sort_order,
+                        segment.start_ms,
+                        segment.end_ms,
+                        segment.text_original,
+                        segment.text_normalized,
+                        segment.external_ref,
+                        segment.notes,
+                    )
+                    for segment in batch
+                ],
             )
-        for token in tokens:
-            self.connection.execute(
-                """
-                INSERT OR REPLACE INTO tokens (
-                    id, segment_id, sort_order, token_text, normalized_text,
-                    char_start, char_end, external_ref
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    token.id,
-                    token.segment_id,
-                    token.sort_order,
-                    token.token_text,
-                    token.normalized_text,
-                    token.char_start,
-                    token.char_end,
-                    token.external_ref,
-                ),
+            done += len(batch)
+            if progress_callback is not None:
+                progress_callback(f"Saved {done:,} of {total:,} transcript rows", done, total)
+
+        token_sql = """
+            INSERT OR REPLACE INTO tokens (
+                id, segment_id, sort_order, token_text, normalized_text,
+                char_start, char_end, external_ref
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        for batch in _batched(tokens, 1000):
+            self.connection.executemany(
+                token_sql,
+                [
+                    (
+                        token.id,
+                        token.segment_id,
+                        token.sort_order,
+                        token.token_text,
+                        token.normalized_text,
+                        token.char_start,
+                        token.char_end,
+                        token.external_ref,
+                    )
+                    for token in batch
+                ],
             )
+            done += len(batch)
+            if progress_callback is not None:
+                progress_callback(f"Saved {done:,} of {total:,} transcript rows", done, total)
         self.connection.commit()
+        if progress_callback is not None:
+            progress_callback("Finished saving transcript rows", total, total)
 
     def _document_from_row(self, row: sqlite3.Row) -> TranscriptDocument:
         return TranscriptDocument(
@@ -569,6 +603,25 @@ class AnnotationRepository:
         annotation.updated_at = annotation.updated_at or annotation.created_at
         self._insert_annotation(annotation)
         self.connection.commit()
+
+    def save_auto_annotations(self, annotations: Sequence[Annotation], *, commit: bool = True) -> None:
+        """Save automatic annotations in one transaction.
+
+        This is used by long-running local tools such as LID so the GUI does
+        not appear frozen while SQLite commits once per token.
+        """
+
+        if not annotations:
+            return
+        now = utc_now()
+        for annotation in annotations:
+            annotation.source = AnnotationSource.AUTO
+            annotation.status = AnnotationStatus.ACTIVE
+            annotation.created_at = annotation.created_at or now
+            annotation.updated_at = annotation.updated_at or annotation.created_at
+            self._insert_annotation(annotation)
+        if commit:
+            self.connection.commit()
 
     def reject_annotation(self, annotation_id: str) -> None:
         """Mark an annotation as rejected."""

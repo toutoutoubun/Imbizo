@@ -7,6 +7,8 @@ from typing import Any
 
 from imbizo.app.strings import StringCatalog, load_string_catalog
 from imbizo.domain.project import ProjectMetadata
+from imbizo.gui.import_progress import import_file_with_progress
+from imbizo.services.import_service import ImportService
 from imbizo.services.annotation_service import AnnotationService
 from imbizo.services.lid_service import LidService
 from imbizo.services.project_service import ProjectService
@@ -20,6 +22,7 @@ class MainWindow:
         self.qt_window = None
         self.tabs = None
         self.project_service = ProjectService()
+        self.import_service = ImportService()
         self.strings = self._load_strings()
 
     def build(self) -> Any:
@@ -54,14 +57,18 @@ class MainWindow:
         from imbizo.gui.widgets.timeline_view import TimelineViewWidget
         from PySide6.QtWidgets import QTabWidget
 
-        editor = AnnotationEditorWidget(self.context, AnnotationService(), LidService())
+        annotation_service = AnnotationService()
+        editor = AnnotationEditorWidget(self.context, annotation_service, LidService())
+        spreadsheet = SpreadsheetViewWidget(self.context, annotation_service)
         self.tabs = QTabWidget()
         self.tabs.clear()
         self.tabs.addTab(editor.build(), self.strings.text("tab.annotation"))
-        self.tabs.addTab(SpreadsheetViewWidget().build(), self.strings.text("tab.spreadsheet"))
+        spreadsheet_page = spreadsheet.build()
+        self.tabs.addTab(spreadsheet_page, self.strings.text("tab.spreadsheet"))
         self.tabs.addTab(TimelineViewWidget().build(), self.strings.text("tab.timeline"))
         self.tabs.addTab(MetricsDashboardWidget().build(), self.strings.text("tab.metrics"))
         self.tabs.addTab(ProjectSettingsWidget().build(), self.strings.text("tab.project_settings"))
+        self.tabs.currentChanged.connect(lambda index: spreadsheet.refresh() if self.tabs and self.tabs.widget(index) is spreadsheet_page else None)
         self.qt_window.setCentralWidget(self.tabs)
 
     def close_project(self) -> None:
@@ -109,15 +116,22 @@ class MainWindow:
 
         new_button = QPushButton(self.strings.text("project.new"))
         open_button = QPushButton(self.strings.text("project.open"))
+        data_button = QPushButton(self.strings.text("project.import_data"))
         import_button = QPushButton(self.strings.text("project.import_zip"))
-        for button in (new_button, open_button, import_button):
+        for button in (new_button, data_button, open_button, import_button):
             button.setMinimumHeight(36)
             button.setMinimumWidth(160)
             action_layout.addWidget(button)
 
         new_button.clicked.connect(self._choose_new_project)
+        data_button.clicked.connect(self._choose_data_file_for_new_project)
         open_button.clicked.connect(self._choose_existing_project)
         import_button.clicked.connect(self._choose_project_zip)
+
+        folder_note = QLabel(self.strings.text("welcome.project_folder_note"))
+        folder_note.setWordWrap(True)
+        folder_note.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        folder_note.setStyleSheet("font-size: 12px; color: #5A5754;")
 
         offline_note = QLabel(self.strings.text("welcome.offline_note"))
         offline_note.setWordWrap(True)
@@ -128,6 +142,7 @@ class MainWindow:
         outer.addWidget(title)
         outer.addWidget(subtitle)
         outer.addWidget(actions)
+        outer.addWidget(folder_note)
         outer.addWidget(offline_note)
         outer.addStretch(2)
 
@@ -145,6 +160,66 @@ class MainWindow:
         )
         if folder:
             self.open_project(Path(folder))
+
+    def _choose_data_file_for_new_project(self) -> None:
+        """Create a new project and immediately import a local data file."""
+
+        from PySide6.QtWidgets import QFileDialog, QInputDialog, QMessageBox
+
+        source, _ = QFileDialog.getOpenFileName(
+            self.qt_window,
+            self.strings.text("project.import_data_dialog_title"),
+            "",
+            self.strings.text("project.import_data_filter"),
+        )
+        if not source:
+            return
+        parent_folder = QFileDialog.getExistingDirectory(
+            self.qt_window,
+            self.strings.text("project.import_data_destination_title"),
+        )
+        if not parent_folder:
+            return
+        folder_name, ok = QInputDialog.getText(
+            self.qt_window,
+            self.strings.text("project.import_data_name_title"),
+            self.strings.text("project.import_data_name_label"),
+        )
+        if not ok:
+            return
+        folder_name = folder_name.strip() or self.strings.text("project.import_data_default_name")
+        project_root = Path(parent_folder) / folder_name
+        title, ok = QInputDialog.getText(
+            self.qt_window,
+            self.strings.text("project.import_data_title_dialog_title"),
+            self.strings.text("project.import_data_title_dialog_label"),
+        )
+        if not ok:
+            return
+        title = title.strip() or Path(source).stem
+        try:
+            context = self.project_service.create_project(project_root, ProjectMetadata(project_uuid="", title=title))
+            result = import_file_with_progress(
+                self.qt_window,
+                context,
+                Path(source),
+                self.import_service,
+                self.strings.text("project.import_data_progress_title"),
+            )
+        except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
+            self._show_error(self.strings.text("project.import_data_failed"), str(exc))
+            return
+
+        self.open_project(context.paths.root)
+        QMessageBox.information(
+            self.qt_window,
+            self.strings.text("project.import_data_complete_title"),
+            self.strings.text(
+                "project.import_data_complete_message",
+                filename=result.copied_path.name,
+                project=str(context.paths.root),
+            ),
+        )
 
     def _choose_new_project(self) -> None:
         """Ask for a folder and title, then create a local project."""

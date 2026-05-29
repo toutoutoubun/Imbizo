@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import shutil
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
@@ -13,7 +14,7 @@ from imbizo.app.errors import ImportFailure
 from imbizo.domain.project import ProjectContext
 from imbizo.domain.provenance import make_provenance_record
 from imbizo.importers.audio import AudioImporter
-from imbizo.importers.base import ImportedBundle, ImportOptions, Importer
+from imbizo.importers.base import ImportedBundle, ImportOptions, ImportProgress, Importer
 from imbizo.importers.csv_importer import CsvTranscriptImporter
 from imbizo.importers.eaf import EafImporter
 from imbizo.importers.json_importer import JsonTranscriptImporter
@@ -21,6 +22,7 @@ from imbizo.importers.spreadsheet import SpreadsheetImporter
 from imbizo.importers.textgrid import TextGridImporter
 from imbizo.importers.txt import TxtImporter
 from imbizo.importers.video import VideoImporter
+from imbizo.importers.xml_importer import XmlTranscriptImporter
 from imbizo.persistence.repositories import ImportRepository, MediaRepository, TranscriptRepository
 from imbizo.services.provenance_service import ProvenanceService
 
@@ -35,12 +37,55 @@ class ImportResult:
     report: dict[str, object]
 
 
-def _sha256(path: Path) -> str:
+def _sha256(path: Path, options: ImportOptions | None = None) -> str:
     digest = hashlib.sha256()
+    total = max(path.stat().st_size, 1)
+    done = 0
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
+            done += len(chunk)
+            if options is not None:
+                _emit_progress(options, "hash", f"Verifying {path.name}", _scaled(done, total, 25, 35), 100)
     return digest.hexdigest()
+
+
+def _emit_progress(options: ImportOptions, stage: str, message: str, current: int, total: int) -> None:
+    """Notify a GUI or CLI progress observer when one is attached."""
+
+    if options.progress_callback is not None:
+        options.progress_callback(ImportProgress(stage=stage, message=message, current=current, total=total))
+
+
+def _scaled(done: int, total: int, start: int, end: int) -> int:
+    """Scale byte progress into an inclusive integer range."""
+
+    if total <= 0:
+        return end
+    return min(end, max(start, start + int(done / total * (end - start))))
+
+
+def _copy_with_progress(source_path: Path, copied_path: Path, options: ImportOptions) -> None:
+    """Copy a file in chunks so large imports can update the progress UI."""
+
+    total = max(source_path.stat().st_size, 1)
+    done = 0
+    copied_path.parent.mkdir(parents=True, exist_ok=True)
+    with source_path.open("rb") as source, copied_path.open("wb") as destination:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            destination.write(chunk)
+            done += len(chunk)
+            _emit_progress(options, "copy", f"Copying {source_path.name}", _scaled(done, total, 10, 25), 100)
+    shutil.copystat(source_path, copied_path)
+
+
+def _save_progress_callback(options: ImportOptions) -> Callable[[str, int, int], None]:
+    """Return a repository callback that maps row-save progress to 85-99%."""
+
+    def update(message: str, done: int, total: int) -> None:
+        _emit_progress(options, "save", message, _scaled(done, total, 85, 99), 100)
+
+    return update
 
 
 class ImportService:
@@ -51,6 +96,7 @@ class ImportService:
             TxtImporter(),
             CsvTranscriptImporter(),
             EafImporter(),
+            XmlTranscriptImporter(),
             TextGridImporter(),
             JsonTranscriptImporter(),
             SpreadsheetImporter(),
@@ -74,13 +120,18 @@ class ImportService:
         if importer is None:
             raise ImportFailure(f"No local importer is available for {source_path.name}.")
 
+        _emit_progress(options, "preflight", f"Preparing {source_path.name}", 0, 100)
         batch_id = str(uuid.uuid4())
         copied_path = context.paths.imports_original / f"{batch_id}_{source_path.name}"
-        shutil.copy2(source_path, copied_path)
-        source_hash = _sha256(copied_path)
+        _emit_progress(options, "copy", f"Copying {source_path.name} into the project", 10, 100)
+        _copy_with_progress(source_path, copied_path, options)
+        _emit_progress(options, "hash", f"Verifying local copy of {source_path.name}", 25, 100)
+        source_hash = _sha256(copied_path, options)
+        _emit_progress(options, "parse", f"Reading {source_path.name}", 35, 100)
         bundle = importer.import_file(copied_path, options)
         relative_copied = copied_path.relative_to(context.paths.root)
 
+        _emit_progress(options, "save", "Saving imported rows to the project database", 85, 100)
         ImportRepository(context.connection).save_import_batch(
             batch_id=batch_id,
             source_label=source_path.name,
@@ -98,7 +149,12 @@ class ImportService:
         if bundle.document:
             bundle.document.import_batch_id = batch_id
             bundle.document.relative_path = str(relative_copied)
-            TranscriptRepository(context.connection).save_document_bundle(bundle.document, bundle.segments, bundle.tokens)
+            TranscriptRepository(context.connection).save_document_bundle(
+                bundle.document,
+                bundle.segments,
+                bundle.tokens,
+                progress_callback=_save_progress_callback(options),
+            )
         ProvenanceService().record(
             context,
             make_provenance_record(
@@ -111,6 +167,7 @@ class ImportService:
                 report=bundle.report,
             ),
         )
+        _emit_progress(options, "complete", f"Finished importing {source_path.name}", 100, 100)
         return ImportResult(batch_id=batch_id, bundle=bundle, copied_path=copied_path, report=bundle.report)
 
     def import_many(self, context: ProjectContext, source_paths: Sequence[Path], options: ImportOptions | None = None) -> list[ImportResult]:
