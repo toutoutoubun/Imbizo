@@ -10,6 +10,7 @@ from imbizo.services.annotation_service import AnnotationService
 
 
 TOKEN_ID_ROLE = 256
+MAX_VISIBLE_TOKEN_ROWS = 1000
 
 
 class SpreadsheetViewWidget:
@@ -29,6 +30,7 @@ class SpreadsheetViewWidget:
         self.search_box = None
         self.status_label = None
         self.languages_by_label: dict[str, str] = {}
+        self.language_names_by_id: dict[str, str] = {}
         self._is_loading = False
 
     def build(self) -> Any:
@@ -102,11 +104,13 @@ class SpreadsheetViewWidget:
         selected_documents = [document for document in documents if not document_id or document.id == document_id]
         rows: list[tuple[str, int, Any]] = []
         languages_seen = {}
+        language_names_by_id = {}
         for document in selected_documents:
             state = self.annotation_service.load_editor_state(self.context, document.id)
             for language in state.languages:
                 languages_seen[language.name] = language.id
                 languages_seen[language.code] = language.id
+                language_names_by_id[language.id] = language.name
             for row in state.rows:
                 haystack = f"{row.token.token_text} {row.annotation.memo if row.annotation else ''}".lower()
                 if search and search not in haystack:
@@ -114,11 +118,14 @@ class SpreadsheetViewWidget:
                 rows.append((document.name, row.segment.sort_order, row))
 
         self.languages_by_label = languages_seen
+        self.language_names_by_id = language_names_by_id
         self._is_loading = True
         self.table.blockSignals(True)
         self.table.setSortingEnabled(False)
-        self.table.setRowCount(len(rows))
-        for row_index, (document_name, segment_order, row) in enumerate(rows):
+        visible_rows = rows[:MAX_VISIBLE_TOKEN_ROWS]
+        self.table.setUpdatesEnabled(False)
+        self.table.setRowCount(len(visible_rows))
+        for row_index, (document_name, segment_order, row) in enumerate(visible_rows):
             annotation = row.annotation
             language_name = self._language_name(annotation.language_id if annotation else None)
             confidence = ""
@@ -147,10 +154,14 @@ class SpreadsheetViewWidget:
         )
         self.table.resizeColumnsToContents()
         self.table.setSortingEnabled(True)
+        self.table.setUpdatesEnabled(True)
         self.table.blockSignals(False)
         self._is_loading = False
         if self.status_label is not None:
-            self.status_label.setText(f"{len(rows):,} token rows")
+            if len(rows) > len(visible_rows):
+                self.status_label.setText(f"Showing {len(visible_rows):,} of {len(rows):,} token rows")
+            else:
+                self.status_label.setText(f"{len(rows):,} token rows")
         self.table.setAccessibleName("Spreadsheet annotation table")
         self.table.setToolTip("Edit Language or Memo cells directly. Other cells are read-only project evidence.")
 
@@ -175,12 +186,7 @@ class SpreadsheetViewWidget:
     def _language_name(self, language_id: str | None) -> str:
         if not language_id:
             return ""
-        from imbizo.persistence.repositories import LanguageRepository
-
-        for language in LanguageRepository(self.context.connection).list_languages():
-            if language.id == language_id:
-                return language.name
-        return language_id
+        return self.language_names_by_id.get(language_id, language_id)
 
     def _item(self, text: str, token_id: str, *, editable: bool) -> Any:
         from PySide6.QtCore import Qt

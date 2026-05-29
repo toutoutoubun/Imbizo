@@ -623,6 +623,27 @@ class AnnotationRepository:
         if commit:
             self.connection.commit()
 
+    def save_imported_annotations(self, annotations: Sequence[Annotation], *, commit: bool = True) -> None:
+        """Save imported annotations in one transaction.
+
+        Imported annotations are source evidence carried by a local file, such
+        as a spreadsheet `lang_id` column. They do not replace manual work, and
+        manual annotations remain higher priority when effective labels are
+        resolved.
+        """
+
+        if not annotations:
+            return
+        now = utc_now()
+        for annotation in annotations:
+            annotation.source = AnnotationSource.IMPORTED
+            annotation.status = AnnotationStatus.ACTIVE
+            annotation.created_at = annotation.created_at or now
+            annotation.updated_at = annotation.updated_at or annotation.created_at
+            self._insert_annotation(annotation)
+        if commit:
+            self.connection.commit()
+
     def reject_annotation(self, annotation_id: str) -> None:
         """Mark an annotation as rejected."""
 

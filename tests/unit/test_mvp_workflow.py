@@ -97,6 +97,39 @@ def test_json_xlsx_and_ods_importers(tmp_path: Path) -> None:
     assert xlsx_result.bundle.document is not None
     assert len(xlsx_result.bundle.tokens) == 2
 
+    path_header_source = tmp_path / "path_headers.xlsx"
+    path_workbook = Workbook()
+    path_sheet = path_workbook.active
+    path_sheet.title = "balanced_engsot"
+    path_sheet.append(["/Corpus", None, None, None])
+    path_sheet.append(
+        [
+            "/SoapOpera/episode/utterance/#id",
+            "/SoapOpera/episode/utterance/speaker_id",
+            "/SoapOpera/episode/utterance/utterance_segment/lang_id",
+            "/SoapOpera/episode/utterance/utterance_segment/transcription",
+        ]
+    )
+    path_sheet.append([1, "AKHONA", "sot", "dumela friend"])
+    path_sheet.append([2, "AKHONA", "eng", "hello friend"])
+    path_workbook.save(path_header_source)
+    path_header_result = ImportService().import_file(context, path_header_source)
+    assert path_header_result.bundle.document is not None
+    assert len(path_header_result.bundle.segments) == 2
+    assert len(path_header_result.bundle.tokens) == 4
+    assert path_header_result.bundle.report["imported_language_labels"] == 4
+    imported_codes = {
+        row["code"]
+        for row in context.connection.execute(
+            """
+            SELECT languages.code FROM annotations
+            JOIN languages ON languages.id = annotations.language_id
+            WHERE annotations.source = 'imported'
+            """
+        ).fetchall()
+    }
+    assert {"eng", "sot"}.issubset(imported_codes)
+
     ods_source = tmp_path / "transcript.ods"
     content_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <office:document-content
