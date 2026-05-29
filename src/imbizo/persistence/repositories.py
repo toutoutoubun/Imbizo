@@ -412,26 +412,33 @@ class TranscriptRepository:
         ).fetchall()
         return [self._token_from_row(row) for row in rows]
 
-    def list_all_tokens(self, document_id: str | None = None) -> list[Token]:
+    def list_all_tokens(self, document_id: str | None = None, *, limit: int | None = None) -> list[Token]:
         """Return tokens, optionally limited to one document."""
 
+        limit_clause = " LIMIT ?" if limit is not None else ""
+        parameters: tuple[object, ...]
         if document_id:
+            parameters = (document_id, limit) if limit is not None else (document_id,)
             rows = self.connection.execute(
-                """
+                f"""
                 SELECT tokens.* FROM tokens
                 JOIN segments ON segments.id = tokens.segment_id
                 WHERE segments.transcript_document_id = ?
                 ORDER BY segments.sort_order, tokens.sort_order
+                {limit_clause}
                 """,
-                (document_id,),
+                parameters,
             ).fetchall()
         else:
+            parameters = (limit,) if limit is not None else ()
             rows = self.connection.execute(
-                """
+                f"""
                 SELECT tokens.* FROM tokens
                 JOIN segments ON segments.id = tokens.segment_id
                 ORDER BY segments.sort_order, tokens.sort_order
-                """
+                {limit_clause}
+                """,
+                parameters,
             ).fetchall()
         return [self._token_from_row(row) for row in rows]
 

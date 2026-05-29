@@ -154,15 +154,23 @@ class AnnotationEditorWidget:
 
         if self.table is None:
             return
+        from imbizo.persistence.repositories import TranscriptRepository
+
         self.document_id = document_id
-        state = self.annotation_service.load_editor_state(self.context, document_id)
+        transcript_repo = TranscriptRepository(self.context.connection)
+        total_token_rows = transcript_repo.count_tokens_for_document(document_id)
+        state = self.annotation_service.load_editor_state(
+            self.context,
+            document_id,
+            token_limit=MAX_VISIBLE_TOKEN_ROWS,
+        )
         if not state.rows and document_id not in self._repair_attempted_document_ids:
             self._repair_attempted_document_ids.add(document_id)
             if self._try_repair_empty_document(document_id):
                 return
         self.languages_by_name = {language.name: language.id for language in state.languages}
         self.language_names_by_id = {language.id: language.name for language in state.languages}
-        visible_rows = state.rows[:MAX_VISIBLE_TOKEN_ROWS]
+        visible_rows = state.rows
         self.table.blockSignals(True)
         self.table.setUpdatesEnabled(False)
         self.table.setRowCount(len(visible_rows))
@@ -180,8 +188,8 @@ class AnnotationEditorWidget:
         self.table.setUpdatesEnabled(True)
         self.table.blockSignals(False)
         if self.status_label is not None:
-            if len(state.rows) > len(visible_rows):
-                total_rows = f"{len(state.rows):,}"
+            if total_token_rows > len(visible_rows):
+                total_rows = f"{total_token_rows:,}"
                 self.status_label.setText(
                     f"Showing first {len(visible_rows):,} of {total_rows} token rows. "
                     "Use the Spreadsheet tab search for focused review."

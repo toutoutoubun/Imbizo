@@ -18,10 +18,19 @@ TEXT_COLUMNS = {
     "sentence",
     "segment",
     "content",
+    "token",
+    "tokens",
+    "token_text",
+    "word",
+    "surface",
+    "form",
     "発話",
     "発話内容",
     "テキスト",
     "本文",
+    "語",
+    "単語",
+    "トークン",
 }
 START_COLUMNS = {"start_ms", "start", "begin", "onset", "start_time", "開始", "開始時刻"}
 END_COLUMNS = {"end_ms", "end", "finish", "offset", "end_time", "終了", "終了時刻"}
