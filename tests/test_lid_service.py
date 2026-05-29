@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from imbizo.domain.annotations import AnnotationDraft
 from imbizo.domain.project import ProjectMetadata
+from imbizo.lid.baseline import BaselineLidProvider
 from imbizo.lid.providers import LidOptions, LidProgress
 from imbizo.services.annotation_service import AnnotationService
 from imbizo.services.import_service import ImportService
@@ -25,7 +28,7 @@ def _context_with_document(tmp_path: Path, text: str):
 def test_local_lid_applies_useful_labels_without_auto_unknown(tmp_path: Path) -> None:
     """Useful local labels are applied, while low-evidence Unknown stays advisory."""
 
-    context, document = _context_with_document(tmp_path, "I went to the market\nngiyabonga friend\n")
+    context, document = _context_with_document(tmp_path, "I went to the market 123\nngiyabonga friend\n")
     updates: list[LidProgress] = []
 
     report = LidService().run_lid_for_document_report(
@@ -75,3 +78,40 @@ def test_local_lid_preserves_manual_labels(tmp_path: Path) -> None:
     first_after = next(row for row in state_after.rows if row.token.id == first_token.id)
     assert first_after.annotation is not None
     assert first_after.annotation.id == manual.id
+
+
+def test_local_lid_discovers_project_fasttext_model_and_maps_codes(tmp_path: Path, monkeypatch) -> None:
+    """A local lid.176 model in project/models/lid is used without env vars."""
+
+    class FakeFastTextModel:
+        def predict(self, text: str, k: int) -> tuple[list[str], list[float]]:
+            return ["__label__zu", "__label__en"][:k], [0.91, 0.05][:k]
+
+    monkeypatch.setitem(sys.modules, "fasttext", SimpleNamespace(load_model=lambda path: FakeFastTextModel()))
+    context, document = _context_with_document(tmp_path, "sawubona friend\n")
+    model_dir = context.paths.root / "models" / "lid"
+    model_dir.mkdir(parents=True)
+    (model_dir / "lid.176.ftz").write_bytes(b"fake model")
+
+    report = LidService().run_lid_for_document_report(context, document.id)
+
+    assert report.provider_method == "fastText lid.176"
+    rows = context.connection.execute(
+        """
+        SELECT languages.code FROM annotations
+        JOIN languages ON languages.id = annotations.language_id
+        WHERE annotations.source = 'auto'
+        """
+    ).fetchall()
+    assert {row["code"] for row in rows} == {"zul"}
+
+
+def test_baseline_lid_without_env_uses_heuristic_not_cwd(monkeypatch) -> None:
+    """Unset model config must not treat the current directory as a model."""
+
+    monkeypatch.delenv("IMBIZO_FASTTEXT_LID_MODEL", raising=False)
+    provider = BaselineLidProvider()
+    prediction = provider.predict(["hello"], LidOptions(max_languages=1))[0][0]
+
+    assert prediction.language_code == "eng"
+    assert prediction.evidence["method"] == "heuristic"

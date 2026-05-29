@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from imbizo.lid.baseline import BaselineLidProvider
+from imbizo.lid.baseline import FASTTEXT_TO_PROJECT_CODE, BaselineLidProvider
 from imbizo.lid.providers import LanguageScore, LidOptions
 
 
@@ -56,9 +56,10 @@ class BaselineLID:
         labels, probabilities = self._model.predict(text.replace("\n", " "), k=top_k)  # type: ignore[attr-defined]
         predictions: list[LIDPrediction] = []
         for label, probability in zip(labels, probabilities, strict=False):
+            raw_code = str(label).replace("__label__", "")
             predictions.append(
                 LIDPrediction(
-                    language_code=str(label).replace("__label__", ""),
+                    language_code=FASTTEXT_TO_PROJECT_CODE.get(raw_code, raw_code),
                     confidence=float(probability),
                     evidence={"method": "fastText lid.176", "model_path": str(self.model_path)},
                 )
@@ -74,7 +75,11 @@ class BaselineLID:
         except ImportError:
             self.error_message = "fasttext Python package is not installed; install the offline wheelhouse and rerun."
             return
-        self._model = fasttext.load_model(str(self.model_path))
+        try:
+            self._model = fasttext.load_model(str(self.model_path))
+        except Exception as exc:  # noqa: BLE001 - UI-facing API must degrade gracefully.
+            self.error_message = f"Could not load baseline LID model at {self.model_path}: {exc}"
+            self._model = None
 
 
 def load_baseline_lid(model_dir: Path = Path("models/lid")) -> BaselineLID:

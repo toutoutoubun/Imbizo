@@ -158,6 +158,9 @@ class AnnotationEditorWidget:
             QMessageBox.critical(self.widget, "Local LID failed", str(exc))
             return
         self.load_document(self.document_id)
+        method_note = f"\nProvider: {report.provider_method}."
+        if report.provider_message:
+            method_note += f"\nNote: {report.provider_message}"
         QMessageBox.information(
             self.widget,
             "Local LID complete",
@@ -166,6 +169,7 @@ class AnnotationEditorWidget:
                 f"{report.auto_annotations_count} useful auto labels.\n"
                 f"Skipped {report.skipped_unknown_count} uncertain Unknown labels; "
                 f"preserved {report.preserved_manual_count} manual labels."
+                f"{method_note}"
             ),
         )
 
