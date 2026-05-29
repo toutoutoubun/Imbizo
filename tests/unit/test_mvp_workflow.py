@@ -130,6 +130,17 @@ def test_json_xlsx_and_ods_importers(tmp_path: Path) -> None:
     }
     assert {"eng", "sot"}.issubset(imported_codes)
 
+    document_id = path_header_result.bundle.document.id
+    from imbizo.persistence.repositories import TranscriptRepository
+
+    transcript_repo = TranscriptRepository(context.connection)
+    transcript_repo.clear_document_content(document_id)
+    assert transcript_repo.count_tokens_for_document(document_id) == 0
+    repaired = ImportService().repair_empty_document(context, document_id)
+    assert repaired is not None
+    assert repaired.report["tokens"] == 4
+    assert transcript_repo.count_tokens_for_document(document_id) == 4
+
     ods_source = tmp_path / "transcript.ods"
     content_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <office:document-content
