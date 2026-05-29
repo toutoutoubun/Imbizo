@@ -10,6 +10,8 @@ from imbizo.gui.import_progress import import_file_with_progress
 from imbizo.gui.lid_progress import run_lid_with_progress
 from imbizo.services.import_service import ImportService
 
+MAX_VISIBLE_TOKEN_ROWS = 1000
+
 
 class AnnotationEditorWidget:
     """Main annotation workbench screen.
@@ -26,7 +28,9 @@ class AnnotationEditorWidget:
         self.document_id: str | None = None
         self.widget = None
         self.table = None
+        self.status_label = None
         self.languages_by_name: dict[str, str] = {}
+        self.language_names_by_id: dict[str, str] = {}
 
     def build(self) -> Any:
         """Build and return the PySide6 widget."""
@@ -60,6 +64,8 @@ class AnnotationEditorWidget:
         header.addWidget(run_lid)
         layout.addLayout(header)
         layout.addWidget(QLabel("Waveform: link media to show local waveform peaks."))
+        self.status_label = QLabel("No token rows loaded")
+        layout.addWidget(self.status_label)
         self.table = QTableWidget(0, 5)
         self.table.setHorizontalHeaderLabels(["Token", "Language", "Source", "Confidence", "Memo"])
         self.table.cellChanged.connect(self._cell_changed)
@@ -134,15 +140,26 @@ class AnnotationEditorWidget:
         self.document_id = document_id
         state = self.annotation_service.load_editor_state(self.context, document_id)
         self.languages_by_name = {language.name: language.id for language in state.languages}
+        self.language_names_by_id = {language.id: language.name for language in state.languages}
+        visible_rows = state.rows[:MAX_VISIBLE_TOKEN_ROWS]
         self.table.blockSignals(True)
-        self.table.setRowCount(len(state.rows))
-        for row_index, row in enumerate(state.rows):
+        self.table.setUpdatesEnabled(False)
+        self.table.setRowCount(len(visible_rows))
+        for row_index, row in enumerate(visible_rows):
             self.table.setItem(row_index, 0, self._item(row.token.token_text, row.token.id))
             self.table.setItem(row_index, 1, self._item(self._language_name(row.annotation.language_id if row.annotation else None), row.token.id))
             self.table.setItem(row_index, 2, self._item(row.annotation.source.value if row.annotation else "", row.token.id))
             self.table.setItem(row_index, 3, self._item(str(row.annotation.researcher_confidence or row.annotation.auto_confidence or "") if row.annotation else "", row.token.id))
             self.table.setItem(row_index, 4, self._item(row.annotation.memo if row.annotation else "", row.token.id))
+        self.table.setUpdatesEnabled(True)
         self.table.blockSignals(False)
+        if self.status_label is not None:
+            if len(state.rows) > len(visible_rows):
+                self.status_label.setText(
+                    f"Showing first {len(visible_rows):,} of {len(state.rows):,} token rows. Use the Spreadsheet tab search for focused review."
+                )
+            else:
+                self.status_label.setText(f"{len(state.rows):,} token rows")
 
     def run_lid(self) -> None:
         """Run local LID for the current document and refresh the grid."""
@@ -207,12 +224,7 @@ class AnnotationEditorWidget:
     def _language_name(self, language_id: str | None) -> str:
         if not language_id:
             return ""
-        from imbizo.persistence.repositories import LanguageRepository
-
-        for language in LanguageRepository(self.context.connection).list_languages():
-            if language.id == language_id:
-                return language.name
-        return language_id
+        return self.language_names_by_id.get(language_id, language_id)
 
     def _item(self, text: str, token_id: str) -> Any:
         from PySide6.QtWidgets import QTableWidgetItem

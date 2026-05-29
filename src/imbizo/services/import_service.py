@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Sequence
 
 from imbizo.app.errors import ImportFailure
+from imbizo.app.time import utc_now
+from imbizo.domain.annotations import Annotation, AnnotationSource
 from imbizo.domain.project import ProjectContext
 from imbizo.domain.provenance import make_provenance_record
 from imbizo.importers.audio import AudioImporter
@@ -23,7 +25,7 @@ from imbizo.importers.textgrid import TextGridImporter
 from imbizo.importers.txt import TxtImporter
 from imbizo.importers.video import VideoImporter
 from imbizo.importers.xml_importer import XmlTranscriptImporter
-from imbizo.persistence.repositories import ImportRepository, MediaRepository, TranscriptRepository
+from imbizo.persistence.repositories import AnnotationRepository, ImportRepository, LanguageRepository, MediaRepository, TranscriptRepository
 from imbizo.services.provenance_service import ProvenanceService
 
 
@@ -155,6 +157,7 @@ class ImportService:
                 bundle.tokens,
                 progress_callback=_save_progress_callback(options),
             )
+            self._save_imported_language_annotations(context, bundle.token_language_codes)
         ProvenanceService().record(
             context,
             make_provenance_record(
@@ -174,3 +177,29 @@ class ImportService:
         """Import multiple files sequentially with individual reports."""
 
         return [self.import_file(context, path, options) for path in source_paths]
+
+    def _save_imported_language_annotations(self, context: ProjectContext, token_language_codes: dict[str, str]) -> None:
+        """Persist language labels that came from the imported local file."""
+
+        if not token_language_codes:
+            return
+        languages_by_code = {language.code.lower(): language.id for language in LanguageRepository(context.connection).list_languages()}
+        now = utc_now()
+        annotations: list[Annotation] = []
+        for token_id, code in token_language_codes.items():
+            language_id = languages_by_code.get(code.strip().lower())
+            if language_id is None:
+                continue
+            annotations.append(
+                Annotation(
+                    id=str(uuid.uuid4()),
+                    token_id=token_id,
+                    source=AnnotationSource.IMPORTED,
+                    language_id=language_id,
+                    auto_confidence=1.0,
+                    created_by="importer",
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+        AnnotationRepository(context.connection).save_imported_annotations(annotations)

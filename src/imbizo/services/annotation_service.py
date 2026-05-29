@@ -6,7 +6,7 @@ import uuid
 from dataclasses import dataclass
 
 from imbizo.app.time import utc_now
-from imbizo.domain.annotations import Annotation, AnnotationDraft, AnnotationSource
+from imbizo.domain.annotations import Annotation, AnnotationDraft, AnnotationSource, choose_effective_annotation
 from imbizo.domain.languages import LanguageTag
 from imbizo.domain.project import ProjectContext
 from imbizo.domain.provenance import make_provenance_record
@@ -44,11 +44,19 @@ class AnnotationService:
         documents = {document.id: document for document in transcript_repo.list_documents()}
         document = documents[document_id]
         segments = transcript_repo.list_segments(document_id)
+        segments_by_id = {segment.id: segment for segment in segments}
         annotation_repo = AnnotationRepository(context.connection)
-        rows: list[AnnotationRow] = []
-        for segment in segments:
-            for token in transcript_repo.list_tokens(segment.id):
-                rows.append(AnnotationRow(segment=segment, token=token, annotation=annotation_repo.get_effective_annotation_for_token(token.id)))
+        tokens = transcript_repo.list_all_tokens(document_id)
+        annotations_by_token = annotation_repo.list_annotations_for_tokens([token.id for token in tokens])
+        rows = [
+            AnnotationRow(
+                segment=segments_by_id[token.segment_id],
+                token=token,
+                annotation=choose_effective_annotation(annotations_by_token.get(token.id, [])),
+            )
+            for token in tokens
+            if token.segment_id in segments_by_id
+        ]
         languages = LanguageRepository(context.connection).list_languages()
         return AnnotationEditorState(document=document, segments=segments, rows=rows, languages=languages)
 

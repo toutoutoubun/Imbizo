@@ -68,7 +68,12 @@ class MainWindow:
         self.tabs.addTab(TimelineViewWidget().build(), self.strings.text("tab.timeline"))
         self.tabs.addTab(MetricsDashboardWidget().build(), self.strings.text("tab.metrics"))
         self.tabs.addTab(ProjectSettingsWidget().build(), self.strings.text("tab.project_settings"))
-        self.tabs.currentChanged.connect(lambda index: spreadsheet.refresh() if self.tabs and self.tabs.widget(index) is spreadsheet_page else None)
+        def refresh_spreadsheet_tab(index: int) -> None:
+            if self.tabs and self.tabs.widget(index) is spreadsheet_page:
+                spreadsheet.refresh_documents()
+                spreadsheet.refresh()
+
+        self.tabs.currentChanged.connect(refresh_spreadsheet_tab)
         self.qt_window.setCentralWidget(self.tabs)
 
     def close_project(self) -> None:

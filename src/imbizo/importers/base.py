@@ -40,6 +40,7 @@ class ImportedBundle:
     document: TranscriptDocument | None = None
     segments: list[TranscriptSegment] = field(default_factory=list)
     tokens: list[Token] = field(default_factory=list)
+    token_language_codes: dict[str, str] = field(default_factory=dict)
     media_assets: list[MediaAsset] = field(default_factory=list)
     report: dict[str, object] = field(default_factory=dict)
 
