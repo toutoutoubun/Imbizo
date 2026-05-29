@@ -604,6 +604,25 @@ class AnnotationRepository:
         self._insert_annotation(annotation)
         self.connection.commit()
 
+    def save_auto_annotations(self, annotations: Sequence[Annotation], *, commit: bool = True) -> None:
+        """Save automatic annotations in one transaction.
+
+        This is used by long-running local tools such as LID so the GUI does
+        not appear frozen while SQLite commits once per token.
+        """
+
+        if not annotations:
+            return
+        now = utc_now()
+        for annotation in annotations:
+            annotation.source = AnnotationSource.AUTO
+            annotation.status = AnnotationStatus.ACTIVE
+            annotation.created_at = annotation.created_at or now
+            annotation.updated_at = annotation.updated_at or annotation.created_at
+            self._insert_annotation(annotation)
+        if commit:
+            self.connection.commit()
+
     def reject_annotation(self, annotation_id: str) -> None:
         """Mark an annotation as rejected."""
 

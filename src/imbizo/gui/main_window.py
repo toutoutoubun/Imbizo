@@ -57,14 +57,18 @@ class MainWindow:
         from imbizo.gui.widgets.timeline_view import TimelineViewWidget
         from PySide6.QtWidgets import QTabWidget
 
-        editor = AnnotationEditorWidget(self.context, AnnotationService(), LidService())
+        annotation_service = AnnotationService()
+        editor = AnnotationEditorWidget(self.context, annotation_service, LidService())
+        spreadsheet = SpreadsheetViewWidget(self.context, annotation_service)
         self.tabs = QTabWidget()
         self.tabs.clear()
         self.tabs.addTab(editor.build(), self.strings.text("tab.annotation"))
-        self.tabs.addTab(SpreadsheetViewWidget().build(), self.strings.text("tab.spreadsheet"))
+        spreadsheet_page = spreadsheet.build()
+        self.tabs.addTab(spreadsheet_page, self.strings.text("tab.spreadsheet"))
         self.tabs.addTab(TimelineViewWidget().build(), self.strings.text("tab.timeline"))
         self.tabs.addTab(MetricsDashboardWidget().build(), self.strings.text("tab.metrics"))
         self.tabs.addTab(ProjectSettingsWidget().build(), self.strings.text("tab.project_settings"))
+        self.tabs.currentChanged.connect(lambda index: spreadsheet.refresh() if self.tabs and self.tabs.widget(index) is spreadsheet_page else None)
         self.qt_window.setCentralWidget(self.tabs)
 
     def close_project(self) -> None:

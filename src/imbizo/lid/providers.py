@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, Sequence
@@ -16,12 +17,30 @@ class LidLayer(StrEnum):
 
 
 @dataclass(slots=True)
+class LidProgress:
+    """One local LID progress update.
+
+    Local LID can touch thousands of tokens in a long interview. This progress
+    object keeps GUI feedback offline and explicit without coupling service
+    code to PySide6.
+    """
+
+    current: int
+    total: int
+    message: str
+
+
+LidProgressCallback = Callable[[LidProgress], None]
+
+
+@dataclass(slots=True)
 class LidOptions:
     """Options for local LID."""
 
     max_languages: int = 3
     min_confidence: float = 0.25
     use_optional_afrolid: bool = False
+    progress_callback: LidProgressCallback | None = None
 
 
 @dataclass(slots=True)

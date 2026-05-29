@@ -7,6 +7,7 @@ from typing import Any
 
 from imbizo.domain.annotations import AnnotationDraft
 from imbizo.gui.import_progress import import_file_with_progress
+from imbizo.gui.lid_progress import run_lid_with_progress
 from imbizo.services.import_service import ImportService
 
 
@@ -146,9 +147,27 @@ class AnnotationEditorWidget:
     def run_lid(self) -> None:
         """Run local LID for the current document and refresh the grid."""
 
-        if self.document_id:
-            self.lid_service.run_lid_for_document(self.context, self.document_id)
-            self.load_document(self.document_id)
+        from PySide6.QtWidgets import QMessageBox
+
+        if not self.document_id:
+            QMessageBox.information(self.widget, "No document selected", "Import or select a transcript before running Local LID.")
+            return
+        try:
+            report = run_lid_with_progress(self.widget, self.context, self.document_id, self.lid_service)
+        except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
+            QMessageBox.critical(self.widget, "Local LID failed", str(exc))
+            return
+        self.load_document(self.document_id)
+        QMessageBox.information(
+            self.widget,
+            "Local LID complete",
+            (
+                f"Saved {report.suggestions_count} suggestions and applied "
+                f"{report.auto_annotations_count} useful auto labels.\n"
+                f"Skipped {report.skipped_unknown_count} uncertain Unknown labels; "
+                f"preserved {report.preserved_manual_count} manual labels."
+            ),
+        )
 
     def _document_changed(self) -> None:
         document_id = self.document_selector.currentData()
