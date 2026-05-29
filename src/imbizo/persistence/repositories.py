@@ -347,6 +347,50 @@ class TranscriptRepository:
         rows = self.connection.execute("SELECT * FROM transcript_documents ORDER BY name").fetchall()
         return [self._document_from_row(row) for row in rows]
 
+    def get_document(self, document_id: str) -> TranscriptDocument | None:
+        """Return one transcript document by ID."""
+
+        row = self.connection.execute("SELECT * FROM transcript_documents WHERE id = ?", (document_id,)).fetchone()
+        return self._document_from_row(row) if row else None
+
+    def count_tokens_for_document(self, document_id: str) -> int:
+        """Return the number of tokens belonging to one transcript document."""
+
+        row = self.connection.execute(
+            """
+            SELECT COUNT(tokens.id) AS token_count
+            FROM tokens
+            JOIN segments ON segments.id = tokens.segment_id
+            WHERE segments.transcript_document_id = ?
+            """,
+            (document_id,),
+        ).fetchone()
+        return int(row["token_count"] if row else 0)
+
+    def clear_document_content(self, document_id: str, *, commit: bool = True) -> None:
+        """Remove segment/token content for a document while keeping its document row.
+
+        This is used only for repair of failed zero-token imports. Manual
+        annotations are removed only when they point at tokens in this document.
+        """
+
+        token_rows = self.connection.execute(
+            """
+            SELECT tokens.id FROM tokens
+            JOIN segments ON segments.id = tokens.segment_id
+            WHERE segments.transcript_document_id = ?
+            """,
+            (document_id,),
+        ).fetchall()
+        token_ids = [row["id"] for row in token_rows]
+        if token_ids:
+            slots = ",".join("?" for _ in token_ids)
+            self.connection.execute(f"DELETE FROM annotations WHERE token_id IN ({slots})", tuple(token_ids))
+            self.connection.execute(f"DELETE FROM tokens WHERE id IN ({slots})", tuple(token_ids))
+        self.connection.execute("DELETE FROM segments WHERE transcript_document_id = ?", (document_id,))
+        if commit:
+            self.connection.commit()
+
     def list_segments(self, document_id: str) -> list[TranscriptSegment]:
         """Return segments for a transcript document."""
 
@@ -805,6 +849,19 @@ class ImportRepository:
             ),
         )
         self.connection.commit()
+
+    def get_import_batch(self, batch_id: str) -> dict[str, Any] | None:
+        """Return one import batch record as a dictionary."""
+
+        row = self.connection.execute("SELECT * FROM import_batches WHERE id = ?", (batch_id,)).fetchone()
+        if row is None:
+            return None
+        data = dict(row)
+        try:
+            data["report"] = json.loads(row["import_report_json"] or "{}")
+        except json.JSONDecodeError:
+            data["report"] = {}
+        return data
 
 
 class ProvenanceRepository:

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from imbizo.domain.annotations import AnnotationDraft
-from imbizo.gui.import_progress import import_file_with_progress
+from imbizo.gui.import_progress import import_file_with_progress, repair_empty_document_with_progress
 from imbizo.gui.lid_progress import run_lid_with_progress
 from imbizo.services.import_service import ImportService
 
@@ -31,6 +31,7 @@ class AnnotationEditorWidget:
         self.status_label = None
         self.languages_by_name: dict[str, str] = {}
         self.language_names_by_id: dict[str, str] = {}
+        self._repair_attempted_document_ids: set[str] = set()
 
     def build(self) -> Any:
         """Build and return the PySide6 widget."""
@@ -139,6 +140,10 @@ class AnnotationEditorWidget:
             return
         self.document_id = document_id
         state = self.annotation_service.load_editor_state(self.context, document_id)
+        if not state.rows and document_id not in self._repair_attempted_document_ids:
+            self._repair_attempted_document_ids.add(document_id)
+            if self._try_repair_empty_document(document_id):
+                return
         self.languages_by_name = {language.name: language.id for language in state.languages}
         self.language_names_by_id = {language.id: language.name for language in state.languages}
         visible_rows = state.rows[:MAX_VISIBLE_TOKEN_ROWS]
@@ -203,6 +208,37 @@ class AnnotationEditorWidget:
                 self.document_selector.setCurrentIndex(index)
                 self.load_document(document_id)
                 return
+
+    def _try_repair_empty_document(self, document_id: str) -> bool:
+        """Attempt to fill a zero-token document from its preserved import copy."""
+
+        from PySide6.QtWidgets import QMessageBox
+
+        try:
+            result = repair_empty_document_with_progress(
+                self.widget,
+                self.context,
+                document_id,
+                self.import_service,
+                "Repairing empty imported document",
+            )
+        except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
+            if self.status_label is not None:
+                self.status_label.setText("0 token rows. Repair failed; import the source file again.")
+            QMessageBox.warning(self.widget, "Repair failed", str(exc))
+            return False
+        if result is None:
+            if self.status_label is not None:
+                self.status_label.setText("0 token rows. Import the source file again to populate this project.")
+            return False
+        self.refresh_documents()
+        self._select_document(document_id)
+        QMessageBox.information(
+            self.widget,
+            "Empty import repaired",
+            f"Recovered {result.report.get('tokens', 0):,} tokens from the preserved local import copy.",
+        )
+        return True
 
     def _cell_changed(self, row: int, column: int) -> None:
         if self.table is None or column not in {1, 4}:

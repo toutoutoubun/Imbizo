@@ -178,6 +178,86 @@ class ImportService:
 
         return [self.import_file(context, path, options) for path in source_paths]
 
+    def repair_empty_document(self, context: ProjectContext, document_id: str, options: ImportOptions | None = None) -> ImportResult | None:
+        """Repair a failed zero-token import from its preserved local copy.
+
+        Older spreadsheet builds could create a transcript document row but no
+        segments or tokens when the real header row was not the first row. The
+        project already contains a copied original file under
+        ``imports/original_copies/``; this method re-parses that local copy and
+        fills the existing document ID. It never contacts the network.
+        """
+
+        options = options or ImportOptions()
+        transcript_repo = TranscriptRepository(context.connection)
+        document = transcript_repo.get_document(document_id)
+        if document is None or not document.import_batch_id:
+            return None
+        if transcript_repo.count_tokens_for_document(document_id) > 0:
+            return None
+
+        batch = ImportRepository(context.connection).get_import_batch(document.import_batch_id)
+        if batch is None:
+            return None
+        copied_raw = str(batch.get("copied_path") or document.relative_path or "")
+        original_raw = str(batch.get("original_path") or "")
+        candidates: list[Path] = []
+        if copied_raw:
+            copied_path = Path(copied_raw)
+            candidates.append(copied_path if copied_path.is_absolute() else context.paths.root / copied_path)
+        if original_raw:
+            candidates.append(Path(original_raw).expanduser())
+        source_path = next((path for path in candidates if path.exists()), None)
+        if source_path is None:
+            return None
+
+        importer = next((item for item in self.importers if item.can_import(source_path)), None)
+        if importer is None:
+            return None
+
+        _emit_progress(options, "repair", f"Repairing empty import from {source_path.name}", 0, 100)
+        source_hash = _sha256(source_path, options)
+        _emit_progress(options, "parse", f"Re-reading {source_path.name}", 35, 100)
+        bundle = importer.import_file(source_path, options)
+        if bundle.document is None or not bundle.tokens:
+            return None
+
+        bundle.document.id = document.id
+        bundle.document.import_batch_id = document.import_batch_id
+        bundle.document.name = document.name
+        bundle.document.relative_path = document.relative_path
+        bundle.document.original_filename = document.original_filename
+        for segment in bundle.segments:
+            segment.transcript_document_id = document.id
+
+        _emit_progress(options, "save", "Saving repaired transcript rows to the project database", 85, 100)
+        transcript_repo.clear_document_content(document.id)
+        transcript_repo.save_document_bundle(
+            bundle.document,
+            bundle.segments,
+            bundle.tokens,
+            progress_callback=_save_progress_callback(options),
+        )
+        self._save_imported_language_annotations(context, bundle.token_language_codes)
+        bundle.report = {
+            **bundle.report,
+            "repaired_document_id": document.id,
+            "repair_source_sha256": source_hash,
+        }
+        ProvenanceService().record(
+            context,
+            make_provenance_record(
+                "import_repair",
+                "importer",
+                target_id=document.id,
+                source=str(source_path),
+                importer=importer.name,
+                report=bundle.report,
+            ),
+        )
+        _emit_progress(options, "complete", f"Finished repairing {document.name}", 100, 100)
+        return ImportResult(batch_id=document.import_batch_id, bundle=bundle, copied_path=source_path, report=bundle.report)
+
     def _save_imported_language_annotations(self, context: ProjectContext, token_language_codes: dict[str, str]) -> None:
         """Persist language labels that came from the imported local file."""
 

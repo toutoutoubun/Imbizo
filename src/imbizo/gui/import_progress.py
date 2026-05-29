@@ -50,3 +50,39 @@ def import_file_with_progress(
         dialog.setValue(100)
         dialog.close()
         QApplication.processEvents()
+
+
+def repair_empty_document_with_progress(
+    parent: Any,
+    context: ProjectContext,
+    document_id: str,
+    import_service: ImportService,
+    title: str = "Repairing empty import",
+) -> ImportResult | None:
+    """Repair a failed zero-token import while showing a progress dialog."""
+
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QApplication, QProgressDialog
+
+    dialog = QProgressDialog(parent)
+    dialog.setWindowTitle(title)
+    dialog.setLabelText("Preparing repair")
+    dialog.setRange(0, 100)
+    dialog.setValue(0)
+    dialog.setCancelButton(None)
+    dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+    dialog.setMinimumDuration(0)
+    dialog.show()
+    QApplication.processEvents()
+
+    def update(progress: ImportProgress) -> None:
+        dialog.setLabelText(progress.message)
+        dialog.setValue(max(0, min(progress.current, progress.total)))
+        QApplication.processEvents()
+
+    try:
+        return import_service.repair_empty_document(context, document_id, ImportOptions(progress_callback=update))
+    finally:
+        dialog.setValue(100)
+        dialog.close()
+        QApplication.processEvents()
