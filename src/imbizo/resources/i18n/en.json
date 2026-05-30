@@ -21,7 +21,7 @@
   "welcome.project_folder_note": "Open Project Folder is for folders that already contain project.sqlite. To open CSV, XML, TXT, ELAN, Praat, Excel, audio, or video files, use Import Data File.",
   "project.import_zip": "Import Project ZIP",
   "project.import_data_dialog_title": "Import a local transcript or media file",
-  "project.import_data_filter": "Supported data files (*.txt *.csv *.tsv *.xml *.eaf *.TextGrid *.textgrid *.json *.xlsx *.ods *.wav *.mp3 *.flac *.mp4 *.mkv);;All files (*)",
+  "project.import_data_filter": "Supported data files (*.txt *.text *.md *.markdown *.log *.srt *.vtt *.csv *.tsv *.xml *.eaf *.TextGrid *.textgrid *.json *.xlsx *.ods *.wav *.mp3 *.flac *.mp4 *.mkv);;All files (*)",
   "project.import_data_destination_title": "Choose where to create the Imbizo project",
   "project.import_data_name_title": "New project folder",
   "project.import_data_name_label": "Folder name for the new project:",

@@ -117,7 +117,7 @@ class AnnotationEditorWidget:
             "Import local file",
             "",
             (
-                "Supported files (*.txt *.csv *.tsv *.xml *.eaf *.TextGrid *.textgrid "
+                "Supported files (*.txt *.text *.md *.markdown *.log *.srt *.vtt *.csv *.tsv *.xml *.eaf *.TextGrid *.textgrid "
                 "*.json *.xlsx *.ods *.wav *.mp3 *.flac *.mp4 *.mkv);;All files (*)"
             ),
             options=QFileDialog.Option.DontUseNativeDialog,

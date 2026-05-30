@@ -11,6 +11,7 @@ from imbizo.domain.project import ProjectMetadata
 from imbizo.importers.base import ImportOptions, ImportProgress
 from imbizo.importers.csv_importer import CsvTranscriptImporter
 from imbizo.importers.txt import TxtImporter
+from imbizo.services.annotation_service import AnnotationService
 from imbizo.importers.xml_importer import XmlTranscriptImporter
 from imbizo.services.import_service import ImportService
 from imbizo.services.project_service import ProjectService
@@ -88,6 +89,47 @@ def test_txt_importer_accepts_cp932_and_reports_progress(tmp_path: Path) -> None
     assert events[-1].current >= 80
 
 
+def test_txt_importer_accepts_plain_text_extensions_and_speaker_lines(tmp_path: Path) -> None:
+    """Plain text import should not be spreadsheet-column dependent."""
+
+    source = tmp_path / "fieldnotes.md"
+    source.write_text(
+        "Speaker A: Dumela friend\n"
+        "[00:00:02.500 - 00:00:04.000] Speaker B: Ke teng today\n",
+        encoding="utf-8",
+    )
+
+    importer = TxtImporter()
+    result = importer.import_file(source, ImportOptions())
+
+    assert importer.can_import(source)
+    assert [segment.text_original for segment in result.segments] == ["Dumela friend", "Ke teng today"]
+    assert [segment.speaker_id for segment in result.segments] == ["Speaker A", "Speaker B"]
+    assert result.segments[1].start_ms == 2500
+    assert result.segments[1].end_ms == 4000
+    assert result.report["plain_text_mode"] is True
+    assert result.report["language_labels"] == 0
+
+
+def test_txt_importer_accepts_srt_without_excel_conversion(tmp_path: Path) -> None:
+    """Subtitle-style plain text should become timed utterance segments."""
+
+    source = tmp_path / "captions.srt"
+    source.write_text(
+        "1\n00:00:01,000 --> 00:00:02,250\nA: Sawubona friend\n\n"
+        "2\n00:00:03,000 --> 00:00:04,000\nB: Ngikhona\n",
+        encoding="utf-8",
+    )
+
+    result = TxtImporter().import_file(source, ImportOptions())
+
+    assert [segment.text_original for segment in result.segments] == ["Sawubona friend", "Ngikhona"]
+    assert result.segments[0].speaker_id == "A"
+    assert result.segments[0].start_ms == 1000
+    assert result.segments[0].end_ms == 2250
+    assert result.report["timestamped_lines"] == 2
+
+
 def test_import_service_imports_single_txt_and_xml_files(tmp_path: Path) -> None:
     """Service-level imports should not crash for one TXT or one XML file."""
 
@@ -106,6 +148,23 @@ def test_import_service_imports_single_txt_and_xml_files(tmp_path: Path) -> None
     assert xml_result.report["segments"] == 1
     assert [event.stage for event in events][:2] == ["preflight", "copy"]
     assert events[-1].stage == "complete"
+
+
+def test_import_service_displays_tokens_for_txt_without_language_column(tmp_path: Path) -> None:
+    """TXT imports have no language column, but token rows must still load."""
+
+    project_root = tmp_path / "project"
+    context = ProjectService().create_project(project_root, ProjectMetadata(project_uuid="", title="Plain Text Test"))
+    source = tmp_path / "plain.text"
+    source.write_text("ao double-licious no ko tsalanang\n", encoding="utf-8")
+
+    result = ImportService().import_file(context, source)
+    document_id = result.bundle.document.id if result.bundle.document else ""
+    state = AnnotationService().load_editor_state(context, document_id)
+
+    assert [row.token.token_text for row in state.rows] == ["ao", "double-licious", "no", "ko", "tsalanang"]
+    assert all(row.annotation is None for row in state.rows)
+    assert result.report["language_labels"] == 0
 
 
 def test_import_service_reports_progress_while_saving_many_rows(tmp_path: Path) -> None:
