@@ -14,6 +14,12 @@ from imbizo.domain.metrics import JobStatus
 from imbizo.domain.project import ProjectContext
 from imbizo.domain.provenance import make_provenance_record
 from imbizo.lid.baseline import BaselineLidProvider
+from imbizo.lid.coarse_groups import (
+    annotate_suggestions_with_candidate_scores,
+    apply_coarse_group_gate,
+    coarse_gate_allows_auto_apply,
+    coarse_gate_reason,
+)
 from imbizo.lid.masklid import MaskLidDetector
 from imbizo.lid.providers import LidLayer, LidOptions, LidProgress, LidSuggestionDraft
 from imbizo.persistence.repositories import AnnotationRepository, LanguageRepository, TranscriptRepository
@@ -33,6 +39,10 @@ class LidRunReport:
     preserved_manual_count: int
     provider_method: str
     provider_message: str
+    coarse_group_gate_enabled: bool = False
+    coarse_group_gated_count: int = 0
+    coarse_group_low_confidence_count: int = 0
+    coarse_group_ambiguous_count: int = 0
 
 
 class LidService:
@@ -69,7 +79,7 @@ class LidService:
                 self.provider.name,
                 self.provider.version,
                 LidLayer.LAYER3_MASKLID.value,
-                json.dumps({"max_languages": options.max_languages, "min_confidence": options.min_confidence}),
+                json.dumps(_lid_parameters(options), ensure_ascii=False),
                 JobStatus.RUNNING.value,
                 now,
                 None,
@@ -90,6 +100,11 @@ class LidService:
             for index, (segment, tokens) in enumerate(token_batches, start=1):
                 self._progress(options, 5 + int((index - 1) / total_batches * 55), f"Detecting languages in segment {index}/{len(token_batches)}")
                 suggestions.extend(detector.detect(segment, tokens, options))
+            if options.use_coarse_group_gate:
+                suggestions = [
+                    apply_coarse_group_gate(suggestion, options)
+                    for suggestion in annotate_suggestions_with_candidate_scores(suggestions, language_codes_by_id)
+                ]
 
             self._progress(options, 62, f"Saving {len(suggestions)} LID suggestions")
             for index, suggestion in enumerate(suggestions, start=1):
@@ -124,6 +139,9 @@ class LidService:
             auto_annotations: list[Annotation] = []
             skipped_unknown_count = 0
             preserved_manual_count = 0
+            coarse_group_gated_count = 0
+            coarse_group_low_confidence_count = 0
+            coarse_group_ambiguous_count = 0
             for suggestion in top_token_suggestions:
                 if not suggestion.token_id:
                     continue
@@ -134,6 +152,14 @@ class LidService:
                 existing = choose_effective_annotation(annotations_by_token.get(suggestion.token_id, []))
                 if existing is not None and existing.source == AnnotationSource.MANUAL:
                     preserved_manual_count += 1
+                    continue
+                if not coarse_gate_allows_auto_apply(suggestion):
+                    coarse_group_gated_count += 1
+                    reason = coarse_gate_reason(suggestion)
+                    if reason == "low_group_confidence":
+                        coarse_group_low_confidence_count += 1
+                    elif reason == "closely_related_language_group":
+                        coarse_group_ambiguous_count += 1
                     continue
                 auto_annotations.append(
                     Annotation(
@@ -168,6 +194,10 @@ class LidService:
                     auto_annotations=len(auto_annotations),
                     skipped_unknown=skipped_unknown_count,
                     preserved_manual=preserved_manual_count,
+                    coarse_group_gate_enabled=options.use_coarse_group_gate,
+                    coarse_group_gated_count=coarse_group_gated_count,
+                    coarse_group_low_confidence_count=coarse_group_low_confidence_count,
+                    coarse_group_ambiguous_count=coarse_group_ambiguous_count,
                 ),
             )
             self._progress(options, 100, "Local LID complete")
@@ -181,6 +211,10 @@ class LidService:
                 preserved_manual_count=preserved_manual_count,
                 provider_method=getattr(self.provider, "active_method", self.provider.name),
                 provider_message=getattr(self.provider, "load_error", ""),
+                coarse_group_gate_enabled=options.use_coarse_group_gate,
+                coarse_group_gated_count=coarse_group_gated_count,
+                coarse_group_low_confidence_count=coarse_group_low_confidence_count,
+                coarse_group_ambiguous_count=coarse_group_ambiguous_count,
             )
         except Exception as exc:
             context.connection.rollback()
@@ -196,7 +230,7 @@ class LidService:
                     self.provider.name,
                     self.provider.version,
                     LidLayer.LAYER3_MASKLID.value,
-                    json.dumps({"max_languages": options.max_languages, "min_confidence": options.min_confidence}),
+                    json.dumps(_lid_parameters(options), ensure_ascii=False),
                     JobStatus.FAILED.value,
                     now,
                     utc_now(),
@@ -226,11 +260,19 @@ class LidService:
             start_ms=segment["start_ms"],
             end_ms=segment["end_ms"],
         )
-        return MaskLidDetector(self.provider, LanguageRepository(context.connection).list_languages()).detect(
+        languages = LanguageRepository(context.connection).list_languages()
+        suggestions = MaskLidDetector(self.provider, languages).detect(
             segment_obj,
             transcript_repo.list_tokens(segment_id),
             options,
         )
+        if not options.use_coarse_group_gate:
+            return suggestions
+        language_codes_by_id = {language.id: language.code for language in languages}
+        return [
+            apply_coarse_group_gate(suggestion, options)
+            for suggestion in annotate_suggestions_with_candidate_scores(suggestions, language_codes_by_id)
+        ]
 
     def _progress(self, options: LidOptions, current: int, message: str) -> None:
         if options.progress_callback is not None:
@@ -250,3 +292,13 @@ def _model_search_roots(context: ProjectContext) -> list[Path]:
             seen.add(root)
             unique.append(root)
     return unique
+
+
+def _lid_parameters(options: LidOptions) -> dict[str, object]:
+    """Return the persisted local LID parameter payload."""
+
+    return {
+        "max_languages": options.max_languages,
+        "min_confidence": options.min_confidence,
+        "use_coarse_group_gate": options.use_coarse_group_gate,
+    }

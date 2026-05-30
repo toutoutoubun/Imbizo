@@ -320,9 +320,12 @@ def _observations_from_tokens(tokens: list[Token]) -> list[TokenObservation]:
 
 
 def _database_path(project: Project) -> Path | None:
-    metadata = getattr(project, "metadata", None) or {}
-    if metadata.get("database_path"):
-        return Path(str(metadata["database_path"]))
+    paths = getattr(project, "paths", None)
+    if paths is not None and getattr(paths, "database", None):
+        return Path(str(paths.database))
+    database_path = _metadata_value(project, "database_path")
+    if database_path:
+        return Path(str(database_path))
     if getattr(project, "project_path", None):
         root = Path(str(project.project_path))
         return root if root.name.endswith(".sqlite") else root / "project.sqlite"
@@ -332,6 +335,9 @@ def _database_path(project: Project) -> Path | None:
 def _project_root(project: Project) -> Path | None:
     if getattr(project, "project_path", None):
         return Path(str(project.project_path))
+    paths = getattr(project, "paths", None)
+    if paths is not None and getattr(paths, "root", None):
+        return Path(str(paths.root))
     database = _database_path(project)
     return database.parent if database else None
 
@@ -343,12 +349,20 @@ def _axes(cells: list[HeatmapCell]) -> tuple[list[str], list[str]]:
 
 
 def _footer(project: Project) -> str:
-    metadata = getattr(project, "metadata", None) or {}
-    dictionaries = metadata.get("dictionary_versions", {})
+    dictionaries = _metadata_value(project, "dictionary_versions", {})
     dictionary_text = ", ".join(f"{k}={v}" for k, v in sorted(dictionaries.items())) if dictionaries else "dictionary versions unavailable"
-    title = getattr(project, "title", None) or metadata.get("title", "Imbizo-CS project")
+    title = getattr(project, "title", None) or _metadata_value(project, "title", "Imbizo-CS project")
     timestamp = datetime.now(UTC).isoformat(timespec="seconds")
     return f"{title} | generated {timestamp} | Imbizo-CS {__version__} | {dictionary_text} | see PRINCIPLES.md"
+
+
+def _metadata_value(project: Project, key: str, default: Any = None) -> Any:
+    """Read metadata values from dict-backed or dataclass-backed projects."""
+
+    metadata = getattr(project, "metadata", None)
+    if isinstance(metadata, dict):
+        return metadata.get(key, default)
+    return getattr(metadata, key, default)
 
 
 def _save_figure(fig: Any, output_path: Path, format: str, title: str, desc: str) -> None:

@@ -4,6 +4,7 @@ import sqlite3
 from imbizo.core.annotation import Project, Token
 from imbizo.core.visualisation.heatmap import compute_speaker_scene_language_proportions, load_token_observations, render_speaker_scene_heatmap
 from imbizo.core.visualisation.palette import LanguagePalette
+from imbizo.domain.project import ProjectContext, ProjectMetadata, ProjectPaths
 
 
 def _project(tmp_path: Path) -> Project:
@@ -63,3 +64,29 @@ def test_load_token_observations_supports_utterances_schema(tmp_path: Path) -> N
     assert observations[0].speaker == "S1"
     assert observations[0].scene == "sceneA"
     assert observations[0].language == "zul"
+
+
+def test_heatmap_accepts_project_context_metadata_dataclass(tmp_path: Path) -> None:
+    """GUI dashboard passes ProjectContext with dataclass metadata, not a dict."""
+
+    paths = ProjectPaths.from_root(tmp_path / "project")
+    paths.ensure_all()
+    conn = sqlite3.connect(paths.database)
+    conn.row_factory = sqlite3.Row
+    conn.execute("CREATE TABLE segments (id TEXT PRIMARY KEY, speaker_id TEXT, scene_id TEXT, sort_order INTEGER)")
+    conn.execute("CREATE TABLE tokens (id TEXT PRIMARY KEY, segment_id TEXT, sort_order INTEGER, language TEXT)")
+    conn.execute("INSERT INTO segments VALUES ('s1', 'S1', 'sceneA', 1)")
+    conn.execute("INSERT INTO tokens VALUES ('t1', 's1', 1, 'eng')")
+    conn.commit()
+    context = ProjectContext(
+        paths=paths,
+        metadata=ProjectMetadata(project_uuid="p1", title="Dataclass Metadata Project"),
+        connection=conn,
+    )
+
+    path = render_speaker_scene_heatmap(context, paths.exports / "figures" / "heatmap.png")  # type: ignore[arg-type]
+
+    assert isinstance(path, Path)
+    assert path.exists()
+    assert path.stat().st_size > 0
+    conn.close()

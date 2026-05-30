@@ -40,6 +40,7 @@ class LidOptions:
     max_languages: int = 3
     min_confidence: float = 0.25
     use_optional_afrolid: bool = False
+    use_coarse_group_gate: bool = False
     progress_callback: LidProgressCallback | None = None
 
 

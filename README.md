@@ -26,6 +26,21 @@ subscription, API key, telemetry, or internet connection for core work.
   M-index, I-index, burstiness, trigger tables, and KWIC concordance.
 - Export CSV, XLSX, JSON, EAF, TextGrid, HTML, PDF, and quotation extracts.
 
+### Optional Coarse Language Group Gate
+
+Local LID suggestions can now be run with an optional coarse language group
+gate. This is not a final language classifier. It groups candidate evidence
+into broad South African language families such as Germanic, Nguni, and
+Sotho-Tswana, then blocks only risky auto-annotation when the evidence is too
+weak or when closely related languages are hard to separate. Suggestions are
+still saved in `lid_suggestions.evidence_json` for audit and review.
+
+The gate is off by default, never overwrites manual or imported annotations,
+and does not change Matrix Language, Embedded Language, switch-type, tags,
+memos, morpheme splits, or existing export columns. Ambiguity is a valid
+scholarly result: use speaker knowledge, context, grammars, and community
+review when exact labels matter.
+
 ## What's New In v1.0
 
 Version 1.0 adds three optional layers for researchers who need to study how

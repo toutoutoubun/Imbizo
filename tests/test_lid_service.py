@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Sequence
 
 from imbizo.domain.annotations import AnnotationDraft
 from imbizo.domain.project import ProjectMetadata
 from imbizo.lid.baseline import BaselineLidProvider
-from imbizo.lid.providers import LidOptions, LidProgress
+from imbizo.lid.providers import LanguageScore, LidOptions, LidProgress
 from imbizo.services.annotation_service import AnnotationService
 from imbizo.services.import_service import ImportService
 from imbizo.services.lid_service import LidService
@@ -209,3 +211,97 @@ trigger_candidates:
 
     assert prediction.language_code == "sot"
     assert "exact:trigger_dictionary:domain_specific_borrowings:kgotso" in prediction.evidence["matched_evidence"]
+
+
+class AmbiguousNguniProvider:
+    """Small deterministic provider for coarse group gate regression tests."""
+
+    @property
+    def name(self) -> str:
+        return "test-ambiguous-nguni"
+
+    @property
+    def version(self) -> str:
+        return "0.1"
+
+    def predict(self, texts: Sequence[str], options: LidOptions) -> list[list[LanguageScore]]:
+        return [
+            [
+                LanguageScore("zul", 0.52, {"method": "fixture"}),
+                LanguageScore("xho", 0.48, {"method": "fixture"}),
+            ][: options.max_languages]
+            for _text in texts
+        ]
+
+
+def test_coarse_group_gate_saves_suggestions_but_blocks_auto_annotation(tmp_path: Path) -> None:
+    """Gated suggestions remain auditable while risky auto labels are withheld."""
+
+    context, document = _context_with_document(tmp_path, "sawubona mhlobo\n")
+    service = LidService()
+    service.provider = AmbiguousNguniProvider()
+
+    report = service.run_lid_for_document_report(context, document.id, LidOptions(max_languages=2, use_coarse_group_gate=True))
+
+    assert report.coarse_group_gate_enabled is True
+    assert report.coarse_group_gated_count >= 2
+    assert report.coarse_group_ambiguous_count >= 2
+    assert report.auto_annotations_count == 0
+    suggestion_rows = context.connection.execute(
+        "SELECT evidence_json FROM lid_suggestions WHERE token_id IS NOT NULL AND rank = 1 ORDER BY created_at"
+    ).fetchall()
+    assert suggestion_rows
+    for row in suggestion_rows:
+        evidence = json.loads(row["evidence_json"])
+        gate = evidence["coarse_group_gate"]
+        assert gate["top_group"] == "Nguni"
+        assert gate["auto_apply_allowed"] is False
+        assert gate["reason"] == "closely_related_language_group"
+
+    annotation_rows = context.connection.execute("SELECT * FROM annotations WHERE source = 'auto'").fetchall()
+    assert annotation_rows == []
+    provenance_rows = context.connection.execute(
+        "SELECT payload_json FROM provenance_records WHERE event_type = 'auto_label' ORDER BY created_at DESC LIMIT 1"
+    ).fetchall()
+    assert provenance_rows
+    payload = json.loads(provenance_rows[0]["payload_json"])
+    assert payload["coarse_group_gate_enabled"] is True
+    assert payload["coarse_group_gated_count"] >= 2
+
+
+def test_coarse_group_gate_off_preserves_existing_auto_annotation_behaviour(tmp_path: Path) -> None:
+    """Default-off gate leaves existing Local LID auto-annotation semantics alone."""
+
+    context, document = _context_with_document(tmp_path, "sawubona mhlobo\n")
+    service = LidService()
+    service.provider = AmbiguousNguniProvider()
+
+    report = service.run_lid_for_document_report(context, document.id, LidOptions(max_languages=2))
+
+    assert report.coarse_group_gate_enabled is False
+    assert report.coarse_group_gated_count == 0
+    assert report.auto_annotations_count >= 2
+    suggestion_rows = context.connection.execute("SELECT evidence_json FROM lid_suggestions WHERE token_id IS NOT NULL").fetchall()
+    assert suggestion_rows
+    assert all("coarse_group_gate" not in json.loads(row["evidence_json"]) for row in suggestion_rows)
+
+
+def test_coarse_group_gate_does_not_override_manual_annotation(tmp_path: Path) -> None:
+    """Manual annotations stay authoritative even when gate evidence is present."""
+
+    context, document = _context_with_document(tmp_path, "sawubona mhlobo\n")
+    annotation_service = AnnotationService()
+    state = annotation_service.load_editor_state(context, document.id)
+    first_token = state.rows[0].token
+    english = next(language for language in state.languages if language.code == "eng")
+    manual = annotation_service.save_token_annotation(context, first_token.id, AnnotationDraft(language_id=english.id, memo="manual"))
+    service = LidService()
+    service.provider = AmbiguousNguniProvider()
+
+    report = service.run_lid_for_document_report(context, document.id, LidOptions(max_languages=2, use_coarse_group_gate=True))
+
+    assert report.preserved_manual_count >= 1
+    state_after = annotation_service.load_editor_state(context, document.id)
+    first_after = next(row for row in state_after.rows if row.token.id == first_token.id)
+    assert first_after.annotation is not None
+    assert first_after.annotation.id == manual.id
