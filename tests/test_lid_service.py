@@ -159,3 +159,53 @@ def test_local_lid_labels_no_language_sentence_rows_with_context(tmp_path: Path)
     assert auto_codes["you're"] == "eng"
     assert auto_codes["awake"] == "eng"
     assert auto_codes["sources"] == "eng"
+
+
+def test_heuristic_lid_uses_packaged_dictionary_and_morphology_features(monkeypatch) -> None:
+    """Packaged local dictionaries enrich the no-model fallback offline."""
+
+    monkeypatch.delenv("IMBIZO_FASTTEXT_LID_MODEL", raising=False)
+    provider = BaselineLidProvider()
+
+    predictions = provider.predict(
+        ["isikole", "isikolo", "motho", "sekolo", "ngifunda", "ndifunda", "walking"],
+        LidOptions(max_languages=1),
+    )
+
+    assert predictions[0][0].language_code == "zul"
+    assert predictions[1][0].language_code == "xho"
+    assert predictions[2][0].language_code in {"sot", "tsn"}
+    assert predictions[3][0].language_code in {"sot", "tsn"}
+    assert predictions[4][0].language_code == "zul"
+    assert predictions[5][0].language_code == "xho"
+    assert predictions[6][0].language_code == "eng"
+    assert any(
+        str(item).startswith(("exact:packaged_", "prefix:packaged_", "suffix:packaged_"))
+        for item in predictions[0][0].evidence["matched_evidence"]
+    )
+
+
+def test_heuristic_lid_uses_project_local_dictionary_override(tmp_path: Path, monkeypatch) -> None:
+    """Project dictionaries can add local LID evidence without network access."""
+
+    monkeypatch.delenv("IMBIZO_FASTTEXT_LID_MODEL", raising=False)
+    dictionary = tmp_path / "dictionaries" / "triggers"
+    dictionary.mkdir(parents=True)
+    (dictionary / "sot.yaml").write_text(
+        """
+language_code: sot
+language_name: Sesotho trigger candidates
+trigger_candidates:
+  domain_specific_borrowings:
+    - form: "kgotso"
+      trigger_type: "borrowing"
+      verified: false
+""",
+        encoding="utf-8",
+    )
+    provider = BaselineLidProvider(search_roots=[tmp_path])
+
+    prediction = provider.predict(["kgotso"], LidOptions(max_languages=1))[0][0]
+
+    assert prediction.language_code == "sot"
+    assert "exact:trigger_dictionary:domain_specific_borrowings:kgotso" in prediction.evidence["matched_evidence"]

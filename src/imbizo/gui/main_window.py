@@ -8,6 +8,7 @@ from typing import Any
 from imbizo.app.strings import StringCatalog, load_string_catalog
 from imbizo.domain.project import ProjectMetadata
 from imbizo.gui.import_progress import import_file_with_progress
+from imbizo.gui.project_open_progress import open_project_with_progress
 from imbizo.services.import_service import ImportService
 from imbizo.services.annotation_service import AnnotationService
 from imbizo.services.lid_service import LidService
@@ -46,7 +47,12 @@ class MainWindow:
         if self.qt_window is None:
             self.build()
         try:
-            self.context = self.project_service.open_project(project_root)
+            self.context = open_project_with_progress(
+                self.qt_window,
+                self.project_service,
+                project_root,
+                self.strings.text("project.open_progress_title"),
+            )
         except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
             self._show_error(self.strings.text("project.open_failed"), str(exc))
             return

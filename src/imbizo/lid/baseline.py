@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import Sequence
 
+from imbizo.lid.local_features import LocalFeatureIndex, cached_local_feature_index, cache_key_for_roots
 from imbizo.lid.providers import LanguageScore, LidOptions
 
 
@@ -204,6 +205,7 @@ class BaselineLidProvider:
         self.load_error: str = ""
         self.active_method = "heuristic"
         self._heuristic_cache: dict[str, list[LanguageScore]] = {}
+        self._feature_index: LocalFeatureIndex | None = None
 
     @property
     def is_model_loaded(self) -> bool:
@@ -217,6 +219,8 @@ class BaselineLidProvider:
         if self._model is not None:
             return
         self.search_roots = [path.expanduser() for path in roots]
+        self._feature_index = None
+        self._heuristic_cache.clear()
 
     def load(self) -> None:
         """Load local model resources."""
@@ -304,6 +308,12 @@ class BaselineLidProvider:
                 scores["tsn"] += 0.14
                 evidence["sot"].append(f"shared_prefix:{word}")
                 evidence["tsn"].append(f"shared_prefix:{word}")
+        known_words = ENGLISH_WORDS | AFRIKAANS_WORDS | ZULU_WORDS | XHOSA_WORDS | SOTHO_TSWANA_WORDS
+        for match in self._local_feature_index().match(lower, known_words):
+            if match.language_code not in scores:
+                continue
+            scores[match.language_code] += match.weight
+            evidence[match.language_code].append(match.evidence)
         if any(word.startswith(cue) for word in words for cue in XHOSA_CLICK_CUES):
             scores["xho"] += 0.20
             evidence["xho"].append("orthography:xhosa_click_cue")
@@ -336,6 +346,11 @@ class BaselineLidProvider:
             result = ranked
         self._heuristic_cache[text] = result
         return result
+
+    def _local_feature_index(self) -> LocalFeatureIndex:
+        if self._feature_index is None:
+            self._feature_index = cached_local_feature_index(cache_key_for_roots(self.search_roots))
+        return self._feature_index
 
     def _resolve_model_path(self) -> Path | None:
         if self.model_path is not None:
