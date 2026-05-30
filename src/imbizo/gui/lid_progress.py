@@ -15,6 +15,7 @@ def run_lid_with_progress(
     document_id: str,
     lid_service: LidService,
     title: str = "Running Local LID",
+    options: LidOptions | None = None,
 ) -> LidRunReport:
     """Run local LID while showing a modal progress dialog.
 
@@ -43,7 +44,15 @@ def run_lid_with_progress(
         QApplication.processEvents()
 
     try:
-        return lid_service.run_lid_for_document_report(context, document_id, LidOptions(progress_callback=update))
+        base_options = options or LidOptions()
+        run_options = LidOptions(
+            max_languages=base_options.max_languages,
+            min_confidence=base_options.min_confidence,
+            use_optional_afrolid=base_options.use_optional_afrolid,
+            use_coarse_group_gate=base_options.use_coarse_group_gate,
+            progress_callback=update,
+        )
+        return lid_service.run_lid_for_document_report(context, document_id, run_options)
     finally:
         dialog.setValue(100)
         dialog.close()

@@ -9,6 +9,7 @@ from typing import Any
 from imbizo.domain.annotations import AnnotationDraft
 from imbizo.gui.import_progress import import_file_with_progress, repair_empty_document_with_progress
 from imbizo.gui.lid_progress import run_lid_with_progress
+from imbizo.lid.providers import LidOptions
 from imbizo.services.import_service import ImportService
 
 MAX_VISIBLE_TOKEN_ROWS = 1000
@@ -33,6 +34,7 @@ class AnnotationEditorWidget:
         self.status_label = None
         self.import_file_button = None
         self.run_lid_button = None
+        self.coarse_group_gate_checkbox = None
         self.languages_by_name: dict[str, str] = {}
         self.language_names_by_id: dict[str, str] = {}
         self._repair_attempted_document_ids: set[str] = set()
@@ -43,6 +45,7 @@ class AnnotationEditorWidget:
         try:
             from PySide6.QtWidgets import (
                 QComboBox,
+                QCheckBox,
                 QHBoxLayout,
                 QLabel,
                 QPushButton,
@@ -69,10 +72,16 @@ class AnnotationEditorWidget:
         self.run_lid_button.setObjectName("annotation-run-local-lid")
         self.run_lid_button.setToolTip("Run fully local language identification for the selected document.")
         self.run_lid_button.clicked.connect(lambda _checked=False: self.run_lid())
+        self.coarse_group_gate_checkbox = QCheckBox("Coarse group gate")
+        self.coarse_group_gate_checkbox.setObjectName("annotation-coarse-group-gate")
+        self.coarse_group_gate_checkbox.setToolTip(
+            "Default off. When enabled, closely related language evidence can block risky auto labels while keeping suggestions."
+        )
         header.addWidget(QLabel("Document"))
         header.addWidget(self.document_selector)
         header.addWidget(self.import_file_button)
         header.addWidget(self.run_lid_button)
+        header.addWidget(self.coarse_group_gate_checkbox)
         layout.addLayout(header)
         layout.addWidget(QLabel("Waveform: link media to show local waveform peaks."))
         self.status_label = QLabel("No token rows loaded")
@@ -211,8 +220,17 @@ class AnnotationEditorWidget:
                 "Import or select a transcript before running Local LID.",
             )
             return
+        use_coarse_group_gate = bool(
+            self.coarse_group_gate_checkbox is not None and self.coarse_group_gate_checkbox.isChecked()
+        )
         try:
-            report = run_lid_with_progress(self.widget, self.context, self.document_id, self.lid_service)
+            report = run_lid_with_progress(
+                self.widget,
+                self.context,
+                self.document_id,
+                self.lid_service,
+                options=LidOptions(use_coarse_group_gate=use_coarse_group_gate),
+            )
         except Exception as exc:  # noqa: BLE001 - GUI boundary shows plain-language errors.
             self._set_status(f"Local LID failed: {exc}")
             QMessageBox.critical(self.widget, "Local LID failed", str(exc))
@@ -221,10 +239,19 @@ class AnnotationEditorWidget:
         method_note = f"\nProvider: {report.provider_method}."
         if report.provider_message:
             method_note += f"\nNote: {report.provider_message}"
+        gate_note = ""
+        if report.coarse_group_gate_enabled:
+            gate_note = (
+                "\nCoarse group gate: "
+                f"withheld {report.coarse_group_gated_count:,} risky auto labels "
+                f"({report.coarse_group_ambiguous_count:,} closely-related, "
+                f"{report.coarse_group_low_confidence_count:,} low-confidence)."
+            )
         self._set_status(
             "Local LID complete: "
             f"{report.auto_annotations_count:,} auto labels, "
-            f"{report.suggestions_count:,} suggestions."
+            f"{report.suggestions_count:,} suggestions"
+            f"{'; coarse gate withheld ' + format(report.coarse_group_gated_count, ',') if report.coarse_group_gate_enabled else ''}."
         )
         QMessageBox.information(
             self.widget,
@@ -234,6 +261,7 @@ class AnnotationEditorWidget:
                 f"{report.auto_annotations_count} useful auto labels.\n"
                 f"Skipped {report.skipped_unknown_count} uncertain Unknown labels; "
                 f"preserved {report.preserved_manual_count} manual labels."
+                f"{gate_note}"
                 f"{method_note}"
             ),
         )

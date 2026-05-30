@@ -41,6 +41,14 @@ memos, morpheme splits, or existing export columns. Ambiguity is a valid
 scholarly result: use speaker knowledge, context, grammars, and community
 review when exact labels matter.
 
+In the desktop Annotation tab, enable the `Coarse group gate` checkbox before
+clicking `Run Local LID` to use this conservative filter for that run. The
+Metrics tab also includes a `LID Accuracy` view. It compares active automatic
+labels with manual/imported review labels per language, so a row such as
+`zul: 73%` means "73% of reviewed isiZulu tokens currently have a matching
+auto label." If no manual/imported labels exist, Imbizo-CS does not claim an
+accuracy value.
+
 ## What's New In v1.0
 
 Version 1.0 adds three optional layers for researchers who need to study how

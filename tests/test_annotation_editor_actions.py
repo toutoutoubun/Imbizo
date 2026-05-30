@@ -78,8 +78,9 @@ def test_run_lid_button_invokes_local_lid_runner(tmp_path: Path, monkeypatch: py
 
     calls: list[str] = []
 
-    def fake_run_lid_with_progress(parent: Any, context_arg: Any, document_id: str, lid_service: Any) -> Any:
+    def fake_run_lid_with_progress(parent: Any, context_arg: Any, document_id: str, lid_service: Any, **kwargs: Any) -> Any:
         calls.append(document_id)
+        calls.append(str(kwargs["options"].use_coarse_group_gate))
         return SimpleNamespace(
             suggestions_count=2,
             auto_annotations_count=2,
@@ -87,6 +88,10 @@ def test_run_lid_button_invokes_local_lid_runner(tmp_path: Path, monkeypatch: py
             preserved_manual_count=0,
             provider_method="test provider",
             provider_message=None,
+            coarse_group_gate_enabled=kwargs["options"].use_coarse_group_gate,
+            coarse_group_gated_count=0,
+            coarse_group_ambiguous_count=0,
+            coarse_group_low_confidence_count=0,
         )
 
     monkeypatch.setattr(annotation_editor, "run_lid_with_progress", fake_run_lid_with_progress)
@@ -94,9 +99,11 @@ def test_run_lid_button_invokes_local_lid_runner(tmp_path: Path, monkeypatch: py
     monkeypatch.setattr(qt_widgets.QMessageBox, "critical", lambda *args, **kwargs: None)
 
     assert editor.run_lid_button is not None
+    assert editor.coarse_group_gate_checkbox is not None
+    editor.coarse_group_gate_checkbox.setChecked(True)
     editor.run_lid_button.click()
     app.processEvents()
 
-    assert calls == [imported.bundle.document.id]
+    assert calls == [imported.bundle.document.id, "True"]
     assert editor.status_label is not None
     assert editor.status_label.text().startswith("Local LID complete:")

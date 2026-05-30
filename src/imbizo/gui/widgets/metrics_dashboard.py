@@ -13,6 +13,7 @@ from imbizo import __version__
 from imbizo.core.visualisation.heatmap import render_speaker_scene_heatmap
 from imbizo.core.visualisation.sankey import render_language_transition_sankey
 from imbizo.persistence.repositories import LanguageRepository
+from imbizo.services.lid_accuracy_service import LidAccuracyRow, LidAccuracyService
 from imbizo.services.metrics_service import MetricsService
 from imbizo.services.nlp_analysis_service import NlpAnalysisOptions, NlpAnalysisService
 
@@ -25,12 +26,16 @@ class MetricsDashboardWidget:
         project: Any | None = None,
         metrics_service: MetricsService | None = None,
         nlp_analysis_service: NlpAnalysisService | None = None,
+        lid_accuracy_service: LidAccuracyService | None = None,
     ) -> None:
         self.project = project
         self.metrics_service = metrics_service or MetricsService()
         self.nlp_analysis_service = nlp_analysis_service or NlpAnalysisService(metrics_service=self.metrics_service)
+        self.lid_accuracy_service = lid_accuracy_service or LidAccuracyService()
         self.tabs = None
         self.metrics_table = None
+        self.lid_accuracy_table = None
+        self.lid_accuracy_summary_label = None
         self.summary_label = None
         self._active_progress_dialog = None
 
@@ -61,6 +66,7 @@ class MetricsDashboardWidget:
         layout.addWidget(self.metrics_table)
         self.tabs.addTab(metrics_page, "Metrics")
         self.tabs.addTab(self.build_speaker_scene_profile_tab(), "Speaker & Scene Profile")
+        self.tabs.addTab(self.build_lid_accuracy_tab(), "LID Accuracy")
         return self.tabs
 
     def run_local_analysis(self) -> list[Any]:
@@ -94,6 +100,7 @@ class MetricsDashboardWidget:
                 f"Completed local NLP analysis from {max((result.input_count for result in results), default=0):,} token rows. "
                 f"Report: {Path(report.report_path).name}. Stages: {stage_labels}."
             )
+        self.refresh_lid_accuracy()
         return results
 
     def _render_metric_results(self, results: list[Any]) -> None:
@@ -144,6 +151,74 @@ class MetricsDashboardWidget:
         layout.addWidget(caption_button)
         layout.addWidget(self.caption_box)
         return root
+
+    def build_lid_accuracy_tab(self) -> Any:
+        """Build a reviewed Local LID accuracy table."""
+
+        from PySide6.QtWidgets import QLabel, QPushButton, QHeaderView, QTableWidget, QVBoxLayout, QWidget
+
+        root = QWidget()
+        layout = QVBoxLayout(root)
+        self.lid_accuracy_summary_label = QLabel(
+            "Reviewed accuracy compares active auto labels with manual/imported labels. No manual/imported labels means no accuracy claim."
+        )
+        self.lid_accuracy_summary_label.setWordWrap(True)
+        refresh_button = QPushButton("Refresh LID accuracy")
+        refresh_button.clicked.connect(self.refresh_lid_accuracy)
+        self.lid_accuracy_table = QTableWidget(0, 8)
+        self.lid_accuracy_table.setHorizontalHeaderLabels(
+            ["Scope", "Language", "Reviewed", "Auto labelled", "Correct", "Accuracy", "Missing", "Wrong"]
+        )
+        header = self.lid_accuracy_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        for section in range(2, 8):
+            header.setSectionResizeMode(section, QHeaderView.ResizeMode.ResizeToContents)
+        layout.addWidget(self.lid_accuracy_summary_label)
+        layout.addWidget(refresh_button)
+        layout.addWidget(self.lid_accuracy_table)
+        return root
+
+    def refresh_lid_accuracy(self) -> list[LidAccuracyRow]:
+        """Refresh the reviewed Local LID accuracy table."""
+
+        project = self._require_project()
+        if not hasattr(project, "connection"):
+            if self.lid_accuracy_summary_label is not None:
+                self.lid_accuracy_summary_label.setText("Open an Imbizo project to compute reviewed LID accuracy.")
+            return []
+        rows = self.lid_accuracy_service.compute(project)
+        self._render_lid_accuracy(rows)
+        return rows
+
+    def _render_lid_accuracy(self, rows: list[LidAccuracyRow]) -> None:
+        """Render reviewed Local LID accuracy rows."""
+
+        if self.lid_accuracy_table is None:
+            return
+        self.lid_accuracy_table.setRowCount(len(rows))
+        for row_index, row in enumerate(rows):
+            self.lid_accuracy_table.setItem(row_index, 0, self._item(row.scope))
+            self.lid_accuracy_table.setItem(row_index, 1, self._item(f"{row.language_code} - {row.language_name}", tooltip=row.basis))
+            self.lid_accuracy_table.setItem(row_index, 2, self._item(f"{row.reviewed_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 3, self._item(f"{row.auto_labelled_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 4, self._item(f"{row.correct_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 5, self._item(_format_accuracy(row.accuracy)))
+            self.lid_accuracy_table.setItem(row_index, 6, self._item(f"{row.missing_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 7, self._item(f"{row.incorrect_count:,}"))
+        self.lid_accuracy_table.resizeRowsToContents()
+        if self.lid_accuracy_summary_label is not None:
+            if rows:
+                reviewed = sum(row.reviewed_count for row in rows if row.scope == "token")
+                correct = sum(row.correct_count for row in rows if row.scope == "token")
+                self.lid_accuracy_summary_label.setText(
+                    f"Token LID reviewed accuracy: {_format_accuracy(correct / reviewed if reviewed else None)} "
+                    f"({correct:,}/{reviewed:,}). Manual/imported labels are treated as review evidence."
+                )
+            else:
+                self.lid_accuracy_summary_label.setText(
+                    "No reviewed manual/imported token or span labels are available yet, so Imbizo-CS cannot estimate LID accuracy."
+                )
 
     def export_heatmap(self, format: str = "png") -> Path:
         """Render the speaker-scene heatmap into the project exports folder."""
@@ -310,6 +385,14 @@ def _format_raw_value(value: Any) -> str:
     if isinstance(value, (dict, list)):
         return json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2)
     return str(value)
+
+
+def _format_accuracy(value: float | None) -> str:
+    """Format a reviewed accuracy ratio."""
+
+    if value is None:
+        return "n/a"
+    return f"{value * 100:.2f}%"
 
 
 def _language_label(raw_id: object, language_labels: dict[str, str]) -> str:

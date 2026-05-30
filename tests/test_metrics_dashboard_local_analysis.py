@@ -64,4 +64,6 @@ def test_metrics_dashboard_table_populates_when_qt_available(tmp_path: Path) -> 
     rendered_values = [dashboard.metrics_table.item(row, 2).text() for row in range(dashboard.metrics_table.rowCount())]
     assert any("eng:" in value and "sot:" in value for value in rendered_values)
     assert all("lang-eng" not in value and "lang-sot" not in value for value in rendered_values)
+    assert dashboard.lid_accuracy_table is not None
+    assert dashboard.lid_accuracy_table.rowCount() > 0
     app.quit()
