@@ -66,7 +66,7 @@ class MetricsDashboardWidget:
         layout.addWidget(self.metrics_table)
         self.tabs.addTab(metrics_page, "Metrics")
         self.tabs.addTab(self.build_speaker_scene_profile_tab(), "Speaker & Scene Profile")
-        self.tabs.addTab(self.build_lid_accuracy_tab(), "LID Accuracy")
+        self.tabs.addTab(self.build_lid_accuracy_tab(), "LID Acceptance")
         return self.tabs
 
     def run_local_analysis(self) -> list[Any]:
@@ -153,26 +153,36 @@ class MetricsDashboardWidget:
         return root
 
     def build_lid_accuracy_tab(self) -> Any:
-        """Build a reviewed Local LID accuracy table."""
+        """Build a final-label Local LID acceptance table."""
 
         from PySide6.QtWidgets import QLabel, QPushButton, QHeaderView, QTableWidget, QVBoxLayout, QWidget
 
         root = QWidget()
         layout = QVBoxLayout(root)
         self.lid_accuracy_summary_label = QLabel(
-            "Reviewed accuracy compares active auto labels with manual/imported labels. No manual/imported labels means no accuracy claim."
+            "LID acceptance uses final effective labels: accepted auto labels plus manual/imported labels for each language."
         )
         self.lid_accuracy_summary_label.setWordWrap(True)
-        refresh_button = QPushButton("Refresh LID accuracy")
+        refresh_button = QPushButton("Refresh LID acceptance")
         refresh_button.clicked.connect(self.refresh_lid_accuracy)
-        self.lid_accuracy_table = QTableWidget(0, 8)
+        self.lid_accuracy_table = QTableWidget(0, 9)
         self.lid_accuracy_table.setHorizontalHeaderLabels(
-            ["Scope", "Language", "Reviewed", "Auto labelled", "Correct", "Accuracy", "Missing", "Wrong"]
+            [
+                "Scope",
+                "Language",
+                "Final labels",
+                "Accepted auto",
+                "Manual/imported",
+                "Manual",
+                "Imported",
+                "Auto accepted",
+                "Manual/imported share",
+            ]
         )
         header = self.lid_accuracy_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        for section in range(2, 8):
+        for section in range(2, 9):
             header.setSectionResizeMode(section, QHeaderView.ResizeMode.ResizeToContents)
         layout.addWidget(self.lid_accuracy_summary_label)
         layout.addWidget(refresh_button)
@@ -180,19 +190,19 @@ class MetricsDashboardWidget:
         return root
 
     def refresh_lid_accuracy(self) -> list[LidAccuracyRow]:
-        """Refresh the reviewed Local LID accuracy table."""
+        """Refresh the final-label Local LID acceptance table."""
 
         project = self._require_project()
         if not hasattr(project, "connection"):
             if self.lid_accuracy_summary_label is not None:
-                self.lid_accuracy_summary_label.setText("Open an Imbizo project to compute reviewed LID accuracy.")
+                self.lid_accuracy_summary_label.setText("Open an Imbizo project to compute Local LID acceptance.")
             return []
         rows = self.lid_accuracy_service.compute(project)
         self._render_lid_accuracy(rows)
         return rows
 
     def _render_lid_accuracy(self, rows: list[LidAccuracyRow]) -> None:
-        """Render reviewed Local LID accuracy rows."""
+        """Render final-label Local LID acceptance rows."""
 
         if self.lid_accuracy_table is None:
             return
@@ -200,24 +210,28 @@ class MetricsDashboardWidget:
         for row_index, row in enumerate(rows):
             self.lid_accuracy_table.setItem(row_index, 0, self._item(row.scope))
             self.lid_accuracy_table.setItem(row_index, 1, self._item(f"{row.language_code} - {row.language_name}", tooltip=row.basis))
-            self.lid_accuracy_table.setItem(row_index, 2, self._item(f"{row.reviewed_count:,}"))
-            self.lid_accuracy_table.setItem(row_index, 3, self._item(f"{row.auto_labelled_count:,}"))
-            self.lid_accuracy_table.setItem(row_index, 4, self._item(f"{row.correct_count:,}"))
-            self.lid_accuracy_table.setItem(row_index, 5, self._item(_format_accuracy(row.accuracy)))
-            self.lid_accuracy_table.setItem(row_index, 6, self._item(f"{row.missing_count:,}"))
-            self.lid_accuracy_table.setItem(row_index, 7, self._item(f"{row.incorrect_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 2, self._item(f"{row.final_label_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 3, self._item(f"{row.accepted_auto_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 4, self._item(f"{row.reviewed_label_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 5, self._item(f"{row.manual_label_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 6, self._item(f"{row.imported_label_count:,}"))
+            self.lid_accuracy_table.setItem(row_index, 7, self._item(_format_accuracy(row.auto_acceptance_rate)))
+            self.lid_accuracy_table.setItem(row_index, 8, self._item(_format_accuracy(row.manual_intervention_rate)))
         self.lid_accuracy_table.resizeRowsToContents()
         if self.lid_accuracy_summary_label is not None:
             if rows:
-                reviewed = sum(row.reviewed_count for row in rows if row.scope == "token")
-                correct = sum(row.correct_count for row in rows if row.scope == "token")
+                final_labels = sum(row.final_label_count for row in rows if row.scope == "token")
+                accepted_auto = sum(row.accepted_auto_count for row in rows if row.scope == "token")
+                reviewed_labels = sum(row.reviewed_label_count for row in rows if row.scope == "token")
                 self.lid_accuracy_summary_label.setText(
-                    f"Token LID reviewed accuracy: {_format_accuracy(correct / reviewed if reviewed else None)} "
-                    f"({correct:,}/{reviewed:,}). Manual/imported labels are treated as review evidence."
+                    f"Token LID auto-accepted share: {_format_accuracy(accepted_auto / final_labels if final_labels else None)} "
+                    f"({accepted_auto:,}/{final_labels:,}). Manual/imported share: "
+                    f"{_format_accuracy(reviewed_labels / final_labels if final_labels else None)} "
+                    f"({reviewed_labels:,}/{final_labels:,})."
                 )
             else:
                 self.lid_accuracy_summary_label.setText(
-                    "No reviewed manual/imported token or span labels are available yet, so Imbizo-CS cannot estimate LID accuracy."
+                    "No token or span language labels are available yet, so Imbizo-CS cannot estimate Local LID acceptance."
                 )
 
     def export_heatmap(self, format: str = "png") -> Path:
@@ -388,7 +402,7 @@ def _format_raw_value(value: Any) -> str:
 
 
 def _format_accuracy(value: float | None) -> str:
-    """Format a reviewed accuracy ratio."""
+    """Format a Local LID acceptance ratio."""
 
     if value is None:
         return "n/a"

@@ -33,8 +33,8 @@ def test_spreadsheet_view_loads_imported_tokens(tmp_path: Path) -> None:
 
     assert widget is not None
     assert view.table is not None
-    assert view.table.rowCount() == 5
-    assert view.table.item(0, 3).text() == "I"
+    assert view.table.model().rowCount() == 5
+    assert view.table.model().index(0, 3).data() == "I"
     assert view.status_label is not None
     assert view.status_label.text() == "5 token rows"
     app.quit()
@@ -57,11 +57,35 @@ def test_spreadsheet_view_persists_memo_edits(tmp_path: Path) -> None:
     view = SpreadsheetViewWidget(context)
     view.build()
     assert view.table is not None
-    view.table.item(0, 9).setText("checked in spreadsheet")
-    view._cell_changed(0, 9)
+    model = view.table.model()
+    assert model.setData(model.index(0, 9), "checked in spreadsheet")
 
     row = context.connection.execute("SELECT memo, source FROM annotations").fetchone()
     assert row is not None
     assert row["memo"] == "checked in spreadsheet"
     assert row["source"] == "manual"
+    app.quit()
+
+
+def test_spreadsheet_view_shows_more_than_one_thousand_rows(tmp_path: Path) -> None:
+    """Long transcript imports must remain fully visible in the Spreadsheet tab."""
+
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets: Any = pytest.importorskip("PySide6.QtWidgets")
+
+    from imbizo.gui.widgets.spreadsheet_view import SpreadsheetViewWidget
+
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication([])
+    source = tmp_path / "long_interview.txt"
+    source.write_text(" ".join(f"tok{i}" for i in range(1005)), encoding="utf-8")
+    context = ProjectService().create_project(tmp_path / "project", ProjectMetadata(project_uuid="", title="Long Sheet Test"))
+    ImportService().import_file(context, source)
+
+    view = SpreadsheetViewWidget(context)
+    view.build()
+
+    assert view.table is not None
+    assert view.table.model().rowCount() == 1005
+    assert view.status_label is not None
+    assert view.status_label.text() == "1,005 token rows"
     app.quit()
