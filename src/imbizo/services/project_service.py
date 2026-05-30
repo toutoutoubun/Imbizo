@@ -6,6 +6,8 @@ import json
 import shutil
 import uuid
 import zipfile
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 from imbizo import __version__
@@ -17,6 +19,19 @@ from imbizo.persistence.connection import open_project_database
 from imbizo.persistence.migrations import CURRENT_SCHEMA_VERSION, initialize_database, migrate_database
 from imbizo.persistence.repositories import ProjectRepository
 from imbizo.services.provenance_service import ProvenanceService
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectOpenProgress:
+    """Progress event emitted while opening a local project folder."""
+
+    stage: str
+    message: str
+    current: int
+    total: int = 100
+
+
+ProjectOpenProgressCallback = Callable[[ProjectOpenProgress], None]
 
 
 class ProjectService:
@@ -42,17 +57,58 @@ class ProjectService:
         ProvenanceService().record(context, make_provenance_record("import", "system", message="Project created locally."))
         return context
 
-    def open_project(self, root: Path) -> ProjectContext:
+    def open_project(
+        self,
+        root: Path,
+        progress_callback: ProjectOpenProgressCallback | None = None,
+    ) -> ProjectContext:
         """Open an existing local project folder."""
 
+        self._report_open_progress(
+            progress_callback,
+            stage="check_folder",
+            message="Checking project folder",
+            current=5,
+        )
         paths = ProjectPaths.from_root(root)
         if not paths.database.exists():
             raise ProjectError("No project.sqlite file was found in that folder.")
         paths.ensure_all()
+        self._report_open_progress(
+            progress_callback,
+            stage="open_database",
+            message="Opening project database",
+            current=25,
+        )
         connection = open_project_database(paths.database)
+        self._report_open_progress(
+            progress_callback,
+            stage="migrate_database",
+            message="Checking schema version",
+            current=45,
+        )
         migrate_database(connection)
+        self._report_open_progress(
+            progress_callback,
+            stage="load_metadata",
+            message="Loading project metadata",
+            current=65,
+        )
         metadata = ProjectRepository(connection).get_metadata()
-        return ProjectContext(paths=paths, metadata=metadata, connection=connection)
+        self._report_open_progress(
+            progress_callback,
+            stage="prepare_workspace",
+            message="Preparing local workspace",
+            current=85,
+        )
+        context = ProjectContext(paths=paths, metadata=metadata, connection=connection)
+        self._report_open_progress(
+            progress_callback,
+            stage="ready",
+            message="Project ready",
+            current=100,
+        )
+        return context
 
     def close_project(self, context: ProjectContext) -> None:
         """Close local resources for an open project."""
@@ -91,3 +147,17 @@ class ProjectService:
             "updated_at": context.metadata.updated_at,
         }
         context.paths.project_json.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    def _report_open_progress(
+        self,
+        callback: ProjectOpenProgressCallback | None,
+        *,
+        stage: str,
+        message: str,
+        current: int,
+    ) -> None:
+        """Report a project-open progress event if a UI provided a callback."""
+
+        if callback is None:
+            return
+        callback(ProjectOpenProgress(stage=stage, message=message, current=current))

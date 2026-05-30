@@ -33,6 +33,7 @@
   "project.import_data_failed": "Could not import data file",
   "project.import_data_progress_title": "Importing data file",
   "project.open_dialog_title": "Open an Imbizo-CS project folder",
+  "project.open_progress_title": "Opening project",
   "project.create_dialog_title": "Choose a folder for the new Imbizo-CS project",
   "project.title_dialog_title": "Project title",
   "project.title_dialog_label": "Enter a short project title:",
